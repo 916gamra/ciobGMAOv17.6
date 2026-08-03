@@ -1,0 +1,8 @@
+{
+  "name": "CIOB GMAO v17.1 lite ",
+  "description": "TITANIC OS: An industrial-grade maintenance \u0026 procurement OS featuring the Titan design system, offline-first PDR Engine, and Shield Ops PM module.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

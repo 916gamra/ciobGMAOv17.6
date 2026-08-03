@@ -1,0 +1,485 @@
+import React, { useState, useMemo } from 'react';
+import { useLiveQuery } from 'dexie-react-hooks';
+import { db, type TaskExecution, type ConsumedPartClaim } from '@/core/db';
+import { motion, AnimatePresence } from 'motion/react';
+import { 
+  ClipboardCheck, 
+  CheckCircle2, 
+  AlertTriangle, 
+  Clock, 
+  ArrowRight, 
+  Search, 
+  Filter, 
+  PackageCheck, 
+  Check, 
+  MinusCircle, 
+  Building2, 
+  UserCheck, 
+  Layers, 
+  Sparkles,
+  ShieldCheck,
+  RefreshCw,
+  Box
+} from 'lucide-react';
+import { GlassCard } from '@/shared/components/GlassCard';
+import { PageHeader } from '@/shared/components/PageHeader';
+import { KpiCard } from '@/shared/components/KpiCard';
+import { BadgePill } from '@/shared/components/BadgePill';
+import { Button } from '@/shared/components/Button';
+import { PdrPageSkeleton } from '../components/PdrPageSkeleton';
+import { toast } from 'sonner';
+
+export function StockReconciliationView({ user }: { user: any }) {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'RECONCILED'>('ALL');
+
+  // Query live data
+  const data = useLiveQuery(async () => {
+    const [taskExecutions, inventory, pdrBlueprints, pdrTemplates, machines, sectors, technicians, movements] = await Promise.all([
+      db.taskExecutions.where('serviceType').equals('CORR').toArray(),
+      db.inventory.toArray(),
+      db.pdrBlueprints.toArray(),
+      db.pdrTemplates.toArray(),
+      db.machines.toArray(),
+      db.sectors.toArray(),
+      db.technicians.toArray(),
+      db.movements.toArray()
+    ]);
+    return { taskExecutions, inventory, pdrBlueprints, pdrTemplates, machines, sectors, technicians, movements };
+  }, []);
+
+  if (!data) {
+    return <PdrPageSkeleton />;
+  }
+
+  const taskExecutions = data.taskExecutions;
+  const inventory = data?.inventory ?? [];
+  const pdrBlueprints = data?.pdrBlueprints ?? [];
+  const pdrTemplates = data?.pdrTemplates ?? [];
+  const machines = data?.machines ?? [];
+  const sectors = data?.sectors ?? [];
+  const technicians = data?.technicians ?? [];
+  const movements = data?.movements ?? [];
+
+  // Lookup maps
+  const invMap = useMemo(() => new Map(inventory.map(i => [i.id, i])), [inventory]);
+  const bpMap = useMemo(() => new Map(pdrBlueprints.map(b => [b.id, b])), [pdrBlueprints]);
+  const tempMap = useMemo(() => new Map(pdrTemplates.map(t => [t.id, t])), [pdrTemplates]);
+  const machineMap = useMemo(() => new Map(machines.map(m => [m.id, m])), [machines]);
+  const sectorMap = useMemo(() => new Map(sectors.map(s => [s.id, s])), [sectors]);
+  const techMap = useMemo(() => new Map(technicians.map(t => [t.id, t])), [technicians]);
+
+  // Extract all claims from executions that have NEW parts claimed
+  const claimsList = useMemo(() => {
+    const items: {
+      executionId: string;
+      bonId: string;
+      machineRef: string;
+      sectorName: string;
+      techName: string;
+      executedAt: string;
+      claimIndex: number;
+      claim: ConsumedPartClaim;
+      partName: string;
+      partRef: string;
+      stockCurrentQty: number;
+      stockId?: string;
+    }[] = [];
+
+    taskExecutions.forEach(ex => {
+      if (!ex.claimedParts || ex.claimedParts.length === 0) return;
+      const machine = machineMap.get(ex.machineId);
+      const sector = machine ? sectorMap.get(machine.sectorId) : null;
+      const tech = techMap.get(ex.doneBy || '');
+
+      ex.claimedParts.forEach((claim, index) => {
+        if (!claim.isNew) return; // Only NEW parts claims from PDR main store need reconciliation
+        let stockItem = claim.stockId ? invMap.get(claim.stockId) : null;
+        if (!stockItem && claim.blueprintId) {
+          stockItem = inventory.find(i => i.blueprintId === claim.blueprintId);
+        }
+
+        const blueprint = stockItem ? bpMap.get(stockItem.blueprintId) : (claim.blueprintId ? bpMap.get(claim.blueprintId) : null);
+        const template = blueprint ? tempMap.get(blueprint.templateId) : null;
+
+        items.push({
+          executionId: ex.id,
+          bonId: ex.bonId || `BDC-${ex.id.slice(0, 6).toUpperCase()}`,
+          machineRef: machine?.referenceCode || 'M-REG',
+          sectorName: sector?.name || 'القطاع العام',
+          techName: tech?.name || ex.doneBy || 'فني الصيانة',
+          executedAt: ex.executedAt || ex.scheduledDate,
+          claimIndex: index,
+          claim,
+          partName: template?.name || 'قطعة غيار غير معروفة',
+          partRef: blueprint?.reference || 'REF-N/A',
+          stockCurrentQty: stockItem ? stockItem.quantityCurrent : 0,
+          stockId: stockItem?.id
+        });
+      });
+    });
+
+    return items.sort((a, b) => new Date(b.executedAt).getTime() - new Date(a.executedAt).getTime());
+  }, [taskExecutions, machineMap, sectorMap, techMap, invMap, bpMap, tempMap, inventory]);
+
+  // Stats
+  const stats = useMemo(() => {
+    const total = claimsList.length;
+    const pending = claimsList.filter(c => !c.claim.reconciled).length;
+    const reconciled = claimsList.filter(c => c.claim.reconciled && !c.claim.deductedStock).length;
+    const deducted = claimsList.filter(c => c.claim.deductedStock).length;
+    return { total, pending, reconciled, deducted };
+  }, [claimsList]);
+
+  // Filtered List
+  const filteredClaims = useMemo(() => {
+    return claimsList.filter(item => {
+      const matchesSearch = searchTerm ? (
+        item.bonId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.machineRef.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.partName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.partRef.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.techName.toLowerCase().includes(searchTerm.toLowerCase())
+      ) : true;
+
+      const matchesStatus = statusFilter === 'PENDING' ? !item.claim.reconciled
+        : statusFilter === 'RECONCILED' ? item.claim.reconciled
+        : true;
+
+      return matchesSearch && matchesStatus;
+    });
+  }, [claimsList, searchTerm, statusFilter]);
+
+  // Storekeeper Action 1: Confirm Match (Without extra deduction)
+  const handleConfirmMatchOnly = async (item: typeof claimsList[0]) => {
+    try {
+      const execution = await db.taskExecutions.get(item.executionId);
+      if (!execution || !execution.claimedParts) return;
+
+      const updatedParts = [...execution.claimedParts];
+      updatedParts[item.claimIndex] = {
+        ...updatedParts[item.claimIndex],
+        reconciled: true,
+        reconciledAt: new Date().toISOString(),
+        reconciledBy: user?.name || 'مسؤول المخزن',
+        deductedStock: false
+      };
+
+      const allReconciled = updatedParts.every(p => !p.isNew || p.reconciled);
+
+      await db.taskExecutions.update(item.executionId, {
+        claimedParts: updatedParts,
+        reconciliationStatus: allReconciled ? 'RECONCILED' : 'PENDING_MATCH'
+      });
+
+      toast.success(`تم تأكيد مطابقة سحب البون ${item.bonId} بنجاح (دون خصم إضافي)`);
+    } catch (err: any) {
+      console.error(err);
+      toast.error('فشلت عملية المطابقة: ' + err.message);
+    }
+  };
+
+  // Storekeeper Action 2: Process Missing Stock Deduction
+  const handleDeductAndReconcile = async (item: typeof claimsList[0]) => {
+    if (!item.stockId) {
+      toast.error('لم يتم العثور على العنصر في رصيد المخزن للخصم منه');
+      return;
+    }
+
+    const stockItem = await db.inventory.get(item.stockId);
+    if (!stockItem) {
+      toast.error('العنصر غير موجود بالمخزن');
+      return;
+    }
+
+    if (stockItem.quantityCurrent < item.claim.quantity) {
+      if (!confirm(`⚠️ تنبيه: الكمية المطلوبة (${item.claim.quantity}) أكبر من المتوفر حالياً بالمخزن (${stockItem.quantityCurrent}). هل ترغب بالخصم وإبقاء الرصيد 0؟`)) {
+        return;
+      }
+    }
+
+    try {
+      const timestamp = new Date().toISOString();
+      const newQty = Math.max(0, stockItem.quantityCurrent - item.claim.quantity);
+
+      // 1. Deduct Stock
+      await db.inventory.update(stockItem.id, {
+        quantityCurrent: newQty,
+        updatedAt: timestamp
+      });
+
+      // 2. Add Stock OUT movement
+      await db.movements.add({
+        id: crypto.randomUUID(),
+        stockId: stockItem.id,
+        type: 'OUT',
+        quantity: item.claim.quantity,
+        performedBy: user?.name || 'Magasinier (Audit)',
+        notes: `خصم معتمد عبر مطابقة البون ${item.bonId} - الآلة: ${item.machineRef}`,
+        timestamp
+      });
+
+      // 3. Update execution claim status
+      const execution = await db.taskExecutions.get(item.executionId);
+      if (execution && execution.claimedParts) {
+        const updatedParts = [...execution.claimedParts];
+        updatedParts[item.claimIndex] = {
+          ...updatedParts[item.claimIndex],
+          reconciled: true,
+          reconciledAt: timestamp,
+          reconciledBy: user?.name || 'مسؤول المخزن',
+          deductedStock: true
+        };
+
+        const allReconciled = updatedParts.every(p => !p.isNew || p.reconciled);
+
+        await db.taskExecutions.update(item.executionId, {
+          claimedParts: updatedParts,
+          reconciliationStatus: allReconciled ? 'STOCK_DEDUCTED' : 'PENDING_MATCH'
+        });
+      }
+
+      toast.success(`تم خصم الكمية (${item.claim.quantity}) وتحديث حركة المخزن للبون ${item.bonId} بنجax`);
+    } catch (err: any) {
+      console.error(err);
+      toast.error('خطأ في خصم المخزن: ' + err.message);
+    }
+  };
+
+  return (
+    <div className="w-full h-full flex flex-col gap-6 relative z-10 lg:px-8 pb-24 pt-2 font-sans" dir="rtl">
+      {/* HEADER COCKPIT */}
+      <PageHeader
+        title="مطابقة سحوبات البونات (Reconciliation Radar)"
+        subtitle="واجهة سيادية لمسؤول المخزن لمراجعة ومطابقة القطع الجديدة المسجلة في التدخلات العلاجية برقم البون."
+        icon={<ClipboardCheck className="w-8 h-8 text-cyan-400" />}
+        badgeColor="cyan"
+      />
+
+      {/* DASHBOARD KPIS */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <KpiCard
+          label="إجمالي طلبات السحب"
+          value={stats.total}
+          unit="سحب"
+          icon={<Box className="w-6 h-6" />}
+          color="cyan"
+          subText="سحوبات الفنيين في البونات"
+        />
+
+        <KpiCard
+          label="في انتظار المطابقة"
+          value={stats.pending}
+          unit="طلب"
+          icon={<Clock className="w-6 h-6" />}
+          color="amber"
+          subText="تتطلب مراجعة أمين المخزن"
+        />
+
+        <KpiCard
+          label="مطابقة وموثقة"
+          value={stats.reconciled}
+          unit="بون"
+          icon={<CheckCircle2 className="w-6 h-6" />}
+          color="emerald"
+          subText="سُحبت وسُجلت مسبقاً"
+        />
+
+        <KpiCard
+          label="معتمدة ومخصومة الآن"
+          value={stats.deducted}
+          unit="عملية"
+          icon={<PackageCheck className="w-6 h-6" />}
+          color="indigo"
+          subText="تم خصم رصيدها فورياً"
+        />
+      </div>
+
+      {/* FILTER & CONTROL BAR */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur-md">
+        <div className="relative flex-1 w-full">
+          <Search className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="بحث برقم البون، اسم القطعة، كود الآلة، أو اسم الفني..."
+            className="w-full pl-4 pr-10 py-2.5 rounded-xl bg-slate-950/80 border border-slate-700/60 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-all font-mono"
+          />
+        </div>
+
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <button
+            onClick={() => setStatusFilter('ALL')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              statusFilter === 'ALL'
+                ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40'
+                : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white'
+            }`}
+          >
+            الكل ({stats.total})
+          </button>
+          <button
+            onClick={() => setStatusFilter('PENDING')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              statusFilter === 'PENDING'
+                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white'
+            }`}
+          >
+            معلقة ({stats.pending})
+          </button>
+          <button
+            onClick={() => setStatusFilter('RECONCILED')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              statusFilter === 'RECONCILED'
+                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-white'
+            }`}
+          >
+            مطابقة ({stats.reconciled + stats.deducted})
+          </button>
+        </div>
+      </div>
+
+      {/* TABLE RADAR */}
+      <GlassCard className="overflow-hidden border border-slate-800/80 p-0">
+        <div className="overflow-x-auto custom-scrollbar">
+          <table className="w-full text-right text-xs">
+            <thead className="bg-slate-950/80 text-slate-400 border-b border-slate-800 font-bold uppercase tracking-wider">
+              <tr>
+                <th className="py-3.5 px-4">رقم البون (Voucher ID)</th>
+                <th className="py-3.5 px-4">الآلة والقطاع</th>
+                <th className="py-3.5 px-4">الفني وتاريخ التدخل</th>
+                <th className="py-3.5 px-4">القطعة المسجلة</th>
+                <th className="py-3.5 px-4 text-center">الكمية</th>
+                <th className="py-3.5 px-4 text-center">رصيد المخزن الفعلي</th>
+                <th className="py-3.5 px-4 text-center">حالة المطابقة</th>
+                <th className="py-3.5 px-4 text-left">إجراء أمين المخزن</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800/60 font-medium">
+              {filteredClaims.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="py-12 text-center text-slate-500 font-bold">
+                    <PackageCheck className="w-12 h-12 text-slate-600 mx-auto mb-3 opacity-60" />
+                    لا توجد طلبات سحب قطع مطابقة للشروط الحالية
+                  </td>
+                </tr>
+              ) : (
+                filteredClaims.map((item, idx) => {
+                  const isReconciled = item.claim.reconciled;
+                  const isDeducted = item.claim.deductedStock;
+
+                  return (
+                    <tr 
+                      key={`${item.executionId}-${idx}`}
+                      className="hover:bg-slate-900/40 transition-colors"
+                    >
+                      {/* BON ID */}
+                      <td className="py-3.5 px-4">
+                        <div className="font-mono font-extrabold text-cyan-400 text-sm tracking-tight flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                          {item.bonId}
+                        </div>
+                      </td>
+
+                      {/* MACHINE & SECTOR */}
+                      <td className="py-3.5 px-4">
+                        <div className="font-bold text-white text-xs">{item.machineRef}</div>
+                        <div className="text-[10px] text-slate-400 font-mono mt-0.5">{item.sectorName}</div>
+                      </td>
+
+                      {/* TECH & DATE */}
+                      <td className="py-3.5 px-4">
+                        <div className="text-slate-200 font-bold flex items-center gap-1">
+                          <UserCheck className="w-3.5 h-3.5 text-slate-400" />
+                          {item.techName}
+                        </div>
+                        <div className="text-[10px] text-slate-500 font-mono mt-0.5">
+                          {new Date(item.executedAt).toLocaleString('ar-EG', { dateStyle: 'short', timeStyle: 'short' })}
+                        </div>
+                      </td>
+
+                      {/* CLAIMED PART */}
+                      <td className="py-3.5 px-4">
+                        <div className="font-bold text-white text-xs">{item.partName}</div>
+                        <div className="text-[10px] font-mono text-cyan-400/80 mt-0.5">{item.partRef}</div>
+                      </td>
+
+                      {/* QTY CLAIMED */}
+                      <td className="py-3.5 px-4 text-center">
+                        <span className="px-2.5 py-1 rounded-md bg-cyan-500/10 border border-cyan-500/30 text-cyan-300 font-mono font-bold text-xs">
+                          x{item.claim.quantity}
+                        </span>
+                      </td>
+
+                      {/* CURRENT STOCK */}
+                      <td className="py-3.5 px-4 text-center">
+                        <span className={`px-2 py-0.5 rounded font-mono font-bold text-xs ${
+                          item.stockCurrentQty > 0 
+                            ? 'bg-slate-800 text-slate-300 border border-slate-700' 
+                            : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
+                        }`}>
+                          {item.stockCurrentQty} قطع
+                        </span>
+                      </td>
+
+                      {/* AUDIT STATUS */}
+                      <td className="py-3.5 px-4 text-center">
+                        {isDeducted ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-300 text-[10px] font-bold">
+                            <PackageCheck className="w-3 h-3" /> تم الخصم فورياً
+                          </span>
+                        ) : isReconciled ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold">
+                            <CheckCircle2 className="w-3 h-3" /> مطابقة سابقة
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-[10px] font-bold animate-pulse">
+                            <Clock className="w-3 h-3" /> في انتظار المطابقة
+                          </span>
+                        )}
+                      </td>
+
+                      {/* STOREKEEPER ACTIONS */}
+                      <td className="py-3.5 px-4 text-left">
+                        {isReconciled ? (
+                          <div className="text-[10px] text-slate-500 font-mono text-left">
+                            تمت بواسطة: {item.claim.reconciledBy || 'المسؤول'}
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-end gap-2">
+                            {/* Option A: Match without deducting again */}
+                            <button
+                              onClick={() => handleConfirmMatchOnly(item)}
+                              className="px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 transition-all font-bold text-[11px] flex items-center gap-1"
+                              title="تأكيد أن القطعة سُحبت مسبقاً وسُجلت بالمسودات"
+                            >
+                              <Check className="w-3.5 h-3.5" />
+                              تأكيد المطابقة
+                            </button>
+
+                            {/* Option B: Deduct stock right now if forgotten */}
+                            <button
+                              onClick={() => handleDeductAndReconcile(item)}
+                              className="px-2.5 py-1 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 transition-all font-bold text-[11px] flex items-center gap-1"
+                              title="خصم الكمية الآن من المخزن واعتماد السحب"
+                            >
+                              <MinusCircle className="w-3.5 h-3.5" />
+                              خصم واعتماد
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </GlassCard>
+    </div>
+  );
+}
