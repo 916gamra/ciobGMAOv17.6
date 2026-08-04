@@ -126,7 +126,7 @@ export function StockTransactionModal({
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 20 }}
                     transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
-                    className="w-full max-w-md bg-transparent/80 backdrop-blur-2xl border border-white/10 shadow-2xl rounded-2xl overflow-hidden shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] relative"
+                    className="w-full max-w-md bg-black/80 backdrop-blur-3xl border border-white/10 shadow-[0_25px_60px_rgba(0,0,0,0.8)] rounded-3xl overflow-hidden relative gemini-breathing-border"
                   >
                     <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                     

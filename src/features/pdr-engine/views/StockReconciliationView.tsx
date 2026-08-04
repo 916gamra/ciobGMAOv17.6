@@ -48,11 +48,7 @@ export function StockReconciliationView({ user }: { user: any }) {
     return { taskExecutions, inventory, pdrBlueprints, pdrTemplates, machines, sectors, technicians, movements };
   }, []);
 
-  if (!data) {
-    return <PdrPageSkeleton />;
-  }
-
-  const taskExecutions = data.taskExecutions;
+  const taskExecutions = data?.taskExecutions ?? [];
   const inventory = data?.inventory ?? [];
   const pdrBlueprints = data?.pdrBlueprints ?? [];
   const pdrTemplates = data?.pdrTemplates ?? [];
@@ -149,6 +145,10 @@ export function StockReconciliationView({ user }: { user: any }) {
       return matchesSearch && matchesStatus;
     });
   }, [claimsList, searchTerm, statusFilter]);
+
+  if (!data) {
+    return <PdrPageSkeleton />;
+  }
 
   // Storekeeper Action 1: Confirm Match (Without extra deduction)
   const handleConfirmMatchOnly = async (item: typeof claimsList[0]) => {

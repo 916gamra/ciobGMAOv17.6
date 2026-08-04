@@ -108,7 +108,7 @@ export function AddInventoryModal({ isOpen, onClose }: { isOpen: boolean, onClos
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 20 }}
                     transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
-                    className="w-full max-w-md bg-slate-950/95 backdrop-blur-3xl border border-white/10 shadow-2xl rounded-2xl overflow-hidden relative my-auto"
+                    className="w-full max-w-md bg-black/85 backdrop-blur-3xl border border-white/10 shadow-[0_25px_60px_rgba(0,0,0,0.8)] rounded-3xl overflow-hidden relative my-auto gemini-breathing-border"
                   >
                     <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent" />
                     

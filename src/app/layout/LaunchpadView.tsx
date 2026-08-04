@@ -12,6 +12,7 @@ import { cn } from '@/shared/utils';
 import { SystemBackground } from '@/shared/components/SystemBackground';
 import { useNotificationsContext } from '@/shared/context/NotificationContext';
 import { useTranslation } from 'react-i18next';
+import { GeminiCommandBar } from './GeminiCommandBar';
 
 // --- SYSTEM NODES CONFIGURATION ---
 const APPS = [
@@ -222,6 +223,9 @@ export function LaunchpadView({ user }: { user: User | null }) {
             </motion.div>
           </div>
         </motion.section>
+
+        {/* --- GEMINI COMMAND BAR --- */}
+        <GeminiCommandBar />
 
         {/* --- SYSTEM NODES (PORTALS) --- */}
         <section className="flex-1 flex flex-col">

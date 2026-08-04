@@ -41,8 +41,8 @@ export function PageHeader({
     <motion.header 
       variants={pageItemVariants} 
       className={cn(
-        "flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8 shrink-0 relative z-10", 
-        "p-6 bg-[#0f0f12] border border-[#1a1a1f] rounded-2xl shadow-2xl",
+        "flex flex-col md:flex-row md:items-start justify-between gap-6 mb-6 shrink-0 relative z-10", 
+        "p-6 bg-white/[0.03] backdrop-blur-2xl border border-white/[0.08] rounded-3xl shadow-[0_15px_40px_rgba(0,0,0,0.4)] card-neon-hover",
         className
       )}
     >

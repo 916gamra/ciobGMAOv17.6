@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence, Variants } from 'motion/react';
+import { useTranslation } from 'react-i18next';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/core/db';
 import { PdrPageSkeleton } from '../components/PdrPageSkeleton';
@@ -42,6 +43,7 @@ const itemVariants: Variants = {
 };
 
 export function StockHistoryView() {
+  const { t } = useTranslation();
   const [activeSubTab, setActiveSubTab] = useState<'ledger' | 'machine-consumption'>('ledger');
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<'ALL' | 'IN' | 'OUT' | 'ADJUST'>('ALL');

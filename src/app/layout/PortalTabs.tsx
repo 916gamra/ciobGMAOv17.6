@@ -32,8 +32,8 @@ export function PortalTabs() {
   if (tabs.length === 0) return null;
 
   return (
-    <header className="h-[44px] md:h-[50px] bg-black/60 backdrop-blur-xl border-b border-white/10 flex items-end px-4 md:px-6 gap-1 shrink-0 w-full overflow-x-auto custom-scrollbar lg:pr-64 z-[60]">
-      <div className="flex gap-px">
+    <header className="h-[46px] md:h-[52px] bg-black/40 backdrop-blur-2xl border border-white/10 rounded-2xl flex items-center px-3 gap-2 shrink-0 w-full overflow-x-auto custom-scrollbar lg:pr-64 z-[60] shadow-xl my-1">
+      <div className="flex items-center gap-1.5 w-full">
         {tabs.map((tab) => {
           const colors = PORTAL_COLORS[tab.portalId] || { dot: 'bg-white/40', border: 'border-white/10', text: 'text-white' };
           const Icon = PORTAL_ICONS[tab.portalId] || Package;
@@ -47,39 +47,39 @@ export function PortalTabs() {
                 setPortal(tab.portalId);
               }}
               className={cn(
-                "group relative flex items-center h-[36px] md:h-[40px] px-4 md:px-5 min-w-[140px] max-w-[200px] md:min-w-[180px] md:max-w-[260px] rounded-t-xl cursor-pointer transition-all select-none border border-b-0 text-[11px] md:text-xs gap-3 shrink-0",
+                "group relative flex items-center h-[34px] md:h-[38px] px-3.5 md:px-4 min-w-[130px] max-w-[200px] md:min-w-[170px] md:max-w-[240px] rounded-xl cursor-pointer transition-all duration-300 select-none border text-[11px] md:text-xs gap-2.5 shrink-0",
                 isCurrentPortal
-                  ? "bg-white/[0.08] text-white border-white/20 z-10 shadow-[0_-2px_10px_rgba(0,0,0,0.3)]" 
-                  : "bg-white/[0.02] text-white/40 border-white/5 hover:bg-white/5 hover:text-white/70"
+                  ? "bg-white/10 text-white border-white/20 shadow-[0_0_20px_rgba(255,255,255,0.08)]" 
+                  : "bg-white/[0.02] text-white/50 border-white/5 hover:bg-white/[0.06] hover:text-white/80"
               )}
             >
               {/* Engine Icon - Colored */}
               <Icon className={cn(
                 "w-4 h-4 shrink-0 transition-all duration-300",
                 isCurrentPortal 
-                  ? colors.text 
-                  : cn(colors.text, "opacity-40")
+                  ? cn(colors.text, "scale-110 drop-shadow-[0_0_8px_currentColor]")
+                  : cn(colors.text, "opacity-50 group-hover:opacity-80")
               )} />
               
-              <span className="truncate flex-1 font-medium flex items-center gap-2">
+              <span className="truncate flex-1 font-semibold tracking-tight flex items-center gap-2">
                 <span className="truncate">{tab.title}</span>
               </span>
 
               <button 
                 onClick={(e) => { e.stopPropagation(); closeTab(tab.portalId); }}
                 className={cn(
-                  "ml-1 p-1 rounded-md opacity-0 group-hover:opacity-100 hover:bg-white/10 transition-all text-white/40 hover:text-white",
-                  isCurrentPortal && "opacity-40"
+                  "ml-1 p-1 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-white/20 transition-all text-white/50 hover:text-white",
+                  isCurrentPortal && "opacity-60"
                 )}
               >
                 <X className="w-3 h-3" />
               </button>
 
-              {/* Bottom active indicator */}
+              {/* Pill active indicator */}
               {isCurrentPortal && (
                 <motion.div 
-                  layoutId="tab-underline"
-                  className={cn("absolute bottom-0 left-0 right-0 h-[2px]", colors.dot.split(' ')[0])} 
+                  layoutId="tab-pill"
+                  className={cn("absolute bottom-0.5 left-3 right-3 h-[2px] rounded-full", colors.dot.split(' ')[0])} 
                 />
               )}
             </div>

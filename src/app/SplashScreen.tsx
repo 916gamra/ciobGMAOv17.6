@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { motion } from 'motion/react';
+import { SystemBackground } from '@/shared/components/SystemBackground';
 
 export function SplashScreen({ onComplete }: { onComplete: () => void }) {
 
@@ -9,10 +10,10 @@ export function SplashScreen({ onComplete }: { onComplete: () => void }) {
   }, [onComplete]);
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#050505] text-slate-100 overflow-hidden selection:bg-white/10">
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#090a0f] text-slate-100 overflow-hidden selection:bg-white/10">
       
-      {/* Subtle refined decorative background */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white/[0.05] via-transparent to-transparent pointer-events-none" />
+      {/* Gemini-Style Dynamic Central Spotlight Background */}
+      <SystemBackground portalId="HOME" />
 
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}

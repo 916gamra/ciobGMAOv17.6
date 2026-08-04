@@ -35,10 +35,6 @@ export function ComponentCatalogView() {
   const { blueprints, templates: dbTemplates, families: dbFamilies, isLoading } = useMasterCatalogEngine();
   const { inventory, addStock } = useStockEngine();
 
-  if (isLoading) {
-    return <PdrPageSkeleton />;
-  }
-
   // 1. Saved linked template IDs from localStorage to keep state of active templates in PDR Catalog
   const [linkedTemplateIds, setLinkedTemplateIds] = useState<string[]>(() => {
     try {
@@ -154,6 +150,10 @@ export function ComponentCatalogView() {
     
     return bps;
   }, [blueprints, selectedTemplateId, selectedFamilyId, templates, searchTerm]);
+
+  if (isLoading) {
+    return <PdrPageSkeleton />;
+  }
 
   const handleActivateInstance = async (e: React.FormEvent) => {
     e.preventDefault();

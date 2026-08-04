@@ -690,32 +690,38 @@ function StatCompactPod({
   sub: string;
   color: 'emerald' | 'indigo' | 'warning' | 'danger';
 }) {
+  const cardGlowClass = 
+    color === 'warning' ? 'bento-card-warning' :
+    color === 'danger' ? 'bento-card-danger' :
+    color === 'emerald' ? 'bento-card-safe' :
+    'titan-card';
+
   return (
-    <div className="flex items-center gap-4 px-4 py-3 bg-slate-900/30 border border-white/[0.05] rounded-3xl hover:bg-slate-900/50 hover:border-white/[0.08] transition-all group text-left relative overflow-hidden shadow-xl">
+    <div className={cn("flex items-center gap-4 px-4 py-4 text-left relative group cursor-pointer transition-all duration-300", cardGlowClass)}>
       
-      {/* Decorative vertical colored anchor */}
+      {/* Decorative vertical colored accent bar */}
       <div className={cn(
-        "absolute left-0 top-0 bottom-0 w-1 transition-all group-hover:w-1.5",
-        color === 'emerald' ? 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]' :
-        color === 'indigo' ? 'bg-indigo-400 shadow-[0_0_8px_rgba(129,140,248,0.5)]' :
-        color === 'warning' ? 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)]' : 
-        'bg-rose-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]'
+        "absolute left-0 top-3 bottom-3 w-1 rounded-r-full transition-all duration-300 group-hover:w-1.5",
+        color === 'emerald' ? 'bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,0.6)]' :
+        color === 'indigo' ? 'bg-indigo-400 shadow-[0_0_12px_rgba(129,140,248,0.6)]' :
+        color === 'warning' ? 'bg-amber-400 shadow-[0_0_12px_rgba(251,191,36,0.6)]' : 
+        'bg-rose-500 shadow-[0_0_12px_rgba(239,68,68,0.6)]'
       )} />
 
       <div className={cn(
-        "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border transition-all group-hover:scale-105",
-        color === 'emerald' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' :
-        color === 'indigo' ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400' :
-        color === 'warning' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' : 
-        'bg-rose-500/10 border-rose-500/20 text-rose-400 shadow-[0_0_10px_rgba(239,68,68,0.1)]'
+        "w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border transition-transform duration-300 group-hover:scale-110 shadow-lg ml-1",
+        color === 'emerald' ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400 shadow-emerald-500/10' :
+        color === 'indigo' ? 'bg-indigo-500/15 border-indigo-500/30 text-indigo-400 shadow-indigo-500/10' :
+        color === 'warning' ? 'bg-amber-500/15 border-amber-500/30 text-amber-400 shadow-amber-500/10' : 
+        'bg-rose-500/15 border-rose-500/30 text-rose-400 shadow-rose-500/10'
       )}>
         {icon}
       </div>
 
-      <div className="flex flex-col flex-1">
-        <span className="text-[9px] font-black uppercase tracking-wider text-slate-500 font-sans">{label}</span>
-        <span className="text-xl font-black text-white mt-0.5 font-mono tracking-tight">{value}</span>
-        <span className="text-[8px] text-slate-400 mt-0.5 font-sans">{sub}</span>
+      <div className="flex flex-col flex-1 min-w-0">
+        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 font-sans truncate">{label}</span>
+        <span className="text-2xl font-black text-white mt-0.5 font-mono tracking-tight">{value}</span>
+        <span className="text-[9px] text-slate-400 mt-0.5 font-sans truncate">{sub}</span>
       </div>
     </div>
   );
