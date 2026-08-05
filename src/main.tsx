@@ -6,8 +6,13 @@ import { ErrorBoundary } from './shared/components/ErrorBoundary';
 import { setupDependencyInjection } from './core/di/setup';
 import './core/i18n';
 
-// Boot IoC Container before React mounts
+import {GlobalErrorHandler} from './core/errors/GlobalErrorHandler';
+import {CsrfShield} from './core/security/csrfShield';
+
+// Boot IoC Container & Security Handlers before React mounts
 setupDependencyInjection();
+GlobalErrorHandler.initialize();
+CsrfShield.initializeToken();
 
 // Register Service Worker for PWA
 if ('serviceWorker' in navigator) {

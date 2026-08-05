@@ -1,0 +1,168 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "BDR Nexus GMAO (v17.1) API & Dexie Data Specifications",
+    "description": "Comprehensive REST & Client Data Engine Specifications for BDR Nexus Industrial Maintenance (GMAO) and PDR Stock System.",
+    "version": "17.1.0",
+    "contact": {
+      "name": "BDR Nexus Architecture Team",
+      "email": "support@bdr-nexus.internal"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://ais-dev-pvc7ja7cd7jlvmjt5vco4g-30835316311.europe-west2.run.app/api/v1",
+      "description": "Primary Production Cloud Run Container"
+    },
+    {
+      "url": "dexie://bdr_nexus_gmao_db",
+      "description": "High-Performance IndexedDB Offline Client Engine"
+    }
+  ],
+  "paths": {
+    "/pdr/inventory": {
+      "get": {
+        "summary": "Retrieve PDR Spare Parts Stock Inventory",
+        "description": "Fetches active spare parts instances stored in the PDR storekeeper warehouse.",
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Fuzzy query string (Part code, designation, reference)",
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "category",
+            "in": "query",
+            "description": "Filter by family code (e.g. ROB, MOT, ELM)",
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of active PDR stock items",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/StockItem" }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Activate Blueprint to PDR Stock",
+        "description": "Converts a Catalog Blueprint model into a physical stock instance with location slot & initial quantity.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ActivateStockPayload" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Stock item activated successfully" },
+          "400": { "description": "Validation error or invalid nomenclature code" }
+        }
+      }
+    },
+    "/pdr/blueprints": {
+      "get": {
+        "summary": "Retrieve Catalog Blueprints",
+        "description": "Fetch theoretical commercial models (Datasheets) defined under Template families.",
+        "responses": {
+          "200": {
+            "description": "Array of catalog blueprints",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/Blueprint" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/machines": {
+      "get": {
+        "summary": "Fetch Industrial Equipment Tree",
+        "description": "Retrieve registered factory machines, sections, and integrated component BOM.",
+        "responses": {
+          "200": {
+            "description": "Machine hierarchy and equipment details"
+          }
+        }
+      }
+    },
+    "/preventive/plans": {
+      "get": {
+        "summary": "List Active Preventive Maintenance Plans",
+        "description": "Retrieve scheduled preventive plans and technician assignments."
+      }
+    },
+    "/telemetry/metrics": {
+      "get": {
+        "summary": "Get Real-Time Performance & System Telemetry",
+        "description": "Returns current FPS, DB Latency, Query Cache hit rates, and JS heap metrics."
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "StockItem": {
+        "type": "object",
+        "required": ["id", "code", "designation", "familyCode", "currentQuantity", "minThreshold"],
+        "properties": {
+          "id": { "type": "string", "example": "pdr-item-001" },
+          "code": { "type": "string", "example": "ROB-001" },
+          "designation": { "type": "string", "example": "Roulement à billes 6205-2RSH" },
+          "familyCode": { "type": "string", "example": "ROB" },
+          "currentQuantity": { "type": "integer", "example": 45 },
+          "minThreshold": { "type": "integer", "example": 10 },
+          "unitPrice": { "type": "number", "example": 12.5 },
+          "location": { "type": "string", "example": "Ais-04 / Shelf-B / Slot-02" },
+          "condition": { "type": "string", "enum": ["NEW", "USED", "REFURBISHED"], "example": "NEW" }
+        }
+      },
+      "Blueprint": {
+        "type": "object",
+        "required": ["id", "nomenclatureCode", "templateId", "brand"],
+        "properties": {
+          "id": { "type": "string", "example": "bp-rob-001" },
+          "nomenclatureCode": { "type": "string", "example": "ROB-001" },
+          "templateId": { "type": "string", "example": "tpl-roulement" },
+          "brand": { "type": "string", "example": "SKF" },
+          "manufacturerRef": { "type": "string", "example": "6205-2RSH/C3" }
+        }
+      },
+      "ActivateStockPayload": {
+        "type": "object",
+        "required": ["blueprintId", "initialQuantity", "location"],
+        "properties": {
+          "blueprintId": { "type": "string" },
+          "initialQuantity": { "type": "integer" },
+          "minThreshold": { "type": "integer" },
+          "location": { "type": "string" },
+          "condition": { "type": "string" }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      },
+      "CsrfToken": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-CSRF-Token"
+      }
+    }
+  }
+}

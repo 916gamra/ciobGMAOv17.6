@@ -16,6 +16,7 @@ import { runDatabaseSeed } from '@/core/db/useDatabaseSeeder';
 const queryClient = new QueryClient();
 
 import { NotificationProvider } from '@/shared/context/NotificationContext';
+import { ErrorBoundary } from '@/shared/components/ErrorBoundary';
 
 function SystemLifecycle() {
   useSystemCognition();
@@ -45,32 +46,34 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <NotificationProvider>
-        <SystemLifecycle />
-        {/* Global Toast Notifications */}
-        <Toaster 
-          position="bottom-right" 
-          expand={true}
-          richColors
-          visibleToasts={3}
-          closeButton
-          theme="dark" 
-          toastOptions={{
-            className: 'titanic-toast group',
-            style: {
-              background: 'transparent',
-              border: 'none',
-            },
-            duration: 4000,
-          }}
-        />
+        <ErrorBoundary componentName="AppRoot">
+          <SystemLifecycle />
+          {/* Global Toast Notifications */}
+          <Toaster 
+            position="bottom-right" 
+            expand={true}
+            richColors
+            visibleToasts={3}
+            closeButton
+            theme="dark" 
+            toastOptions={{
+              className: 'titanic-toast group',
+              style: {
+                background: 'transparent',
+                border: 'none',
+              },
+              duration: 4000,
+            }}
+          />
 
-        {isBooting && (
-          <SplashScreen onComplete={() => setIsSplashScreenDone(true)} />
-        )}
-        
-        {!isBooting && !isAuthenticated && <LoginScreen />}
-        
-        {!isBooting && isAuthenticated && <DesktopLayout user={currentUser} onLogout={logout} />}
+          {isBooting && (
+            <SplashScreen onComplete={() => setIsSplashScreenDone(true)} />
+          )}
+          
+          {!isBooting && !isAuthenticated && <LoginScreen />}
+          
+          {!isBooting && isAuthenticated && <DesktopLayout user={currentUser} onLogout={logout} />}
+        </ErrorBoundary>
       </NotificationProvider>
     </QueryClientProvider>
   );

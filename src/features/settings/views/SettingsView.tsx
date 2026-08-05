@@ -1,20 +1,35 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { GlassCard } from '@/shared/components/GlassCard';
-import { Database, Download, Upload, Trash2, Shield, Bell, Monitor, LogOut, RefreshCw, Loader2 } from 'lucide-react';
+import { Database, Download, Upload, Trash2, Shield, Bell, Monitor, LogOut, RefreshCw, Loader2, Activity, Cpu, Zap, HardDrive, BookOpen } from 'lucide-react';
 import { db, User } from '@/core/db';
 import * as Dialog from '@radix-ui/react-dialog';
 import { runDatabaseSeed } from '@/core/db/useDatabaseSeeder';
 import { useDataVault } from '../hooks/useDataVault';
+import { PerformanceMonitor } from '@/core/monitoring/performanceMonitor';
+import { QueryCache } from '@/core/cache/QueryCacheService';
+import { usePerformanceMonitor } from '@/core/monitoring/usePerformanceMonitor';
+import { DocumentationHubView } from '@/features/docs/views/DocumentationHubView';
 
 export function SettingsView({ onLogout, user }: { onLogout?: () => void, user?: User | null }) {
-  const [activeSection, setActiveSection] = useState<'appearance' | 'data'>('appearance');
+  usePerformanceMonitor('SettingsView');
+  const [activeSection, setActiveSection] = useState<'appearance' | 'data' | 'performance' | 'docs'>('appearance');
   const [isClearing, setIsClearing] = useState(false);
   const [clearSuccess, setClearSuccess] = useState(false);
   const [isSeeding, setIsSeeding] = useState(false);
   const [seedSuccess, setSeedSuccess] = useState(false);
-  
+  const [telemetry, setTelemetry] = useState(() => PerformanceMonitor.getTelemetrySummary());
+  const [cacheStats, setCacheStats] = useState(() => QueryCache.getStats());
+
   const { exportBackup, importBackup, isExporting, isImporting } = useDataVault();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTelemetry(PerformanceMonitor.getTelemetrySummary());
+      setCacheStats(QueryCache.getStats());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleClearDatabase = async () => {
     setIsClearing(true);
@@ -96,8 +111,22 @@ export function SettingsView({ onLogout, user }: { onLogout?: () => void, user?:
             onClick={() => setActiveSection('data')}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium ${activeSection === 'data' ? 'bg-[white/5] border border-white/10 text-white' : 'hover:bg-white/5 border border-transparent text-slate-400 hover:text-white'}`}
           >
-            <Database className={`w-5 h-5 ${activeSection === 'data' ? 'text-[blue-500]' : ''}`} />
+            <Database className={`w-5 h-5 ${activeSection === 'data' ? 'text-cyan-400' : ''}`} />
             Data Management
+          </button>
+          <button 
+            onClick={() => setActiveSection('performance')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium ${activeSection === 'performance' ? 'bg-[white/5] border border-white/10 text-white' : 'hover:bg-white/5 border border-transparent text-slate-400 hover:text-white'}`}
+          >
+            <Activity className={`w-5 h-5 ${activeSection === 'performance' ? 'text-emerald-400' : ''}`} />
+            Performance & Telemetry
+          </button>
+          <button 
+            onClick={() => setActiveSection('docs')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium ${activeSection === 'docs' ? 'bg-[white/5] border border-white/10 text-white' : 'hover:bg-white/5 border border-transparent text-slate-400 hover:text-white'}`}
+          >
+            <BookOpen className={`w-5 h-5 ${activeSection === 'docs' ? 'text-indigo-400' : ''}`} />
+            Docs & OpenAPI Specs
           </button>
 
           <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 border border-transparent text-slate-400 hover:text-white font-medium transition-colors">
@@ -260,6 +289,114 @@ export function SettingsView({ onLogout, user }: { onLogout?: () => void, user?:
               </div>
             </GlassCard>
           )}
+
+          {activeSection === 'performance' && (
+            <GlassCard className="space-y-6">
+              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                <h2 className="text-[14px] font-semibold uppercase tracking-[0.05em] text-slate-400">
+                  Real-Time Telemetry & Performance Engine
+                </h2>
+                <span className="text-xs font-mono font-bold text-emerald-400 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  Live Monitoring Active
+                </span>
+              </div>
+
+              {/* KPI Grid for Performance */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="bg-black/40 border border-white/10 rounded-2xl p-4 flex flex-col">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 font-sans">Framerate (FPS)</span>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <span className="text-2xl font-black font-mono text-emerald-400">{telemetry.fps}</span>
+                    <span className="text-[10px] text-slate-500">Target: 60 FPS</span>
+                  </div>
+                  <Cpu className="w-4 h-4 text-emerald-400/50 self-end -mt-4" />
+                </div>
+
+                <div className="bg-black/40 border border-white/10 rounded-2xl p-4 flex flex-col">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 font-sans">Query Cache Hit Rate</span>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <span className="text-2xl font-black font-mono text-cyan-400">{cacheStats.hitRate}</span>
+                    <span className="text-[10px] text-slate-500">{cacheStats.hits} Hits</span>
+                  </div>
+                  <Zap className="w-4 h-4 text-cyan-400/50 self-end -mt-4" />
+                </div>
+
+                <div className="bg-black/40 border border-white/10 rounded-2xl p-4 flex flex-col">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 font-sans">Avg DB Latency</span>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <span className="text-2xl font-black font-mono text-indigo-400">{telemetry.avgDbLatencyMs} ms</span>
+                    <span className="text-[10px] text-slate-500">Dexie Engine</span>
+                  </div>
+                  <HardDrive className="w-4 h-4 text-indigo-400/50 self-end -mt-4" />
+                </div>
+
+                <div className="bg-black/40 border border-white/10 rounded-2xl p-4 flex flex-col">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 font-sans">Avg Component Render</span>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <span className="text-2xl font-black font-mono text-fuchsia-400">{telemetry.avgRenderTimeMs} ms</span>
+                    <span className="text-[10px] text-slate-500">React Virtual DOM</span>
+                  </div>
+                  <Activity className="w-4 h-4 text-fuchsia-400/50 self-end -mt-4" />
+                </div>
+              </div>
+
+              {/* Memory Usage & Cache Stats */}
+              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-3">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-300 font-semibold flex items-center gap-2">
+                    <HardDrive className="w-4 h-4 text-cyan-400" /> Client Query Cache Entries
+                  </span>
+                  <span className="font-mono text-cyan-400 font-bold">{cacheStats.size} Items in Memory</span>
+                </div>
+                {telemetry.memory && (
+                  <div className="flex items-center justify-between text-xs pt-2 border-t border-white/10">
+                    <span className="text-slate-300 font-semibold">JS Heap Allocation</span>
+                    <span className="font-mono text-slate-400">
+                      {telemetry.memory.usedHeapMb} MB / {telemetry.memory.totalHeapMb} MB
+                    </span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between text-xs pt-2 border-t border-white/10">
+                  <span className="text-slate-300 font-semibold flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-emerald-400" /> Security Shield & Rate Limiting
+                  </span>
+                  <div className="flex items-center gap-2 font-mono text-[10px]">
+                    <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Anti-CSRF Active</span>
+                    <span className="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">RateLimiter SlidingWindow</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Live Metric Logs Stream */}
+              <div className="space-y-2">
+                <span className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider">
+                  سجل الأداء والمقاييس المباشرة (Recent Metrics Stream)
+                </span>
+                <div className="bg-black/60 border border-white/10 rounded-2xl p-3 max-h-[220px] overflow-y-auto font-mono text-[11px] space-y-1.5 custom-scrollbar">
+                  {telemetry.recentMetrics.length === 0 ? (
+                    <div className="text-slate-500 text-center py-4">لا توجد سجلات أداء سابقة حالياً...</div>
+                  ) : (
+                    telemetry.recentMetrics.map(m => (
+                      <div key={m.id} className="flex items-center justify-between px-2 py-1 rounded bg-white/[0.02] hover:bg-white/5 border border-white/5">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-1.5 h-1.5 rounded-full ${
+                            m.category === 'DB_QUERY' ? 'bg-indigo-400' :
+                            m.category === 'WORKER_COMPUTE' ? 'bg-cyan-400' : 'bg-fuchsia-400'
+                          }`} />
+                          <span className="text-slate-200 font-bold">{m.name}</span>
+                          <span className="text-[9px] text-slate-500 px-1.5 py-0.5 rounded bg-white/5">{m.category}</span>
+                        </div>
+                        <span className="text-cyan-400 font-bold">{m.durationMs} ms</span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </GlassCard>
+          )}
+
+          {activeSection === 'docs' && <DocumentationHubView />}
 
           {/* Remove activeSection === 'users' logic, as users are managed in System Config / User Management View now */}
         </div>

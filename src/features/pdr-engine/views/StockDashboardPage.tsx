@@ -41,6 +41,7 @@ import {
 import { cn } from '@/shared/utils';
 import { StockTransactionModal } from './StockTransactionModal';
 import { AddInventoryModal } from './AddInventoryModal';
+import { usePerformanceMonitor } from '@/core/monitoring/usePerformanceMonitor';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -53,6 +54,7 @@ const itemVariants: Variants = {
 };
 
 export function StockDashboardPage({ tabId }: { tabId: string }) {
+  usePerformanceMonitor('StockDashboardPage');
   const { t } = useTranslation();
   const { inventory, movements, lowStockItems, outOfStockItems, isLoading } = useStockEngine();
   const { createPendingOrder } = useProcurementEngine();
