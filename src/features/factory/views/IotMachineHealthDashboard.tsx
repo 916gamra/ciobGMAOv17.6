@@ -64,8 +64,8 @@ export function IotMachineHealthDashboard() {
         </div>
 
         {/* Global KPI Summary Pills */}
-        <div className="flex items-center gap-3">
-          <div className="px-3.5 py-2 rounded-2xl bg-black/40 border border-white/10 flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="px-3.5 py-2 rounded-2xl bg-black/40 border border-white/10 flex items-center gap-2.5 shrink-0">
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
             <div className="flex flex-col">
               <span className="text-[9px] uppercase font-bold text-slate-400">سليمة (Healthy)</span>
@@ -73,7 +73,7 @@ export function IotMachineHealthDashboard() {
             </div>
           </div>
 
-          <div className="px-3.5 py-2 rounded-2xl bg-black/40 border border-white/10 flex items-center gap-2.5">
+          <div className="px-3.5 py-2 rounded-2xl bg-black/40 border border-white/10 flex items-center gap-2.5 shrink-0">
             <AlertTriangle className="w-4 h-4 text-amber-400" />
             <div className="flex flex-col">
               <span className="text-[9px] uppercase font-bold text-slate-400">تحذير (Warning)</span>
@@ -81,7 +81,7 @@ export function IotMachineHealthDashboard() {
             </div>
           </div>
 
-          <div className="px-3.5 py-2 rounded-2xl bg-black/40 border border-white/10 flex items-center gap-2.5">
+          <div className="px-3.5 py-2 rounded-2xl bg-black/40 border border-white/10 flex items-center gap-2.5 shrink-0">
             <Activity className="w-4 h-4 text-rose-400" />
             <div className="flex flex-col">
               <span className="text-[9px] uppercase font-bold text-slate-400">حرجة (Critical)</span>
@@ -103,7 +103,7 @@ export function IotMachineHealthDashboard() {
       )}
 
       {/* Main Grid: Machine List & Live Telemetry Inspector */}
-      <div className="grid lg:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Machine Cards Selection Grid (5 cols) */}
         <div className="lg:col-span-5 space-y-3">
           <h2 className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">

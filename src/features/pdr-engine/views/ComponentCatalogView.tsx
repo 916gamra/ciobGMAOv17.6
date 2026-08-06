@@ -239,10 +239,10 @@ export function ComponentCatalogView() {
       </header>
 
       {/* Explorer Split View */}
-      <div className="flex-1 min-h-0 flex overflow-hidden">
+      <div className="flex-1 min-h-0 flex flex-col md:flex-row overflow-hidden">
         
         {/* Left Pane: Taxonomy Tree */}
-        <div className="w-80 border-r border-white/5 bg-white/[0.01] flex flex-col overflow-y-auto custom-scrollbar">
+        <div className="w-full md:w-80 shrink-0 border-b md:border-b-0 md:border-r border-white/5 bg-white/[0.01] flex flex-col overflow-y-auto custom-scrollbar max-h-[300px] md:max-h-full">
           <div className="p-4 border-b border-white/5 flex items-center justify-between">
             <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Active Tree</h3>
             <span className="text-[10px] bg-white/5 text-slate-400 px-2 py-0.5 rounded-full font-mono">{families.length} Fam</span>

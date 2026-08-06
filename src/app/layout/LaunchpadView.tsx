@@ -146,7 +146,7 @@ export function LaunchpadView({ user }: { user: User | null }) {
       <div className="relative z-10 w-full max-w-7xl mx-auto px-6 lg:px-8 xl:px-12 py-8 min-h-full flex flex-col">
         
         {/* --- OS HEADER --- */}
-        <header className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12">
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 pt-8 md:pt-4">
           <div className="mb-6 md:mb-0">
             <div className="flex items-center gap-4 mb-3">
               <div className="flex items-center gap-2">
@@ -173,7 +173,7 @@ export function LaunchpadView({ user }: { user: User | null }) {
           animate="show"
           className="mb-12"
         >
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5">
             <motion.div variants={itemAnim}>
               <GlassCard className="border-l-4 border-l-cyan-500 p-6 flex flex-col gap-3 group transition-all duration-500 hover:-translate-y-2 hover:border-y-cyan-500/30 hover:border-r-cyan-500/30 hover:shadow-[0_25px_50px_-12px_rgba(6,182,212,0.3)] hover:bg-cyan-500/[0.05]">
                  <div className="w-10 h-10 rounded-full bg-cyan-500/10 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
@@ -235,7 +235,7 @@ export function LaunchpadView({ user }: { user: User | null }) {
             variants={containerAnim}
             initial="hidden"
             animate="show"
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
           >
             {visibleApps.map((app) => {
               const themeStyle = THEME_MAP[app.theme];

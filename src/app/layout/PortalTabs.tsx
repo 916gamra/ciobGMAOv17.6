@@ -32,7 +32,7 @@ export function PortalTabs() {
   if (tabs.length === 0) return null;
 
   return (
-    <header className="h-[46px] md:h-[52px] bg-black/40 backdrop-blur-2xl border border-white/10 rounded-2xl flex items-center px-3 gap-2 shrink-0 w-full overflow-x-auto custom-scrollbar lg:pr-64 z-[60] shadow-xl my-1">
+    <header className="h-[46px] md:h-[52px] bg-black/40 backdrop-blur-2xl border border-white/10 rounded-2xl flex items-center px-3 gap-2 shrink-0 w-full overflow-x-auto custom-scrollbar z-[60] shadow-xl my-1">
       <div className="flex items-center gap-1.5 w-full">
         {tabs.map((tab) => {
           const colors = PORTAL_COLORS[tab.portalId] || { dot: 'bg-white/40', border: 'border-white/10', text: 'text-white' };

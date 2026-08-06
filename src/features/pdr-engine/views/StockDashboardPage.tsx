@@ -254,7 +254,7 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
       />
 
       {/* Upgraded Cyberpunk KPI display pods */}
-      <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-4 gap-4 relative z-10">
+      <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-3 gap-4 relative z-10">
         <StatCompactPod 
           icon={<Database className="w-5 h-5 text-emerald-400" />} 
           label="NEW Parts" 
@@ -287,8 +287,8 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
             <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent" />
             
             {/* Control Panel Header */}
-            <div className="p-4 md:p-5 border-b border-white/5 bg-white/[0.01] flex flex-col lg:flex-row lg:items-center justify-between gap-4 shrink-0">
-              <div className="flex items-center gap-3 w-full lg:w-auto justify-start">
+            <div className="p-4 md:p-5 border-b border-white/5 bg-white/[0.01] flex flex-col xl:flex-row xl:items-center justify-between gap-4 shrink-0">
+              <div className="flex items-center gap-3 w-full xl:w-auto justify-start">
                 <div className="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0">
                   <Sliders className="w-4 h-4 text-cyan-400" />
                 </div>
@@ -299,7 +299,7 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
               </div>
 
               {/* Action Buttons & Quick Search */}
-              <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto justify-start">
+              <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto justify-start">
                 {/* Search Inputs */}
                 <div className="relative w-full sm:w-56 group">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 group-focus-within:text-cyan-400 transition-colors" />
@@ -429,7 +429,7 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                   </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
                   <AnimatePresence>
                     {filteredInventory.map((item, idx) => {
                       let pct = 0;
