@@ -315,7 +315,7 @@ export function MachinePdrLinkModal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-black/80 backdrop-blur-md"
+          className="absolute inset-0 bg-[#0a0a0f]/80 backdrop-blur-md"
           onClick={onClose}
         />
 
@@ -361,7 +361,7 @@ export function MachinePdrLinkModal({
                 <div
                   key={num}
                   className={`relative z-10 w-8 h-8 rounded-full flex items-center justify-center font-mono font-bold text-xs transition-all ${
-                    step >= num ? 'bg-teal-500 text-black border border-teal-400' : 'bg-slate-900 text-slate-500 border border-white/10'
+                    step >= num ? 'bg-teal-500 text-black border border-teal-400' : 'bg-[#0a0a0f] text-slate-500 border border-white/10'
                   }`}
                 >
                   {step > num ? <Check className="w-3.5 h-3.5" /> : num}
@@ -570,7 +570,7 @@ export function MachinePdrLinkModal({
                         Maximum capacity of sequence slot spaces has been reached.
                       </div>
                     ) : (
-                      <div className="p-3 bg-black/40 border border-white/5 rounded-xl text-center">
+                      <div className="p-3 bg-[#0a0a0f]/40 border border-white/5 rounded-xl text-center">
                         <span className="block text-[9px] uppercase font-bold tracking-widest text-slate-500">Auto Generated Nomenclature ID</span>
                         <span className="text-lg font-mono font-bold text-teal-400 tracking-wider">{slotDetails.activeId}</span>
                       </div>

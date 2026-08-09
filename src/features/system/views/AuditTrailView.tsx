@@ -126,7 +126,7 @@ export function AuditTrailView() {
          <motion.div variants={itemVariants}>
            <GlassCard className="h-full p-5 bg-white/[0.06] border border-white/10 flex flex-col justify-between group rounded-2xl shadow-xl backdrop-blur-md">
               <div className="flex items-center gap-3 mb-4">
-                <div className="p-2.5 rounded-xl bg-black/40 border border-white/5 shadow-inner">
+                <div className="p-2.5 rounded-xl bg-[#0a0a0f]/40 border border-white/5 shadow-inner">
                    <Activity className="w-5 h-5 text-slate-400" />
                 </div>
                 <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Events</span>
@@ -137,7 +137,7 @@ export function AuditTrailView() {
          <motion.div variants={itemVariants}>
            <GlassCard className="h-full p-5 bg-rose-500/[0.08] border border-rose-500/30 flex flex-col justify-between group rounded-2xl shadow-xl backdrop-blur-md">
               <div className="flex items-center gap-3 mb-4">
-                <div className="p-2.5 rounded-xl bg-black/40 border border-white/5 shadow-inner">
+                <div className="p-2.5 rounded-xl bg-[#0a0a0f]/40 border border-white/5 shadow-inner">
                    <AlertOctagon className="w-5 h-5 text-rose-500" />
                 </div>
                 <span className="text-xs font-bold text-rose-500/80 uppercase tracking-wider">Critical Alerts</span>
@@ -148,7 +148,7 @@ export function AuditTrailView() {
          <motion.div variants={itemVariants}>
            <GlassCard className="h-full p-5 bg-amber-500/[0.08] border border-amber-500/30 flex flex-col justify-between group rounded-2xl shadow-xl backdrop-blur-md">
                <div className="flex items-center gap-3 mb-4">
-                <div className="p-2.5 rounded-xl bg-black/40 border border-white/5 shadow-inner">
+                <div className="p-2.5 rounded-xl bg-[#0a0a0f]/40 border border-white/5 shadow-inner">
                    <AlertTriangle className="w-5 h-5 text-amber-500" />
                 </div>
                 <span className="text-xs font-bold text-amber-500/80 uppercase tracking-wider">Warnings</span>
@@ -159,7 +159,7 @@ export function AuditTrailView() {
          <motion.div variants={itemVariants}>
            <GlassCard className="h-full p-5 bg-cyan-500/[0.08] border border-cyan-500/30 flex flex-col justify-between group rounded-2xl shadow-xl backdrop-blur-md">
                <div className="flex items-center gap-3 mb-4">
-                <div className="p-2.5 rounded-xl bg-black/40 border border-white/5 shadow-inner">
+                <div className="p-2.5 rounded-xl bg-[#0a0a0f]/40 border border-white/5 shadow-inner">
                    <Info className="w-5 h-5 text-cyan-500" />
                 </div>
                 <span className="text-xs font-bold text-cyan-500/80 uppercase tracking-wider">Info Stream</span>
@@ -169,11 +169,11 @@ export function AuditTrailView() {
          </motion.div>
       </div>
 
-      <motion.div variants={itemVariants} className="flex flex-col bg-slate-900/60 border border-white/10 rounded-3xl overflow-hidden shadow-2xl relative backdrop-blur-xl">
-        <div className="p-5 border-b border-white/[0.08] bg-black/60 flex flex-col sm:flex-row sm:items-center justify-between gap-5 shrink-0">
+      <motion.div variants={itemVariants} className="flex flex-col bg-[#0a0a0f]/60 border border-white/10 rounded-3xl overflow-hidden shadow-2xl relative backdrop-blur-xl">
+        <div className="p-5 border-b border-white/[0.08] bg-[#0a0a0f]/60 flex flex-col sm:flex-row sm:items-center justify-between gap-5 shrink-0">
           <div className="flex items-center gap-3">
              <Filter className="w-4 h-4 text-slate-400" />
-             <div className="flex bg-black/60 p-1 rounded-xl border border-white/20 shrink-0 shadow-inner relative z-10">
+             <div className="flex bg-[#0a0a0f]/60 p-1 rounded-xl border border-white/20 shrink-0 shadow-inner relative z-10">
                 {(['ALL', 'INFO', 'WARNING', 'CRITICAL'] as const).map(sev => (
                   <button
                     key={sev}
@@ -197,7 +197,7 @@ export function AuditTrailView() {
               placeholder="Search users, operations, or entities..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-black/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-slate-200 outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-600 shadow-inner"
+              className="w-full bg-[#0a0a0f]/40 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-slate-200 outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-600 shadow-inner"
             />
           </div>
         </div>

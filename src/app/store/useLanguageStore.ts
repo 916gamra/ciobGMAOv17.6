@@ -14,8 +14,10 @@ const syncI18n = (lang: Language) => {
   const code = lang.toLowerCase();
   i18n.changeLanguage(code);
   if (typeof document !== 'undefined') {
-    document.documentElement.dir = lang === 'AR' ? 'rtl' : 'ltr';
+    // Set language attribute for typography and accessibility
     document.documentElement.lang = code;
+    // Maintain stable LTR base layout for industrial technical grids and tables
+    document.documentElement.dir = 'ltr';
   }
 };
 

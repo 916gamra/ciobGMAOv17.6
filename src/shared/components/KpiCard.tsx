@@ -85,7 +85,7 @@ export function KpiCard({
   return (
     <motion.div variants={pageItemVariants} onClick={onClick} className={cn(onClick && "cursor-pointer")}>
       <GlassCard className={cn(
-        "relative overflow-hidden group transition-all duration-300 shadow-[0_0_30px_rgba(0,0,0,0.5)] !p-5 border-white/5 bg-black/40 backdrop-blur-xl rounded-2xl",
+        "relative overflow-hidden group transition-all duration-300 shadow-[0_0_30px_rgba(0,0,0,0.5)] !p-5 border-white/5 bg-[#0a0a0f]/40 backdrop-blur-xl rounded-2xl",
         style.borderHover,
         className
       )}>

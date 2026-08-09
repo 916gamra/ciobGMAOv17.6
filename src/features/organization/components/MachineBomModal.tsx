@@ -25,7 +25,7 @@ export function MachineBomModal({ machineId, machineName, onClose }: MachineBomM
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <motion.div 
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-        className="absolute inset-0 bg-black/90 backdrop-blur-xl"
+        className="absolute inset-0 bg-[#0a0a0f]/90 backdrop-blur-xl"
         onClick={onClose}
       />
       <motion.div
@@ -88,14 +88,14 @@ export function MachineBomModal({ machineId, machineName, onClose }: MachineBomM
           </div>
 
           {/* Catalog Search */}
-          <div className="p-6 overflow-y-auto bg-black/5 custom-scrollbar">
+          <div className="p-6 overflow-y-auto bg-[#0a0a0f]/5 custom-scrollbar">
             <div className="mb-6 space-y-4">
               <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Component Catalog</h4>
               <div className="relative">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <input 
                   type="text" placeholder="Search reference..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
-                  className="w-full bg-black/40 border border-white/10 rounded-2xl pl-11 pr-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500/50 outline-none transition-all shadow-inner"
+                  className="w-full bg-[#0a0a0f]/40 border border-white/10 rounded-2xl pl-11 pr-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500/50 outline-none transition-all shadow-inner"
                 />
               </div>
             </div>

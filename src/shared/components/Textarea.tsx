@@ -18,7 +18,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         <textarea
           ref={ref}
           className={cn(
-            "w-full bg-black/50 border border-white/10 rounded-lg p-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-orange-500 transition-colors custom-scrollbar resize-none",
+            "w-full bg-[#0a0a0f]/50 border border-white/10 rounded-lg p-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-orange-500 transition-colors custom-scrollbar resize-none",
             error && "border-rose-500/50 focus:border-rose-500",
             className
           )}

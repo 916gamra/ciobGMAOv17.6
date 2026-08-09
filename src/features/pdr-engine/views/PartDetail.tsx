@@ -72,11 +72,11 @@ export function PartDetail({ tabId }: { tabId: string }) {
         </div>
 
         <div className="flex gap-4">
-          <GlassCard className="!p-4 text-center min-w-[120px] bg-black/40 border-white/10">
+          <GlassCard className="!p-4 text-center min-w-[120px] bg-[#0a0a0f]/40 border-white/10">
              <div className="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Unit Config</div>
              <div className="text-xl font-medium text-white">{bp.unit}</div>
           </GlassCard>
-          <GlassCard className="!p-4 text-center min-w-[120px] bg-black/40 border-white/10">
+          <GlassCard className="!p-4 text-center min-w-[120px] bg-[#0a0a0f]/40 border-white/10">
              <div className="text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">Threshold</div>
              <div className="text-xl font-mono text-emerald-400">{bp.minThreshold}</div>
           </GlassCard>
@@ -109,7 +109,7 @@ export function PartDetail({ tabId }: { tabId: string }) {
           </GlassCard>
 
           <GlassCard className="p-0 overflow-hidden">
-             <div className="p-4 border-b border-white/10 bg-black/20 text-sm font-semibold text-white flex items-center gap-2">
+             <div className="p-4 border-b border-white/10 bg-[#0a0a0f]/20 text-sm font-semibold text-white flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-cyan-400" /> Bin Locations
              </div>
              <div className="divide-y divide-white/10 max-h-[300px] overflow-auto">
@@ -133,12 +133,12 @@ export function PartDetail({ tabId }: { tabId: string }) {
         {/* Right Col - Telemetry */}
         <div className="lg:col-span-2">
            <GlassCard className="h-[600px] flex flex-col p-0 overflow-hidden">
-             <div className="p-5 border-b border-white/10 bg-black/20 flex justify-between items-center shrink-0">
+             <div className="p-5 border-b border-white/10 bg-[#0a0a0f]/20 flex justify-between items-center shrink-0">
                 <h2 className="text-[15px] font-semibold text-white flex items-center gap-2">
                   <Activity className="w-5 h-5 text-cyan-400" /> 
                   Component Telemetry Log
                 </h2>
-                <div className="text-xs font-mono text-slate-400 px-3 py-1 bg-black/40 rounded-full border border-white/5 shadow-inner">
+                <div className="text-xs font-mono text-slate-400 px-3 py-1 bg-[#0a0a0f]/40 rounded-full border border-white/5 shadow-inner">
                   {movements.length} Records
                 </div>
              </div>

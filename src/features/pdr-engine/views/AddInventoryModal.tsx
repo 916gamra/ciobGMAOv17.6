@@ -100,7 +100,7 @@ export function AddInventoryModal({ isOpen, onClose }: { isOpen: boolean, onClos
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto"
+                className="fixed inset-0 bg-[#0a0a0f]/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto"
               >
                 <Dialog.Content asChild>
                   <motion.div
@@ -108,7 +108,7 @@ export function AddInventoryModal({ isOpen, onClose }: { isOpen: boolean, onClos
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 20 }}
                     transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
-                    className="w-full max-w-md bg-black/85 backdrop-blur-3xl border border-white/10 shadow-[0_25px_60px_rgba(0,0,0,0.8)] rounded-3xl overflow-hidden relative my-auto gemini-breathing-border"
+                    className="w-full max-w-md bg-[#0a0a0f]/85 backdrop-blur-3xl border border-white/10 shadow-[0_25px_60px_rgba(0,0,0,0.8)] rounded-3xl overflow-hidden relative my-auto gemini-breathing-border"
                   >
                     <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent" />
                     

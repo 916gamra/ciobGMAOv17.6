@@ -451,7 +451,7 @@ export function MachineDetailsView({ tabId }: { tabId: string }) {
            </div>
 
            {/* Tabs */}
-           <div className="flex gap-2 p-1 bg-black/40 border border-white/5 rounded-xl self-start">
+           <div className="flex gap-2 p-1 bg-[#0a0a0f]/40 border border-white/5 rounded-xl self-start">
              <button 
                onClick={() => setActiveTab('stock')}
                className={`py-2 px-4 rounded-lg font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2 ${
@@ -524,7 +524,7 @@ export function MachineDetailsView({ tabId }: { tabId: string }) {
                                <p className="text-[11px] text-slate-400 mt-1 mb-4">{pt.description || 'No technical notes recorded for this slot.'}</p>
                                
                                {/* Selector mode toggles */}
-                               <div className="flex gap-2 mb-4 bg-black/40 border border-white/5 p-1 rounded-lg">
+                               <div className="flex gap-2 mb-4 bg-[#0a0a0f]/40 border border-white/5 p-1 rounded-lg">
                                  <button
                                    type="button"
                                    onClick={() => setActiveFormMode(prev => ({ ...prev, [pt.id]: 'link' }))}
@@ -558,7 +558,7 @@ export function MachineDetailsView({ tabId }: { tabId: string }) {
                                      <select
                                        value={selectedBlueprintForTemplate[pt.id] || ''}
                                        onChange={e => setSelectedBlueprintForTemplate(prev => ({ ...prev, [pt.id]: e.target.value }))}
-                                       className="flex-1 bg-black/60 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500/50"
+                                       className="flex-1 bg-[#0a0a0f]/60 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500/50"
                                      >
                                        <option value="">-- Select from designed parts --</option>
                                        {compatibleBlueprints.map(cb => (
@@ -592,7 +592,7 @@ export function MachineDetailsView({ tabId }: { tabId: string }) {
                                        placeholder="e.g. 6205-2RS, SKF, 5.5kW"
                                        value={newBlueprintModel[pt.id] || ''}
                                        onChange={e => setNewBlueprintModel(prev => ({ ...prev, [pt.id]: e.target.value }))}
-                                       className="w-full bg-black/60 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500/50"
+                                       className="w-full bg-[#0a0a0f]/60 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500/50"
                                      />
                                    </div>
                                    <div className="grid grid-cols-2 gap-2">
@@ -605,7 +605,7 @@ export function MachineDetailsView({ tabId }: { tabId: string }) {
                                          placeholder="e.g. 24VDC, 5kW"
                                          value={newBlueprintPower[pt.id] || ''}
                                          onChange={e => setNewBlueprintPower(prev => ({ ...prev, [pt.id]: e.target.value }))}
-                                         className="w-full bg-black/60 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500/50"
+                                         className="w-full bg-[#0a0a0f]/60 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500/50"
                                        />
                                      </div>
                                      <div>
@@ -617,7 +617,7 @@ export function MachineDetailsView({ tabId }: { tabId: string }) {
                                          placeholder="e.g. Size, Type"
                                          value={newBlueprintSpecs[pt.id] || ''}
                                          onChange={e => setNewBlueprintSpecs(prev => ({ ...prev, [pt.id]: e.target.value }))}
-                                         className="w-full bg-black/60 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500/50"
+                                         className="w-full bg-[#0a0a0f]/60 border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500/50"
                                        />
                                      </div>
                                    </div>
@@ -687,7 +687,7 @@ export function MachineDetailsView({ tabId }: { tabId: string }) {
                    </h3>
                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                      {linkedComponents.map(sc => (
-                       <div key={sc.id} className="p-3 rounded-xl bg-black/40 border border-purple-500/20 flex items-center justify-between text-xs">
+                       <div key={sc.id} className="p-3 rounded-xl bg-[#0a0a0f]/40 border border-purple-500/20 flex items-center justify-between text-xs">
                          <div>
                            <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-300 uppercase font-mono border border-purple-500/20">
                              {sc.id}
@@ -714,7 +714,7 @@ export function MachineDetailsView({ tabId }: { tabId: string }) {
                      {linkedPartBlueprints.map(bp => {
                        const tmpl = pdrTemplates.find(t => t.id === bp.templateId);
                        return (
-                         <div key={bp.id} className="p-3 rounded-xl bg-black/40 border border-white/5 flex items-center justify-between text-xs">
+                         <div key={bp.id} className="p-3 rounded-xl bg-[#0a0a0f]/40 border border-white/5 flex items-center justify-between text-xs">
                            <div>
                              <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 uppercase font-mono">{bp.id}</span>
                              <p className="font-bold text-white mt-1">{bp.reference}</p>
@@ -738,7 +738,7 @@ export function MachineDetailsView({ tabId }: { tabId: string }) {
                      if (associatedInFam.length === 0) return null;
 
                      return (
-                       <GlassCard key={fam.id} className="p-5 border-white/5 flex flex-col bg-black/40">
+                       <GlassCard key={fam.id} className="p-5 border-white/5 flex flex-col bg-[#0a0a0f]/40">
                          <h3 className="text-sm font-bold text-indigo-400 font-mono mb-4 pb-2 border-b border-white/5 uppercase flex items-center gap-2">
                            📁 {fam.name}
                          </h3>
@@ -791,7 +791,7 @@ export function MachineDetailsView({ tabId }: { tabId: string }) {
                          const bpItem = allPdrBlueprints.find(b => b.id === dm.blueprintId);
                          const tmpl = pdrTemplates.find(t => t.id === bpItem?.templateId);
                          return (
-                           <div key={dm.id} className="p-3 rounded-xl bg-black/40 border border-white/5 flex items-center justify-between text-xs" dir="ltr">
+                           <div key={dm.id} className="p-3 rounded-xl bg-[#0a0a0f]/40 border border-white/5 flex items-center justify-between text-xs" dir="ltr">
                              <span className="px-1.5 py-0.5 rounded bg-purple-500/10 text-[9px] text-purple-400 font-bold uppercase shrink-0">رابط مادي مباشر</span>
                              <div className="text-right">
                                <p className="font-bold text-purple-300 font-mono">{dm.blueprintId}</p>
@@ -837,7 +837,7 @@ export function MachineDetailsView({ tabId }: { tabId: string }) {
                          placeholder="مثال: RVA-02"
                          value={newBpReference}
                          onChange={e => setNewBpReference(e.target.value)}
-                         className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-cyan-500 font-mono text-left font-bold"
+                         className="w-full bg-[#0a0a0f]/40 border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-cyan-500 font-mono text-left font-bold"
                        />
                      </div>
                      <div className="space-y-2">
@@ -848,7 +848,7 @@ export function MachineDetailsView({ tabId }: { tabId: string }) {
                          placeholder="مثال: Siemens"
                          value={newBpBrand}
                          onChange={e => setNewBpBrand(e.target.value)}
-                         className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-cyan-500 text-right font-bold"
+                         className="w-full bg-[#0a0a0f]/40 border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-cyan-500 text-right font-bold"
                        />
                      </div>
                      <div className="space-y-2">
@@ -859,7 +859,7 @@ export function MachineDetailsView({ tabId }: { tabId: string }) {
                          placeholder="مثال: Motor Series 5"
                          value={newBpModelField}
                          onChange={e => setNewBpModelField(e.target.value)}
-                         className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-cyan-500 text-right font-bold"
+                         className="w-full bg-[#0a0a0f]/40 border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-cyan-500 text-right font-bold"
                        />
                      </div>
                      <div className="space-y-2">
@@ -869,7 +869,7 @@ export function MachineDetailsView({ tabId }: { tabId: string }) {
                          placeholder="مثال: 5.5 kW / 380V"
                          value={newBpPowerField}
                          onChange={e => setNewBpPowerField(e.target.value)}
-                         className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-cyan-500 text-right font-bold"
+                         className="w-full bg-[#0a0a0f]/40 border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-cyan-500 text-right font-bold"
                        />
                      </div>
                      <div className="space-y-2">
@@ -877,7 +877,7 @@ export function MachineDetailsView({ tabId }: { tabId: string }) {
                        <select
                          value={newBpEnergy}
                          onChange={e => setNewBpEnergy(e.target.value)}
-                         className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-cyan-500 text-right font-bold"
+                         className="w-full bg-[#0a0a0f]/40 border border-white/10 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-cyan-500 text-right font-bold"
                        >
                          <option value="380v">380V Trifase</option>
                          <option value="220v">220V Monofase</option>
@@ -890,7 +890,7 @@ export function MachineDetailsView({ tabId }: { tabId: string }) {
 
                    {/* Migrate other machines checklist */}
                    {allMachines.filter(m => m.blueprintId === machine?.blueprintId && m.id !== machineId).length > 0 && (
-                     <div className="space-y-3 bg-black/20 p-4 border border-white/5 rounded-xl">
+                     <div className="space-y-3 bg-[#0a0a0f]/20 p-4 border border-white/5 rounded-xl">
                        <p className="text-xs font-bold text-white text-right font-bold">🔗 هل ترغب في نقل آلات مادية أخرى تابعة لنفس الطراز القديم إلى هذا الطراز الجديد؟</p>
                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                          {allMachines.filter(m => m.blueprintId === machine?.blueprintId && m.id !== machineId).map(otherM => {
@@ -907,7 +907,7 @@ export function MachineDetailsView({ tabId }: { tabId: string }) {
                                      setMigratedMachineIds(prev => prev.filter(id => id !== otherM.id));
                                    }
                                  }}
-                                 className="rounded bg-black/40 border-white/10 text-cyan-500 focus:ring-cyan-500"
+                                 className="rounded bg-[#0a0a0f]/40 border-white/10 text-cyan-500 focus:ring-cyan-500"
                                />
                                <div className="text-right">
                                  <span className="font-bold text-white block">آلة: {otherM.referenceCode}</span>

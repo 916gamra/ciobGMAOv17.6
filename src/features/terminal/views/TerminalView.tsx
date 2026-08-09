@@ -2,11 +2,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'motion/react';
 import { Terminal as TerminalIcon, Shield, Cpu, Activity } from 'lucide-react';
 import { GlassCard } from '@/shared/components/GlassCard';
+import { PageHeader } from '@/shared/components/PageHeader';
 
 export function TerminalView() {
   const [history, setHistory] = useState<string[]>([
-    'CIOB GMAO [Version 17.0.4]',
-    '(c) Genesis Edition. All rights reserved.',
+    'BDR NEXUS GMAO [Version 17.1.0]',
+    '(c) Enterprise Edition. All rights reserved.',
     '',
     'System initialization complete.',
     'Local database (Dexie) connected.',
@@ -44,7 +45,7 @@ export function TerminalView() {
         newHistory.push('USER: System Administrator', 'ROLE: Super User', 'AUTH: Level 10');
         break;
       case 'version':
-        newHistory.push('CIOB GMAO v17.0.4 (Genesis Edition)');
+        newHistory.push('BDR NEXUS GMAO v17.1.0 (Enterprise Edition)');
         break;
       default:
         newHistory.push(`Command not found: ${cmd}. Type "help" for assistance.`);
@@ -55,16 +56,21 @@ export function TerminalView() {
   };
 
   return (
-    <div className="h-full flex flex-col gap-6">
-      <header className="flex justify-between items-end mb-2">
-        <div>
-          <h1 className="text-3xl font-semibold text-slate-100 tracking-tight mb-2">System Diagnostics</h1>
-          <p className="text-slate-400 text-sm">Diagnostic console and system operations.</p>
-        </div>
-      </header>
+    <motion.div 
+      initial={{ opacity: 0, y: 15 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="h-full flex flex-col gap-6 p-4 md:p-6"
+    >
+      <PageHeader
+        title="التشخيص والنظام (System Diagnostics Console)"
+        subtitle="طرفية التشخيص وأوامر التحكم المباشرة للنظام والتحقق من حالة المكونات والبيانات."
+        icon={<TerminalIcon className="w-6 h-6 text-emerald-400" />}
+        badgeText="v17.1 Console"
+        badgeColor="emerald"
+      />
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 flex-1 min-h-0">
-        <div className="lg:col-span-3 flex flex-col bg-black/60 border border-white/10 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-xl">
+        <div className="lg:col-span-3 flex flex-col bg-[#0a0a0f]/60 border border-white/10 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-xl">
           <div className="flex items-center gap-2 px-4 py-2 bg-white/5 border-b border-white/10">
             <div className="flex gap-1.5">
               <div className="w-3 h-3 rounded-full bg-red-500/50" />
@@ -161,6 +167,6 @@ export function TerminalView() {
           </GlassCard>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

@@ -9,14 +9,12 @@ import type { User } from '@/core/db';
 import { BreakdownLogView } from '../views/BreakdownLogView';
 import { MasterPartsCatalogHub } from '@/features/organization/views/MasterPartsCatalogHub';
 import { ComponentRadarView } from '../views/ComponentRadarView';
-import { CorrectiveWardView } from '@/features/analytics/views/CorrectiveWardView';
 import { FailureCatalogView } from '../views/FailureCatalogView';
 
 const CORRECTIVE_COMPONENTS = {
   'breakdown-log': BreakdownLogView,
   'components-catalog': (props: any) => <MasterPartsCatalogHub defaultTab="components" {...props} />,
   'component-radar': ComponentRadarView,
-  'corrective-ward': CorrectiveWardView,
   'failure-catalog': FailureCatalogView,
 };
 
@@ -37,6 +35,7 @@ export function CorrectiveLayout({ user, onLogout }: { user: User | null, onLogo
       <PortalSidebar 
         portalName="Corrective Operations"
         portalIcon={<Wrench />}
+        glowColor="orange"
         colorClass="bg-orange-500/10 text-orange-500"
         borderClass="border-orange-500/30"
         textClass="text-orange-400"
@@ -70,14 +69,6 @@ export function CorrectiveLayout({ user, onLogout }: { user: User | null, onLogo
           isActive={activeTabId === 'component-radar'} 
           onClick={() => openTab({ id: 'component-radar', portalId: 'CORRECTIVE', title: 'رادار ربط B.O.M', component: 'component-radar' })}
           title="رادار ربط المكونات والآلات"
-          colorClass="text-orange-400"
-        />
-
-        <PortalSidebarItem 
-          icon={<BarChart3 />} 
-          isActive={activeTabId === 'corrective-ward'} 
-          onClick={() => openTab({ id: 'corrective-ward', portalId: 'CORRECTIVE', title: 'تحليلات الأعطال', component: 'corrective-ward' })}
-          title="مركز تحليلات الأعطال"
           colorClass="text-orange-400"
         />
       </PortalSidebar>

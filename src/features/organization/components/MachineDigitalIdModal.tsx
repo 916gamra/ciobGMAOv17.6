@@ -124,7 +124,7 @@ export function MachineDigitalIdModal({ machine, onClose }: MachineDigitalIdModa
       <motion.div 
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
         onClick={onClose}
-        className="absolute inset-0 bg-black/85 backdrop-blur-md"
+        className="absolute inset-0 bg-[#0a0a0f]/85 backdrop-blur-md"
       />
       
       <motion.div 
@@ -167,7 +167,7 @@ export function MachineDigitalIdModal({ machine, onClose }: MachineDigitalIdModa
               <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent pointer-events-none rounded-2xl transition-opacity group-hover:opacity-100" />
               
               <p className="text-[9px] font-bold tracking-widest text-emerald-400/80 mb-2 uppercase">BDR NEXUS DIGITAL ID</p>
-              <h4 className="text-2xl font-black text-white font-mono tracking-wider mb-6 bg-black/40 px-4 py-1.5 rounded-xl border border-white/5">
+              <h4 className="text-2xl font-black text-white font-mono tracking-wider mb-6 bg-[#0a0a0f]/40 px-4 py-1.5 rounded-xl border border-white/5">
                 {machine.referenceCode}
               </h4>
               

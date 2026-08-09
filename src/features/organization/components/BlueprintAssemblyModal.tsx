@@ -415,7 +415,7 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
       <motion.div 
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
         onClick={onClose}
-        className="absolute inset-0 bg-black/90 backdrop-blur-lg"
+        className="absolute inset-0 bg-[#0a0a0f]/90 backdrop-blur-lg"
       />
       
       <motion.div 
@@ -524,7 +524,7 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                 </div>
 
                 {/* Right Column: Physical Assembly BOM */}
-                <div className="lg:col-span-7 p-6 bg-black/40 overflow-y-auto custom-scrollbar flex flex-col gap-5">
+                <div className="lg:col-span-7 p-6 bg-[#0a0a0f]/40 overflow-y-auto custom-scrollbar flex flex-col gap-5">
                   <div className="flex items-center justify-between">
                     <div>
                       <h3 className="text-[11px] font-black text-cyan-400 uppercase tracking-widest flex items-center gap-1.5">
@@ -553,7 +553,7 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
 
                   {/* BOM Render list */}
                   {selectedComponents.length === 0 && selectedPartTemplates.length === 0 && selectedPdrBlueprints.length === 0 ? (
-                    <div className="flex-1 flex flex-col items-center justify-center border border-dashed border-white/5 rounded-3xl p-10 min-h-[300px] bg-black/20">
+                    <div className="flex-1 flex flex-col items-center justify-center border border-dashed border-white/5 rounded-3xl p-10 min-h-[300px] bg-[#0a0a0f]/20">
                       <div className="w-14 h-14 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center justify-center mb-4">
                         <Component className="w-8 h-8 text-slate-600 animate-pulse" />
                       </div>
@@ -572,7 +572,7 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                           </h4>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                             {selectedComponents.map(sc => (
-                              <div key={sc.id} className="p-3 rounded-xl bg-black/60 border border-purple-500/20 text-xs text-slate-200 flex flex-col gap-1.5 shadow-sm">
+                              <div key={sc.id} className="p-3 rounded-xl bg-[#0a0a0f]/60 border border-purple-500/20 text-xs text-slate-200 flex flex-col gap-1.5 shadow-sm">
                                 <div className="flex items-center justify-between">
                                   <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-purple-500/10 text-purple-300 uppercase font-mono border border-purple-500/20">
                                     {sc.id}
@@ -603,7 +603,7 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                             {selectedPdrBlueprints.map(bp => {
                               const tmpl = pdrTemplates.find(t => t.id === bp.templateId);
                               return (
-                                <div key={bp.id} className="p-3 rounded-xl bg-black/60 border border-white/5 text-xs text-slate-200 flex flex-col gap-1.5 shadow-sm">
+                                <div key={bp.id} className="p-3 rounded-xl bg-[#0a0a0f]/60 border border-white/5 text-xs text-slate-200 flex flex-col gap-1.5 shadow-sm">
                                   <div className="flex items-center justify-between">
                                     <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-300 uppercase font-mono border border-cyan-500/20">{bp.id}</span>
                                     <span className="text-[9px] text-slate-500 font-medium truncate max-w-[120px]">{tmpl?.name}</span>
@@ -639,7 +639,7 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                                 </h4>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                   {associatedInFam.map(pt => (
-                                    <div key={pt.id} className="p-2.5 rounded-xl bg-black/40 border border-white/5 text-xs text-slate-200 flex items-center gap-3">
+                                    <div key={pt.id} className="p-2.5 rounded-xl bg-[#0a0a0f]/40 border border-white/5 text-xs text-slate-200 flex items-center gap-3">
                                       <div className="w-7 h-7 rounded bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-[10px] font-bold font-mono border border-indigo-500/20 shrink-0">
                                         {pt.skuBase.substring(0, 2)}
                                       </div>
@@ -672,7 +672,7 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
               >
                 {/* Left Column: Selection lists */}
                 <div className="p-6 border-r border-white/5 flex flex-col min-h-0 overflow-y-auto custom-scrollbar">
-                  <div className="flex gap-1.5 p-1 bg-black/40 border border-white/5 rounded-xl mb-5 shrink-0">
+                  <div className="flex gap-1.5 p-1 bg-[#0a0a0f]/40 border border-white/5 rounded-xl mb-5 shrink-0">
                     <button 
                       onClick={() => setLeftTab('components')}
                       className={`flex-1 py-2 px-2.5 rounded-lg font-bold text-[10px] uppercase tracking-wider transition-all flex items-center justify-center gap-1 ${
@@ -724,12 +724,12 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                             placeholder="البحث اسم المكون أو العائلة..."
                             value={componentSearchTerm}
                             onChange={(e) => setComponentSearchTerm(e.target.value)}
-                            className="w-full bg-black/40 border border-white/5 rounded-xl py-2 pl-9 pr-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500/50 transition-colors"
+                            className="w-full bg-[#0a0a0f]/40 border border-white/5 rounded-xl py-2 pl-9 pr-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500/50 transition-colors"
                           />
                         </div>
 
                         {filteredComponentBlueprints.length === 0 ? (
-                          <div className="flex flex-col items-center justify-center p-8 border border-dashed border-white/5 rounded-2xl bg-black/20 min-h-[200px]">
+                          <div className="flex flex-col items-center justify-center p-8 border border-dashed border-white/5 rounded-2xl bg-[#0a0a0f]/20 min-h-[200px]">
                             <Component className="w-10 h-10 text-slate-600 mb-2" />
                             <p className="text-xs font-bold text-slate-400 uppercase tracking-wider text-center">لا توجد مكونات مسجلة مطابقة</p>
                           </div>
@@ -745,19 +745,19 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                                   className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 text-xs ${
                                     isChecked 
                                       ? 'bg-purple-500/10 border-purple-500/40 text-purple-300' 
-                                      : 'bg-black/30 border-white/5 hover:border-white/10 text-slate-300'
+                                      : 'bg-[#0a0a0f]/30 border-white/5 hover:border-white/10 text-slate-300'
                                   }`}
                                 >
                                   <div className="min-w-0 flex-1">
                                     <div className="font-bold flex items-center gap-2">
                                       {temp?.name || 'Unknown'} 
-                                      <span className="text-[9px] px-1.5 rounded-sm bg-black/40 text-slate-500 border border-white/5">{sc.reference}</span>
+                                      <span className="text-[9px] px-1.5 rounded-sm bg-[#0a0a0f]/40 text-slate-500 border border-white/5">{sc.reference}</span>
                                     </div>
                                     <div className="text-[10px] text-slate-500 mt-1 uppercase truncate font-mono">
                                       {temp?.family || 'N/A'} {sc.brand ? `• ${sc.brand}` : ''}
                                     </div>
                                   </div>
-                                  <div className="shrink-0 flex items-center justify-center w-5 h-5 rounded-full border border-white/10 bg-black/50">
+                                  <div className="shrink-0 flex items-center justify-center w-5 h-5 rounded-full border border-white/10 bg-[#0a0a0f]/50">
                                     {isChecked && <CheckCircle2 className="w-3.5 h-3.5 text-purple-400" />}
                                   </div>
                                 </div>
@@ -789,7 +789,7 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                               if (templatesInFam.length === 0) return null;
 
                               return (
-                                <div key={fam.id} className="p-4 bg-black/20 border border-white/5 rounded-2xl">
+                                <div key={fam.id} className="p-4 bg-[#0a0a0f]/20 border border-white/5 rounded-2xl">
                                   <h4 className="text-xs font-bold text-amber-400/80 uppercase tracking-wider font-mono mb-3 pb-1.5 border-b border-white/5">
                                     📁 {fam.name}
                                   </h4>
@@ -803,7 +803,7 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                                           className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between text-xs ${
                                             isChecked 
                                               ? 'bg-amber-500/10 border-amber-500/40 text-amber-300' 
-                                              : 'bg-black/30 border-white/5 hover:border-white/10 text-slate-300'
+                                              : 'bg-[#0a0a0f]/30 border-white/5 hover:border-white/10 text-slate-300'
                                           }`}
                                         >
                                           <div className="flex flex-col">
@@ -845,12 +845,12 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                             placeholder="البحث بالرمز أو الموديل..."
                             value={pdrSearchTerm}
                             onChange={(e) => setPdrSearchTerm(e.target.value)}
-                            className="w-full bg-black/40 border border-white/5 rounded-xl py-2 pl-9 pr-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 transition-colors"
+                            className="w-full bg-[#0a0a0f]/40 border border-white/5 rounded-xl py-2 pl-9 pr-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 transition-colors"
                           />
                         </div>
 
                         {filteredPdrBlueprints.length === 0 ? (
-                          <div className="flex flex-col items-center justify-center p-8 border border-dashed border-white/5 rounded-2xl bg-black/20 min-h-[200px]">
+                          <div className="flex flex-col items-center justify-center p-8 border border-dashed border-white/5 rounded-2xl bg-[#0a0a0f]/20 min-h-[200px]">
                             <Boxes className="w-10 h-10 text-slate-600 mb-2" />
                             <p className="text-xs font-bold text-slate-400 uppercase tracking-wider text-center">لا توجد قطع مطابقة للبحث</p>
                           </div>
@@ -867,7 +867,7 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                                   className={`p-3 rounded-xl border transition-all cursor-pointer flex items-center justify-between gap-3 text-xs ${
                                     isChecked 
                                       ? 'bg-cyan-500/10 border-cyan-500/40 text-cyan-300' 
-                                      : 'bg-black/30 border-white/5 hover:border-white/10 text-slate-300'
+                                      : 'bg-[#0a0a0f]/30 border-white/5 hover:border-white/10 text-slate-300'
                                   }`}
                                 >
                                   <div className="min-w-0 flex-1">
@@ -902,7 +902,7 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                 </div>
 
                 {/* Right Column: Physical Assembly Summary */}
-                <div className="p-6 bg-black/40 flex flex-col min-h-0 overflow-y-auto custom-scrollbar">
+                <div className="p-6 bg-[#0a0a0f]/40 flex flex-col min-h-0 overflow-y-auto custom-scrollbar">
                   <div className="space-y-4 flex-1 min-h-0">
                     <div>
                       <h3 className="text-xs font-bold text-[#6366f1] uppercase tracking-widest mb-1 flex items-center gap-2">
@@ -927,7 +927,7 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                             </h4>
                             <div className="grid grid-cols-1 gap-2">
                               {selectedComponents.map(sc => (
-                                <div key={sc.id} className="p-2.5 rounded-xl bg-black/40 border border-purple-500/20 text-xs text-slate-200 flex items-center justify-between">
+                                <div key={sc.id} className="p-2.5 rounded-xl bg-[#0a0a0f]/40 border border-purple-500/20 text-xs text-slate-200 flex items-center justify-between">
                                   <div className="min-w-0 flex-1">
                                     <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-300 font-mono">{sc.id}</span>
                                     <p className="font-semibold text-white truncate mt-1">{componentTemplates.find(t => t.id === sc.templateId)?.name || 'Unknown'}</p>
@@ -945,7 +945,7 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                             </h4>
                             <div className="grid grid-cols-1 gap-2">
                               {selectedPdrBlueprints.map(bp => (
-                                <div key={bp.id} className="p-2.5 rounded-xl bg-black/40 border border-white/5 text-xs text-slate-200 flex items-center justify-between">
+                                <div key={bp.id} className="p-2.5 rounded-xl bg-[#0a0a0f]/40 border border-white/5 text-xs text-slate-200 flex items-center justify-between">
                                   <div className="min-w-0 flex-1">
                                     <span className="text-[8px] font-bold px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 font-mono">{bp.id}</span>
                                     <p className="font-semibold text-white truncate mt-1">{bp.reference}</p>
@@ -970,7 +970,7 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                                   <h4 className="text-[9px] font-bold text-slate-400 uppercase tracking-wider font-mono mb-2">📁 {fam.name}</h4>
                                   <div className="grid grid-cols-2 gap-2">
                                     {associatedInFam.map(pt => (
-                                      <div key={pt.id} className="p-2.5 rounded-xl bg-black/40 border border-white/5 text-xs text-slate-200 flex items-center gap-2">
+                                      <div key={pt.id} className="p-2.5 rounded-xl bg-[#0a0a0f]/40 border border-white/5 text-xs text-slate-200 flex items-center gap-2">
                                         <div className="w-5 h-5 rounded bg-indigo-500/10 text-indigo-400 flex items-center justify-center text-[10px] font-mono">{pt.skuBase.substring(0,2)}</div>
                                         <div className="min-w-0 flex-1">
                                           <p className="font-semibold truncate">{pt.name}</p>
@@ -1030,7 +1030,7 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                         className={`relative z-10 w-9 h-9 rounded-full flex items-center justify-center font-mono font-bold text-xs transition-all ${
                           wizardStep >= num 
                             ? 'bg-cyan-500 text-black border-2 border-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.3)]' 
-                            : 'bg-slate-900 text-slate-500 border border-white/10'
+                            : 'bg-[#0a0a0f] text-slate-500 border border-white/10'
                         }`}
                       >
                         {wizardStep > num ? <CheckCircle2 className="w-4 h-4" /> : num}
@@ -1066,7 +1066,7 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                             <select
                               value={wizardSelectedFamilyId}
                               onChange={e => setWizardSelectedFamilyId(e.target.value)}
-                              className="w-full bg-black/50 border border-white/10 rounded-xl py-3 px-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 transition-all appearance-none"
+                              className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl py-3 px-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 transition-all appearance-none"
                             >
                               <option value="">--- اختر عائلة قطع الغيار المسجلة ---</option>
                               {pdrFamilies.map(fam => (
@@ -1112,7 +1112,7 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                               required
                               value={newFamilyData.name}
                               onChange={e => setNewFamilyData({ ...newFamilyData, name: e.target.value })}
-                              className="w-full bg-black/40 border border-white/5 rounded-xl py-3 px-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 transition-all font-mono"
+                              className="w-full bg-[#0a0a0f]/40 border border-white/5 rounded-xl py-3 px-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 transition-all font-mono"
                               placeholder="e.g. CYLINDRES, VANNE, ROULEMENTS"
                             />
                           </div>
@@ -1122,7 +1122,7 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                             <select
                               value={newFamilyData.group}
                               onChange={e => setNewFamilyData({ ...newFamilyData, group: e.target.value as any })}
-                              className="w-full bg-black/40 border border-white/5 rounded-xl py-3 px-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 transition-all appearance-none"
+                              className="w-full bg-[#0a0a0f]/40 border border-white/5 rounded-xl py-3 px-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 transition-all appearance-none"
                             >
                               <option value="mecanique">MÉCANIQUE (ميكانيك)</option>
                               <option value="hydraulique">HYDRAULIQUE (هيدروليك)</option>
@@ -1138,7 +1138,7 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                             <textarea
                               value={newFamilyData.description}
                               onChange={e => setNewFamilyData({ ...newFamilyData, description: e.target.value })}
-                              className="w-full bg-black/40 border border-white/5 rounded-xl py-3 px-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 transition-all h-20 resize-none font-sans"
+                              className="w-full bg-[#0a0a0f]/40 border border-white/5 rounded-xl py-3 px-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 transition-all h-20 resize-none font-sans"
                               placeholder="أدخل وصفاً مبسطاً لنوعية قطع الغيار التي يصنفها هذا النظام..."
                             />
                           </div>
@@ -1180,7 +1180,7 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                             <select
                               value={wizardSelectedTemplateId}
                               onChange={e => setWizardSelectedTemplateId(e.target.value)}
-                              className="w-full bg-black/50 border border-white/10 rounded-xl py-3 px-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 transition-all appearance-none"
+                              className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl py-3 px-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 transition-all appearance-none"
                             >
                               <option value="">--- اختر قالب المواصفات الفنية ---</option>
                               {pdrTemplates
@@ -1249,7 +1249,7 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                               required
                               value={newTemplateData.name}
                               onChange={e => setNewTemplateData({ ...newTemplateData, name: e.target.value })}
-                              className="w-full bg-black/40 border border-white/5 rounded-xl py-3 px-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 transition-all font-sans"
+                              className="w-full bg-[#0a0a0f]/40 border border-white/5 rounded-xl py-3 px-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 transition-all font-sans"
                               placeholder="e.g. Capteur Inductif M12, Roulement Standard Ball 6xxx"
                             />
                           </div>
@@ -1264,7 +1264,7 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                               required
                               value={newTemplateData.skuBase}
                               onChange={e => setNewTemplateData({ ...newTemplateData, skuBase: e.target.value })}
-                              className="w-full bg-black/40 border border-white/5 rounded-xl py-3 px-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 transition-all font-mono"
+                              className="w-full bg-[#0a0a0f]/40 border border-white/5 rounded-xl py-3 px-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 transition-all font-mono"
                               placeholder="e.g. RLM, MOT-E, CAP"
                             />
                           </div>
@@ -1274,7 +1274,7 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                             <textarea
                               value={newTemplateData.description}
                               onChange={e => setNewTemplateData({ ...newTemplateData, description: e.target.value })}
-                              className="w-full bg-black/40 border border-white/5 rounded-xl py-3 px-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 transition-all h-20 resize-none font-sans"
+                              className="w-full bg-[#0a0a0f]/40 border border-white/5 rounded-xl py-3 px-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 transition-all h-20 resize-none font-sans"
                               placeholder="صف المعايير الفنية والكهربائية أو الميكانيكية الموحدة في هذا القالب..."
                             />
                           </div>
@@ -1320,7 +1320,7 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                         <div className="space-y-4">
                           <div className="p-4 bg-cyan-500/[0.02] border border-cyan-500/20 rounded-2xl space-y-2 text-center">
                             <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-widest">كود الترقيم المتسلسل الممنوح (999 Slots Nomenclature ID)</span>
-                            <div className="text-2xl font-black font-mono text-cyan-300 py-2.5 bg-black/60 rounded-xl border border-white/5 tracking-wider shadow-inner">
+                            <div className="text-2xl font-black font-mono text-cyan-300 py-2.5 bg-[#0a0a0f]/60 rounded-xl border border-white/5 tracking-wider shadow-inner">
                               {slotDetails.activeId}
                             </div>
                             <p className="text-[9px] text-slate-400 font-sans">
@@ -1335,7 +1335,7 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                               required
                               value={newBlueprintData.model}
                               onChange={e => setNewBlueprintData({ ...newBlueprintData, model: e.target.value })}
-                              className="w-full bg-black/40 border border-white/5 rounded-xl py-3 px-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 transition-all font-mono"
+                              className="w-full bg-[#0a0a0f]/40 border border-white/5 rounded-xl py-3 px-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 transition-all font-mono"
                               placeholder="e.g. 6205-2RS-C3, IM12-04N-N-C10"
                             />
                           </div>
@@ -1348,7 +1348,7 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                                 required
                                 value={newBlueprintData.powerOrForce}
                                 onChange={e => setNewBlueprintData({ ...newBlueprintData, powerOrForce: e.target.value })}
-                                className="w-full bg-black/40 border border-white/5 rounded-xl py-3 px-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 transition-all"
+                                className="w-full bg-[#0a0a0f]/40 border border-white/5 rounded-xl py-3 px-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 transition-all"
                                 placeholder="e.g. 15 kW, 25x52x15 mm"
                               />
                             </div>
@@ -1360,7 +1360,7 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                                 required
                                 value={newBlueprintData.technicalSpecs}
                                 onChange={e => setNewBlueprintData({ ...newBlueprintData, technicalSpecs: e.target.value })}
-                                className="w-full bg-black/40 border border-white/5 rounded-xl py-3 px-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 transition-all"
+                                className="w-full bg-[#0a0a0f]/40 border border-white/5 rounded-xl py-3 px-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 transition-all"
                                 placeholder="e.g. 3-Phase 400V, PNP NO"
                               />
                             </div>
@@ -1372,7 +1372,7 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                               <select
                                 value={newBlueprintData.unit}
                                 onChange={e => setNewBlueprintData({ ...newBlueprintData, unit: e.target.value })}
-                                className="w-full bg-black/40 border border-white/5 rounded-xl py-3 px-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 transition-all appearance-none"
+                                className="w-full bg-[#0a0a0f]/40 border border-white/5 rounded-xl py-3 px-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 transition-all appearance-none"
                               >
                                 <option value="Pcs">قطعة (Pieces/Pcs)</option>
                                 <option value="Kg">كيلوغرام (Kg)</option>
@@ -1389,7 +1389,7 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                                 required
                                 value={newBlueprintData.minThreshold}
                                 onChange={e => setNewBlueprintData({ ...newBlueprintData, minThreshold: Number(e.target.value) })}
-                                className="w-full bg-black/40 border border-white/5 rounded-xl py-3 px-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 transition-all font-mono"
+                                className="w-full bg-[#0a0a0f]/40 border border-white/5 rounded-xl py-3 px-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 transition-all font-mono"
                               />
                             </div>
                           </div>

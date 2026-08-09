@@ -2,7 +2,8 @@ import React from 'react';
 import { cn } from '@/shared/utils';
 
 interface BadgePillProps {
-  label: string;
+  label?: string;
+  children?: React.ReactNode;
   color?: 'cyan' | 'indigo' | 'fuchsia' | 'emerald' | 'amber' | 'rose' | 'orange' | 'purple' | 'slate';
   pulse?: boolean;
   icon?: React.ReactNode;
@@ -12,6 +13,7 @@ interface BadgePillProps {
 
 export function BadgePill({
   label,
+  children,
   color = 'cyan',
   pulse = false,
   icon,
@@ -51,7 +53,7 @@ export function BadgePill({
     )}>
       {pulse && <span className={cn("w-1.5 h-1.5 rounded-full animate-ping", dotColors[color])} />}
       {icon}
-      <span>{label}</span>
+      <span>{children || label}</span>
     </span>
   );
 }

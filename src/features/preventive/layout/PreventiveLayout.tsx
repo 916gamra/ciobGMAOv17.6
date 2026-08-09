@@ -24,15 +24,16 @@ export function PreventiveLayout({ user, onLogout }: { user: User | null, onLogo
 
   useEffect(() => {
     if (!currentTab) {
-      openTab({ id: 'pm-radar', portalId: 'PREVENTIVE', title: 'Preventive Radar', component: 'pm-radar' });
+      openTab({ id: 'pm-radar', portalId: 'PREVENTIVE', title: 'رادار الصيانة', component: 'pm-radar' });
     }
   }, [currentTab, openTab]);
 
   return (
     <div className="flex flex-1 overflow-hidden h-full">
       <PortalSidebar 
-        portalName="Maintenance Ops"
+        portalName="الصيانة الوقائية"
         portalIcon={<ClipboardCheck />}
+        glowColor="emerald"
         colorClass="bg-emerald-500/10 text-emerald-500"
         borderClass="border-emerald-500/30"
         textClass="text-emerald-400"
@@ -40,22 +41,22 @@ export function PreventiveLayout({ user, onLogout }: { user: User | null, onLogo
         <PortalSidebarItem 
           icon={<LayoutDashboard />} 
           isActive={activeTabId === 'pm-radar'} 
-          onClick={() => openTab({ id: 'pm-radar', portalId: 'PREVENTIVE', title: 'Preventive Radar', component: 'pm-radar' })}
-          title="Preventive Radar"
+          onClick={() => openTab({ id: 'pm-radar', portalId: 'PREVENTIVE', title: 'رادار الصيانة', component: 'pm-radar' })}
+          title="رادار الصيانة الوقائية"
           colorClass="text-emerald-400"
         />
         <PortalSidebarItem 
           icon={<KanbanSquare />} 
           isActive={activeTabId === 'pm-task-catalog'} 
-          onClick={() => openTab({ id: 'pm-task-catalog', portalId: 'PREVENTIVE', title: 'Tasks Catalog', component: 'pm-task-catalog' })}
-          title="Tasks Catalog"
+          onClick={() => openTab({ id: 'pm-task-catalog', portalId: 'PREVENTIVE', title: 'كتالوج المهام', component: 'pm-task-catalog' })}
+          title="كتالوج المهام القياسية"
           colorClass="text-emerald-400"
         />
         <PortalSidebarItem 
           icon={<CalendarClock />} 
           isActive={activeTabId === 'pm-machine-registry'} 
-          onClick={() => openTab({ id: 'pm-machine-registry', portalId: 'PREVENTIVE', title: 'Preventive Plans', component: 'pm-machine-registry' })}
-          title="Preventive Plans"
+          onClick={() => openTab({ id: 'pm-machine-registry', portalId: 'PREVENTIVE', title: 'خطط الصيانة', component: 'pm-machine-registry' })}
+          title="سجل الآلات والخطط"
           colorClass="text-emerald-400"
         />
       </PortalSidebar>

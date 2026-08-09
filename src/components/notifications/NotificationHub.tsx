@@ -33,14 +33,14 @@ export const NotificationHub = ({ isOpen, onClose }: { isOpen: boolean; onClose:
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[100]"
+            className="fixed inset-0 bg-[#0a0a0f]/40 backdrop-blur-sm z-[100]"
           />
           <motion.div
             initial={{ x: '110%', opacity: 0, scale: 0.98 }}
             animate={{ x: 0, opacity: 1, scale: 1 }}
             exit={{ x: '110%', opacity: 0, scale: 0.98 }}
             transition={{ type: 'spring', damping: 28, stiffness: 220 }}
-            className="fixed right-6 top-[8%] bottom-[8%] w-[320px] bg-black/45 backdrop-blur-[40px] border border-white/10 z-[101] flex flex-col shadow-[0_50px_100px_-20px_rgba(0,0,0,0.9)] rounded-[2.5rem] overflow-hidden font-sans"
+            className="fixed right-6 top-[8%] bottom-[8%] w-[320px] bg-[#0a0a0f]/45 backdrop-blur-[40px] border border-white/10 z-[101] flex flex-col shadow-[0_50px_100px_-20px_rgba(0,0,0,0.9)] rounded-[2.5rem] overflow-hidden font-sans"
           >
             {/* Glossy Overlay Reflect */}
             <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/[0.03] to-transparent pointer-events-none" />
@@ -49,7 +49,7 @@ export const NotificationHub = ({ isOpen, onClose }: { isOpen: boolean; onClose:
             <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-amber-500/10 blur-[80px] rounded-full pointer-events-none" />
             <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-cyan-500/10 blur-[80px] rounded-full pointer-events-none" />
             
-            <div className="p-5 pb-4 border-b border-white/[0.08] flex items-center justify-between relative bg-black/20">
+            <div className="p-5 pb-4 border-b border-white/[0.08] flex items-center justify-between relative bg-[#0a0a0f]/20">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20 shadow-[0_10px_20px_-5px_rgba(245,158,11,0.2)] group">
                   <Bell className="w-4 h-4 text-amber-500 group-hover:rotate-[15deg] transition-transform duration-500" />

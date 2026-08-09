@@ -443,21 +443,21 @@ export function StockHistoryView() {
             </GlassCard>
 
             {/* Ledger table */}
-            <GlassCard className="!p-0 border-white/5 overflow-hidden shadow-2xl rounded-3xl flex flex-col h-[600px]">
-              <div className="flex-1 overflow-auto custom-scrollbar bg-black/10">
+            <div className="rounded-2xl border border-white/10 bg-[#0a0a0f]/60 backdrop-blur-xl overflow-hidden shadow-2xl flex flex-col h-[600px]">
+              <div className="flex-1 overflow-auto custom-scrollbar">
                 <table className="w-full text-right border-collapse whitespace-nowrap">
-                  <thead className="sticky top-0 bg-[#0e1626] z-20 border-b border-white/[0.08] text-right">
+                  <thead className="sticky top-0 bg-[#0f172a] z-20 border-b border-white/10 text-right">
                     <tr>
-                      <th className="px-6 py-4 font-sans font-bold text-slate-400 uppercase text-xs">Movement Type & Date</th>
-                      <th className="px-6 py-4 font-sans font-bold text-slate-400 uppercase text-xs">Spare Part</th>
-                      <th className="px-6 py-4 font-sans font-bold text-slate-400 text-center text-xs">Quantity</th>
-                      <th className="px-6 py-4 font-sans font-bold text-slate-400 uppercase text-xs">Performed By & Machine</th>
-                      <th className="px-6 py-4 font-sans font-bold text-slate-400 uppercase text-xs">Statement / Notes</th>
+                      <th className="px-6 py-3.5 font-sans font-bold text-slate-300 uppercase tracking-wider text-xs">Movement Type & Date</th>
+                      <th className="px-6 py-3.5 font-sans font-bold text-slate-300 uppercase tracking-wider text-xs">Spare Part</th>
+                      <th className="px-6 py-3.5 font-sans font-bold text-slate-300 text-center text-xs uppercase tracking-wider">Quantity</th>
+                      <th className="px-6 py-3.5 font-sans font-bold text-slate-300 uppercase tracking-wider text-xs">Performed By & Machine</th>
+                      <th className="px-6 py-3.5 font-sans font-bold text-slate-300 uppercase tracking-wider text-xs">Statement / Notes</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/[0.02]">
+                  <tbody className="divide-y divide-white/5">
                     {filteredMovements.map((mov) => (
-                      <tr key={mov.id} className="group hover:bg-white/[0.01] transition-colors text-right">
+                      <tr key={mov.id} className="group hover:bg-white/[0.04] transition-colors text-right border-b border-white/5">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3 justify-end">
                             <span className="text-[10px] font-mono text-slate-500">
@@ -527,7 +527,7 @@ export function StockHistoryView() {
                   </tbody>
                 </table>
               </div>
-            </GlassCard>
+            </div>
           </motion.div>
         ) : (
           <motion.div

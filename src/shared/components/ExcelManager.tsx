@@ -206,7 +206,7 @@ export function ExcelManager({ portalId }: ExcelManagerProps) {
                 key={template.id}
                 onClick={() => handleExportData(template.id)}
                 disabled={isLoading}
-                className="flex items-start gap-4 p-5 rounded-xl border border-white/10 hover:border-blue-500/50 bg-black/40 hover:bg-black/60 transition-all text-left group"
+                className="flex items-start gap-4 p-5 rounded-xl border border-white/10 hover:border-blue-500/50 bg-[#0a0a0f]/40 hover:bg-[#0a0a0f]/60 transition-all text-left group"
               >
                 <div className="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0 group-hover:bg-blue-500 transition-colors">
                   <Download className="w-6 h-6 text-blue-400 group-hover:text-white transition-colors" />
@@ -237,7 +237,7 @@ export function ExcelManager({ portalId }: ExcelManagerProps) {
           ) : (
             <div className="space-y-3">
               {portalBackups.map(backup => (
-                <div key={backup.id} className="flex items-center justify-between p-4 rounded-xl border border-white/5 bg-black/40 hover:bg-black/60 transition-colors group">
+                <div key={backup.id} className="flex items-center justify-between p-4 rounded-xl border border-white/5 bg-[#0a0a0f]/40 hover:bg-[#0a0a0f]/60 transition-colors group">
                   <div>
                     <h4 className="font-bold text-slate-200 group-hover:text-blue-400 transition-colors">{backup.fileName}</h4>
                     <div className="flex gap-4 mt-1 text-[11px] text-slate-500 uppercase tracking-widest font-mono">
@@ -277,7 +277,7 @@ export function ExcelManager({ portalId }: ExcelManagerProps) {
         <GlassCard className="p-6 h-[400px] overflow-auto custom-scrollbar">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {templates.map(template => (
-              <div key={template.id} className="flex flex-col p-5 rounded-xl border border-white/10 bg-black/40">
+              <div key={template.id} className="flex flex-col p-5 rounded-xl border border-white/10 bg-[#0a0a0f]/40">
                 <div className="flex items-start gap-4 mb-4">
                   <div className="w-10 h-10 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
                     <FileText className="w-5 h-5 text-emerald-400" />

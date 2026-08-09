@@ -74,7 +74,7 @@ export function SecurityPoliciesView() {
         {/* Session Timeout */}
         <motion.div variants={itemVariants} className="group flex flex-col md:flex-row items-start md:items-center justify-between p-6 rounded-2xl bg-white/[0.02] hover:bg-white/[0.04] border border-white/5 hover:border-white/10 transition-colors shadow-lg hover:shadow-xl relative overflow-hidden">
           <div className="flex gap-6 items-center w-full md:w-auto mb-6 md:mb-0">
-            <div className="w-14 h-14 rounded-2xl bg-black/40 border border-white/5 flex items-center justify-center shadow-inner group-hover:border-blue-500/30 transition-colors duration-300 shrink-0">
+            <div className="w-14 h-14 rounded-2xl bg-[#0a0a0f]/40 border border-white/5 flex items-center justify-center shadow-inner group-hover:border-blue-500/30 transition-colors duration-300 shrink-0">
                <Timer className="w-6 h-6 text-slate-400 group-hover:text-blue-400 transition-colors" />
             </div>
             <div>
@@ -85,7 +85,7 @@ export function SecurityPoliciesView() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 bg-black/40 p-2.5 rounded-xl border border-white/5 shadow-inner w-full md:w-auto justify-between md:justify-start group-hover:border-blue-500/20 transition-all">
+          <div className="flex items-center gap-3 bg-[#0a0a0f]/40 p-2.5 rounded-xl border border-white/5 shadow-inner w-full md:w-auto justify-between md:justify-start group-hover:border-blue-500/20 transition-all">
             <input 
               type="number" 
               min="1" 
@@ -101,7 +101,7 @@ export function SecurityPoliciesView() {
         {/* Strict Hardware Validation */}
         <motion.div variants={itemVariants} className="group flex flex-col md:flex-row items-start md:items-center justify-between p-6 rounded-2xl bg-white/[0.02] hover:bg-white/[0.04] border border-white/5 hover:border-white/10 transition-colors shadow-lg hover:shadow-xl relative overflow-hidden">
           <div className="flex gap-6 items-center w-full md:w-auto mb-6 md:mb-0">
-            <div className="w-14 h-14 rounded-2xl bg-black/40 border border-white/5 flex items-center justify-center shadow-inner group-hover:border-cyan-500/30 transition-colors shrink-0">
+            <div className="w-14 h-14 rounded-2xl bg-[#0a0a0f]/40 border border-white/5 flex items-center justify-center shadow-inner group-hover:border-cyan-500/30 transition-colors shrink-0">
                <Fingerprint className="w-6 h-6 text-slate-400 group-hover:text-cyan-400 transition-colors" />
             </div>
             <div>
@@ -117,7 +117,7 @@ export function SecurityPoliciesView() {
                 "w-12 h-6 rounded-full border transition-colors relative outline-none active:scale-95 shadow-inner grow-0 shrink-0", 
                 strictMode 
                  ? "bg-blue-600 border-blue-500" 
-                 : "bg-black/60 border-white/10"
+                 : "bg-[#0a0a0f]/60 border-white/10"
               )}
           >
              <div className={cn(
@@ -130,7 +130,7 @@ export function SecurityPoliciesView() {
         {/* Developer Mode */}
         <motion.div variants={itemVariants} className="group flex flex-col md:flex-row items-start md:items-center justify-between p-6 rounded-2xl bg-white/[0.02] hover:bg-white/[0.04] border border-white/5 hover:border-white/10 transition-colors shadow-lg hover:shadow-xl relative overflow-hidden cursor-pointer" onClick={() => setDevMode(!devMode)}>
           <div className="flex gap-6 items-center w-full md:w-auto mb-6 md:mb-0">
-            <div className="w-14 h-14 rounded-2xl bg-black/40 border border-white/5 flex items-center justify-center shadow-inner group-hover:border-amber-500/30 transition-colors shrink-0">
+            <div className="w-14 h-14 rounded-2xl bg-[#0a0a0f]/40 border border-white/5 flex items-center justify-center shadow-inner group-hover:border-amber-500/30 transition-colors shrink-0">
                <Code2 className="w-6 h-6 text-slate-400 group-hover:text-amber-400 transition-colors" />
             </div>
             <div>
@@ -147,7 +147,7 @@ export function SecurityPoliciesView() {
                "w-12 h-6 rounded-full border transition-all duration-300 relative outline-none active:scale-95 shadow-inner grow-0 shrink-0", 
                devMode 
                 ? "bg-amber-600 border-amber-500" 
-                : "bg-black/60 border-white/10"
+                : "bg-[#0a0a0f]/60 border-white/10"
              )}
           >
              <div className={cn(

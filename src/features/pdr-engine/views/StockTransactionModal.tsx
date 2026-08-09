@@ -118,7 +118,7 @@ export function StockTransactionModal({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                className="fixed inset-0 bg-[#0a0a0f]/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
               >
                 <Dialog.Content asChild>
                   <motion.div
@@ -126,7 +126,7 @@ export function StockTransactionModal({
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 20 }}
                     transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
-                    className="w-full max-w-md bg-black/80 backdrop-blur-3xl border border-white/10 shadow-[0_25px_60px_rgba(0,0,0,0.8)] rounded-3xl overflow-hidden relative gemini-breathing-border"
+                    className="w-full max-w-md bg-[#0a0a0f]/80 backdrop-blur-3xl border border-white/10 shadow-[0_25px_60px_rgba(0,0,0,0.8)] rounded-3xl overflow-hidden relative gemini-breathing-border"
                   >
                     <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
                     
@@ -188,7 +188,7 @@ export function StockTransactionModal({
                                 "flex items-center justify-center gap-2 py-2.5 rounded-xl border transition-all font-medium text-sm disabled:opacity-50",
                                 type === 'IN' 
                                   ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.15)]" 
-                                  : "bg-black/30 border-white/10 text-slate-400 hover:bg-white/5"
+                                  : "bg-[#0a0a0f]/30 border-white/10 text-slate-400 hover:bg-white/5"
                               )}
                             >
                               <ArrowDownRight className="w-4 h-4" /> Entrée (IN)
@@ -201,7 +201,7 @@ export function StockTransactionModal({
                                 "flex items-center justify-center gap-2 py-2.5 rounded-xl border transition-all font-medium text-sm disabled:opacity-50",
                                 type === 'OUT' 
                                   ? "bg-amber-500/20 border-amber-500/40 text-amber-400 shadow-[0_0_15px_rgba(245,158,11,0.15)]" 
-                                  : "bg-black/30 border-white/10 text-slate-400 hover:bg-white/5"
+                                  : "bg-[#0a0a0f]/30 border-white/10 text-slate-400 hover:bg-white/5"
                               )}
                             >
                               <ArrowUpRight className="w-4 h-4" /> Sortie (OUT)

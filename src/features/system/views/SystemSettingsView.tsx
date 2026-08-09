@@ -145,7 +145,7 @@ export function SystemSettingsView({ user, onLogout }: { user: User | null, onLo
              <div className="absolute top-0 right-0 w-80 h-80 bg-red-500/10 rounded-full blur-[100px] pointer-events-none group-hover:bg-red-500/20 transition-all duration-1000" />
              
              <div className="flex items-start gap-5 mb-6 relative z-10">
-                <div className="p-4 rounded-2xl bg-black/40 border border-red-500/20 shadow-inner">
+                <div className="p-4 rounded-2xl bg-[#0a0a0f]/40 border border-red-500/20 shadow-inner">
                   <ShieldAlert className="w-8 h-8 text-red-500" />
                 </div>
                 <div>
@@ -156,7 +156,7 @@ export function SystemSettingsView({ user, onLogout }: { user: User | null, onLo
                 </div>
              </div>
              
-             <div className="mt-4 mb-6 bg-black/40 p-4 rounded-xl border border-red-500/20 flex items-start gap-3 relative z-10">
+             <div className="mt-4 mb-6 bg-[#0a0a0f]/40 p-4 rounded-xl border border-red-500/20 flex items-start gap-3 relative z-10">
                 <AlertTriangle className="w-5 h-5 text-yellow-500 shrink-0 mt-0.5" />
                 <p className="text-xs text-slate-300 leading-relaxed font-medium">
                   This maintenance protocol will format the equipment registry, personnel records, and inventory stocks. 
@@ -192,7 +192,7 @@ export function SystemSettingsView({ user, onLogout }: { user: User | null, onLo
              <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/[0.05] rounded-full blur-[100px] pointer-events-none group-hover:bg-emerald-500/10 transition-all duration-1000" />
              
              <div className="flex items-start gap-5 mb-6 relative z-10">
-                <div className="p-4 rounded-2xl bg-black/40 border border-emerald-500/20 shadow-inner">
+                <div className="p-4 rounded-2xl bg-[#0a0a0f]/40 border border-emerald-500/20 shadow-inner">
                   <DatabaseZap className="w-8 h-8 text-emerald-500" />
                 </div>
                 <div>
@@ -203,7 +203,7 @@ export function SystemSettingsView({ user, onLogout }: { user: User | null, onLo
                 </div>
              </div>
              
-             <div className="mt-4 mb-6 bg-black/40 p-4 rounded-xl border border-emerald-500/20 flex items-start gap-3 relative z-10">
+             <div className="mt-4 mb-6 bg-[#0a0a0f]/40 p-4 rounded-xl border border-emerald-500/20 flex items-start gap-3 relative z-10">
                 <AlertTriangle className="w-5 h-5 text-yellow-500 shrink-0 mt-0.5" />
                 <p className="text-xs text-slate-300 leading-relaxed font-medium">
                   This tool extracts the entire current state of the application (Machines, Models, Stock) as JSON to the console. Copy it into `seedData.ts` to make it the default nuclear state.
@@ -213,7 +213,7 @@ export function SystemSettingsView({ user, onLogout }: { user: User | null, onLo
              <div className="mt-auto relative z-10">
                <button
                  onClick={handleExportSeed}
-                 className="w-full py-4 rounded-xl bg-black/60 border border-emerald-500/30 hover:bg-emerald-500/20 text-emerald-400 font-bold uppercase tracking-widest text-xs transition-all shadow-lg hover:shadow-[0_0_30px_rgba(16,185,129,0.2)] flex items-center justify-center gap-3 relative overflow-hidden group/btn"
+                 className="w-full py-4 rounded-xl bg-[#0a0a0f]/60 border border-emerald-500/30 hover:bg-emerald-500/20 text-emerald-400 font-bold uppercase tracking-widest text-xs transition-all shadow-lg hover:shadow-[0_0_30px_rgba(16,185,129,0.2)] flex items-center justify-center gap-3 relative overflow-hidden group/btn"
                >
                  <DatabaseZap className="w-4 h-4" />
                  <span>EXPORT SEED TO CONSOLE</span>
@@ -228,7 +228,7 @@ export function SystemSettingsView({ user, onLogout }: { user: User | null, onLo
              <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/[0.05] rounded-full blur-[100px] pointer-events-none group-hover:bg-blue-500/10 transition-all duration-1000" />
              
              <div className="flex items-start gap-5 mb-6 relative z-10">
-                <div className="p-4 rounded-2xl bg-black/40 border border-blue-500/20 shadow-inner">
+                <div className="p-4 rounded-2xl bg-[#0a0a0f]/40 border border-blue-500/20 shadow-inner">
                   <HardDrive className="w-8 h-8 text-blue-500" />
                 </div>
                 <div>
@@ -239,7 +239,7 @@ export function SystemSettingsView({ user, onLogout }: { user: User | null, onLo
                 </div>
              </div>
              
-             <div className="mt-4 mb-6 bg-black/40 p-4 rounded-xl border border-blue-500/20 flex items-start gap-3 relative z-10">
+             <div className="mt-4 mb-6 bg-[#0a0a0f]/40 p-4 rounded-xl border border-blue-500/20 flex items-start gap-3 relative z-10">
                 <ArrowRightLeft className="w-5 h-5 text-blue-400 shrink-0 mt-0.5" />
                 <p className="text-xs text-slate-300 leading-relaxed font-medium">
                   We use the specialized Data Exchange Hub for importing and exporting massive data logs, factory schemas, and stock limits safely. 
@@ -250,7 +250,7 @@ export function SystemSettingsView({ user, onLogout }: { user: User | null, onLo
              <div className="mt-auto relative z-10">
                <button
                  onClick={handleGoToDataExchange}
-                 className="w-full py-4 rounded-xl bg-black/60 border border-blue-500/30 hover:bg-blue-500/20 text-blue-400 font-bold uppercase tracking-widest text-xs transition-all shadow-lg hover:shadow-[0_0_30px_rgba(59,130,246,0.2)] flex items-center justify-center gap-3 relative overflow-hidden group/btn"
+                 className="w-full py-4 rounded-xl bg-[#0a0a0f]/60 border border-blue-500/30 hover:bg-blue-500/20 text-blue-400 font-bold uppercase tracking-widest text-xs transition-all shadow-lg hover:shadow-[0_0_30px_rgba(59,130,246,0.2)] flex items-center justify-center gap-3 relative overflow-hidden group/btn"
                >
                  <ArrowRightLeft className="w-4 h-4" />
                  <span>OPEN DATA EXCHANGE HUB</span>

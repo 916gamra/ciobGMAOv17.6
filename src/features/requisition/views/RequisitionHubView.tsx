@@ -207,7 +207,7 @@ export function RequisitionHubView() {
                 ) : (
                   <AnimatePresence>
                     {cart.map((item) => (
-                      <motion.div key={item.blueprintId} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, height: 0 }} className="flex items-center justify-between p-3 rounded-lg bg-black/40 border border-white/10">
+                      <motion.div key={item.blueprintId} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, height: 0 }} className="flex items-center justify-between p-3 rounded-lg bg-[#0a0a0f]/40 border border-white/10">
                          <div>
                            <div className="font-mono text-sm text-white">{item.reference}</div>
                            <div className="text-xs text-slate-400">Stock available: {item.available}</div>
@@ -291,7 +291,7 @@ export function RequisitionHubView() {
       </motion.div>
 
       {/* Floating Action Button Bar */}
-      <div className="fixed bottom-0 left-[72px] right-0 bg-black/60 backdrop-blur-xl border-t border-white/10 p-4 flex justify-end z-40">
+      <div className="fixed bottom-0 left-[72px] right-0 bg-[#0a0a0f]/60 backdrop-blur-xl border-t border-white/10 p-4 flex justify-end z-40">
          <div className="w-full flex justify-between items-center px-4 lg:px-8">
             <div className="text-sm font-medium text-slate-400">
               {cart.length > 0 ? (

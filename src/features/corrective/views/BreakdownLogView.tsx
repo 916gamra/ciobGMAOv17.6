@@ -33,16 +33,22 @@ import {
   Layers3,
   Hammer,
   HelpCircle,
-  Sparkles
+  Sparkles,
+  LayoutList,
+  Grid,
+  Eye,
+  X
 } from 'lucide-react';
 import { GlassCard } from '@/shared/components/GlassCard';
 import { PageHeader } from '@/shared/components/PageHeader';
+import { StatCompact } from '@/shared/components/StatCompact';
 import { KpiCard } from '@/shared/components/KpiCard';
 import { BadgePill } from '@/shared/components/BadgePill';
 import { FilterBar } from '@/shared/components/FilterBar';
 import { Button } from '@/shared/components/Button';
 import { cn, EMPTY_ARRAY } from '@/shared/utils';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -50,6 +56,7 @@ const containerVariants = {
 };
 
 export function BreakdownLogView({ user }: { user: any }) {
+  const { t } = useTranslation();
   // Live Data Query
   const data = useLiveQuery(async () => {
     const [
@@ -97,6 +104,8 @@ export function BreakdownLogView({ user }: { user: any }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterMachine, setFilterMachine] = useState('');
   const [filterDomain, setFilterDomain] = useState('');
+  const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
+  const [selectedInspectExecution, setSelectedInspectExecution] = useState<TaskExecution | null>(null);
 
   // WIZARD MODAL STATE
   const [isWizardOpen, setIsWizardOpen] = useState(false);
@@ -327,205 +336,376 @@ export function BreakdownLogView({ user }: { user: any }) {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="w-full h-full flex flex-col gap-6 relative z-10 lg:px-8 pb-24 pt-2 font-sans"
+      className="flex flex-col h-full text-slate-200 font-sans"
     >
       
-      {/* HEADER COCKPIT */}
-      <PageHeader
-        title="التدخلات الإصلاحية (Corrective Interventions)"
-        subtitle="تسجيل الأعطال والتسلسلات العلاجية خطوة بخطوة مع مطابقة سحوبات المخزن برقم البون."
-        icon={<Wrench className="w-8 h-8 text-orange-400" />}
-        badgeColor="orange"
-        actions={
-          <Button onClick={handleOpenWizard} variant="secondary" leftIcon={<Plus className="w-4 h-4" />}>
-            تسجيل تدخل إصلاحي جديد (Wizard)
-          </Button>
-        }
-      />
-
-      {/* DASHBOARD COUNTERS */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <KpiCard
-          label="إجمالي التدخلات العلاجية"
-          value={stats.totalRepairs}
-          unit="تدخل"
-          icon={<Wrench className="w-6 h-6" />}
-          color="orange"
-          subText="سجل التدخلات الميدانية"
-        />
-
-        <KpiCard
-          label="إجمالي توقف الآلات"
-          value={Math.round(stats.totalDowntime / 60)}
-          unit="ساعة"
-          icon={<Clock className="w-6 h-6" />}
-          color="amber"
-          subText="ساعات التوقف المسجلة"
-        />
-
-        <KpiCard
-          label="أعطال حرجة (Critical)"
-          value={stats.criticalIncidents}
-          unit="عطل"
-          icon={<AlertTriangle className="w-6 h-6" />}
-          color="rose"
-          subText="تأثير مرتفع على الإنتاج"
-        />
-
-        <KpiCard
-          label="بونات في انتظار المطابقة"
-          value={stats.pendingReconciliations}
-          unit="بون"
-          icon={<Package className="w-6 h-6" />}
-          color="cyan"
-          subText="تنتظر مراجعة أمين المخزن"
+      {/* HEADER COCKPIT WITH INTEGRATED COMPACT STATS */}
+      <div className="p-6 md:p-8 pb-0">
+        <PageHeader
+          title={t('corrective.breakdownLog.title', 'سجل التدخلات والأعطال الطارئة')}
+          subtitle={t('corrective.breakdownLog.subtitle', 'التوثيق اللحظي للتدخلات العلاجية ومتابعة حالة إصلاح الأصول والقطع المستهلكة')}
+          icon={<Wrench className="w-8 h-8 text-orange-400" />}
+          badgeColor="orange"
+          actions={
+            <div className="flex flex-wrap items-center gap-3">
+              <StatCompact 
+                icon={<Wrench className="w-4 h-4 text-orange-400" />} 
+                label={t('corrective.breakdownLog.totalIncidents', 'إجمالي التدخلات')} 
+                value={stats.totalRepairs.toString()} 
+              />
+              <StatCompact 
+                icon={<Clock className="w-4 h-4 text-amber-400" />} 
+                label={t('corrective.breakdownLog.avgMttr', 'ساعات التوقف')} 
+                value={`${Math.round(stats.totalDowntime / 60)} س`} 
+              />
+              <StatCompact 
+                icon={<AlertTriangle className="w-4 h-4 text-rose-400" />} 
+                label={t('general.status', 'أعطال حرجة')} 
+                value={stats.criticalIncidents.toString()} 
+              />
+              <StatCompact 
+                icon={<Package className="w-4 h-4 text-cyan-400" />} 
+                label={t('pdr.reconciliation', 'في انتظار المطابقة')} 
+                value={stats.pendingReconciliations.toString()} 
+              />
+            </div>
+          }
         />
       </div>
 
-      {/* SEARCH AND FILTERS */}
-      <FilterBar
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        searchPlaceholder="بحث برقم البون، كود الآلة، أو سبب العطل..."
-        extraControls={
-          <div className="flex items-center gap-2">
-            <select
-              value={filterMachine}
-              onChange={(e) => setFilterMachine(e.target.value)}
-              className="py-1.5 px-3 bg-black/50 border border-white/10 rounded-xl text-xs text-slate-300 font-mono cursor-pointer focus:outline-none focus:border-orange-500/50"
-            >
-              <option value="">جميع الآلات</option>
-              {machines.map(m => (
-                <option key={m.id} value={m.id}>{m.referenceCode}</option>
-              ))}
-            </select>
+      {/* CORE TABLE CONTAINER (FACTORY ADMIN CRYSTAL HIGH-CONTRAST DESIGN) */}
+      <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl flex-1 flex flex-col bg-[#0a0a0f]/60 backdrop-blur-xl mx-6 md:mx-8 mb-6 mt-6">
+        {/* Table Registry Header + FilterBar */}
+        <div className="p-6 md:p-8 border-b border-white/10 bg-white/[0.02] flex flex-col gap-6 shrink-0 relative z-10">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shrink-0">
+                <Activity className="w-6 h-6 text-orange-400" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-white uppercase tracking-tight font-sans">
+                  سجل البونات والتدخلات الإصلاحية
+                </h2>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono">
+                  Active Interventions & Breakdown Registry
+                </p>
+              </div>
+            </div>
 
-            <select
-              value={filterDomain}
-              onChange={(e) => setFilterDomain(e.target.value)}
-              className="py-1.5 px-3 bg-black/50 border border-white/10 rounded-xl text-xs text-slate-300 font-mono cursor-pointer focus:outline-none focus:border-orange-500/50"
-            >
-              <option value="">جميع المجالات</option>
-              <option value="MEC">ميكانيك (MEC)</option>
-              <option value="ELE">كهرباء (ELE)</option>
-              <option value="HYD">هيدروليك (HYD)</option>
-              <option value="PNU">بنيوماتيك (PNU)</option>
-              <option value="ELN">إلكترونيك (ELN)</option>
-            </select>
+            <div className="flex items-center gap-2">
+              <BadgePill color="orange">
+                {filteredExecutions.length} تدخل مسجل
+              </BadgePill>
+              <button 
+                onClick={handleOpenWizard} 
+                className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+              >
+                <Plus className="w-4 h-4 text-slate-950" />
+                <span>تسجيل تدخل طارئ</span>
+              </button>
+            </div>
           </div>
-        }
-      />
 
-      {/* CORE CONTENT GRID */}
-      <div className="flex flex-col gap-4">
-        <h2 className="text-sm font-bold text-orange-400 uppercase tracking-widest flex items-center gap-2 border-b border-white/5 pb-2 font-mono">
-          <Activity className="w-4 h-4" /> سجل البونات والتدخلات الإصلاحية
-        </h2>
+          {/* SEARCH AND FILTERS */}
+          <FilterBar
+            searchTerm={searchTerm}
+            onSearchChange={setSearchTerm}
+            searchPlaceholder="بحث برقم البون، كود الآلة، أو سبب العطل..."
+            extraControls={
+              <div className="flex items-center gap-2">
+                <select
+                  value={filterMachine}
+                  onChange={(e) => setFilterMachine(e.target.value)}
+                  className="py-1.5 px-3 bg-[#0a0a0f]/50 border border-white/10 rounded-xl text-xs text-slate-300 font-mono cursor-pointer focus:outline-none focus:border-orange-500/50"
+                >
+                  <option value="">جميع الآلات</option>
+                  {machines.map(m => (
+                    <option key={m.id} value={m.id}>{m.referenceCode}</option>
+                  ))}
+                </select>
 
-        <div className="grid grid-cols-1 gap-3">
-          {filteredExecutions.length === 0 ? (
-            <div className="p-12 text-center text-slate-500 bg-white/[0.01] border border-white/5 rounded-2xl flex flex-col items-center justify-center">
-              <Wrench className="w-10 h-10 text-slate-600 mb-3" />
-              <p className="font-semibold text-slate-400">لا توجد تدخلات إصلاحية مسجلة</p>
-              <p className="text-xs text-slate-500 mt-1">انقر فوق "تسجيل تدخل إصلاحي جديد" لبدء إدخال بون جديد.</p>
+                <select
+                  value={filterDomain}
+                  onChange={(e) => setFilterDomain(e.target.value)}
+                  className="py-1.5 px-3 bg-[#0a0a0f]/50 border border-white/10 rounded-xl text-xs text-slate-300 font-mono cursor-pointer focus:outline-none focus:border-orange-500/50"
+                >
+                  <option value="">جميع المجالات</option>
+                  <option value="MEC">ميكانيك</option>
+                  <option value="ELE">كهرباء</option>
+                  <option value="HYD">هيدروليك</option>
+                  <option value="PNU">بنيوماتيك</option>
+                  <option value="ELN">إلكترونيك</option>
+                </select>
+
+                {/* VIEW SWITCHER */}
+                <div className="flex items-center bg-[#0a0a0f]/90 border border-white/10 rounded-xl p-0.5 gap-0.5">
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('table')}
+                    className={cn(
+                      "p-1.5 rounded-lg transition-all text-xs flex items-center gap-1 font-bold cursor-pointer",
+                      viewMode === 'table' 
+                        ? "bg-white/10 text-white shadow-sm" 
+                        : "text-slate-400 hover:text-white"
+                    )}
+                    title="عرض جدول كريستالي"
+                  >
+                    <LayoutList className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setViewMode('cards')}
+                    className={cn(
+                      "p-1.5 rounded-lg transition-all text-xs flex items-center gap-1 font-bold cursor-pointer",
+                      viewMode === 'cards' 
+                        ? "bg-white/10 text-white shadow-sm" 
+                        : "text-slate-400 hover:text-white"
+                    )}
+                    title="عرض بطاقات"
+                  >
+                    <Grid className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            }
+          />
+        </div>
+
+        {/* CONTENT AREA */}
+        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar bg-[#0a0a0f]/40 p-6 md:p-8">
+          {viewMode === 'table' ? (
+            /* CRYSTAL HIGH-CONTRAST TABLE VIEW */
+            <div className="w-full overflow-x-auto rounded-2xl border border-white/10 bg-[#0a0a0f]/60 backdrop-blur-xl shadow-2xl">
+              <table className="w-full text-right border-collapse text-xs">
+                <thead>
+                  <tr className="bg-white/[0.04] border-b border-white/10 text-slate-300 font-bold uppercase tracking-wider font-mono text-[11px]">
+                    <th className="py-3.5 px-4">رقم البون</th>
+                    <th className="py-3.5 px-4">الآلة / المعدة</th>
+                    <th className="py-3.5 px-4">المجال والإجراء</th>
+                    <th className="py-3.5 px-4">سبب العطل / التشخيص</th>
+                    <th className="py-3.5 px-4">الفني المكلف</th>
+                    <th className="py-3.5 px-4">مدة التوقف</th>
+                    <th className="py-3.5 px-4 text-center">الحالة والمطابقة</th>
+                    <th className="py-3.5 px-4 text-center">التفاصيل</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5 font-sans">
+                  {filteredExecutions.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="py-20 text-center">
+                        <div className="flex flex-col items-center justify-center">
+                          <Wrench className="w-16 h-16 text-slate-500 mb-4 opacity-50" />
+                          <p className="font-semibold text-slate-400">لا توجد تدخلات إصلاحية مسجلة</p>
+                          <p className="text-xs text-slate-500 mt-1">انقر فوق "تسجيل تدخل طارئ" لبدء إدخال بون جديد.</p>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : filteredExecutions.map((ex) => {
+                    const machine = machinesMap.get(ex.machineId);
+                    const sector = machine ? sectorsMap.get(machine.sectorId) : null;
+                    const tech = techsMap.get(ex.doneBy || '');
+
+                    return (
+                      <tr 
+                        key={ex.id}
+                        className="hover:bg-white/[0.04] transition-colors border-b border-white/5 group"
+                      >
+                        {/* Bon ID */}
+                        <td className="py-3.5 px-4 font-mono font-black text-cyan-400 whitespace-nowrap">
+                          {ex.bonId || `BDC-${ex.id.slice(0, 6)}`}
+                        </td>
+
+                        {/* Machine & Sector */}
+                        <td className="py-3.5 px-4 whitespace-nowrap">
+                          <div className="flex flex-col">
+                            <span className="font-mono font-bold text-white text-xs">
+                              {machine?.referenceCode || 'M-REG'}
+                            </span>
+                            <span className="text-[10px] text-slate-400 font-mono">
+                              {sector?.name || 'عام'}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Domain & Action */}
+                        <td className="py-3.5 px-4 whitespace-nowrap">
+                          <div className="flex items-center gap-1.5">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-black bg-orange-500/10 text-orange-400 border border-orange-500/20 uppercase">
+                              {ex.domainFamily || 'MEC'}
+                            </span>
+                            <span className="text-[10px] font-bold text-slate-300 font-mono uppercase bg-white/5 px-1.5 py-0.5 rounded border border-white/10">
+                              {ex.actionType || 'REPAIR'}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Root Cause */}
+                        <td className="py-3.5 px-4 text-slate-100 font-semibold max-w-xs truncate">
+                          <div>{ex.rootCause || ex.notes}</div>
+                          {ex.operatorSymptom && (
+                            <span className="block text-[10px] text-slate-400 italic font-normal truncate">
+                              "{ex.operatorSymptom}"
+                            </span>
+                          )}
+                        </td>
+
+                        {/* Technician */}
+                        <td className="py-3.5 px-4 text-slate-300 whitespace-nowrap text-[11px]">
+                          <div className="flex items-center gap-1.5">
+                            <User className="w-3.5 h-3.5 text-slate-400" />
+                            <span>{tech?.name || ex.doneBy || 'فني الصيانة'}</span>
+                          </div>
+                        </td>
+
+                        {/* Duration */}
+                        <td className="py-3.5 px-4 font-mono text-amber-300 font-bold whitespace-nowrap">
+                          {ex.durationMinutes} دقيقة
+                        </td>
+
+                        {/* Status */}
+                        <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                          <div className="flex flex-col items-center gap-1">
+                            <span className={cn(
+                              "text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider",
+                              ex.outcomeStatus === 'COMPLETED'
+                                ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                                : ex.outcomeStatus === 'PENDING_PARTS'
+                                  ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                                  : "bg-purple-500/20 text-purple-400 border border-purple-500/30"
+                            )}>
+                              {ex.outcomeStatus === 'COMPLETED' ? 'منجز بالكامل' : ex.outcomeStatus === 'PENDING_PARTS' ? 'مؤجل لقطعة' : 'ورشة التصنيع'}
+                            </span>
+                            {ex.reconciliationStatus === 'PENDING_MATCH' && (
+                              <span className="text-[9px] font-mono text-amber-300 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/30">
+                                في انتظار المخزن
+                              </span>
+                            )}
+                          </div>
+                        </td>
+
+                        {/* Details Action Button */}
+                        <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedInspectExecution(ex)}
+                            className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 transition-all font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer active:scale-95"
+                            title="معاينة تفاصيل البون"
+                          >
+                            <Eye className="w-3.5 h-3.5 text-cyan-400" />
+                            <span>معاينة</span>
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           ) : (
-            filteredExecutions.map((ex, idx) => {
-              const machine = machinesMap.get(ex.machineId);
-              const sector = machine ? sectorsMap.get(machine.sectorId) : null;
-              const componentTemp = compTemplatesMap.get(ex.componentId || '');
-              const tech = techsMap.get(ex.doneBy || '');
+            /* CARDS VIEW */
+            filteredExecutions.length === 0 ? (
+              <div className="py-20 text-center border border-dashed border-white/10 rounded-3xl bg-white/[0.02]">
+                <Wrench className="w-16 h-16 text-slate-500 mx-auto mb-4 opacity-50" />
+                <p className="font-semibold text-slate-400">لا توجد تدخلات إصلاحية مسجلة</p>
+                <p className="text-xs text-slate-500 mt-1">انقر فوق "تسجيل تدخل طارئ" لبدء إدخال بون جديد.</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {filteredExecutions.map((ex, idx) => {
+                const machine = machinesMap.get(ex.machineId);
+                const sector = machine ? sectorsMap.get(machine.sectorId) : null;
+                const tech = techsMap.get(ex.doneBy || '');
 
-              return (
-                <motion.div
-                  key={ex.id}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.04 }}
-                  className="p-5 bg-slate-900/60 hover:bg-slate-900/90 border border-slate-800 hover:border-orange-500/30 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all"
-                >
-                  <div className="flex-1 flex items-start gap-4">
-                    <div className={cn(
-                      "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border font-mono font-bold text-xs",
-                      ex.componentCondition === 'CRITICAL' 
-                        ? "bg-rose-500/10 border-rose-500/30 text-rose-400" 
-                        : "bg-orange-500/10 border-orange-500/20 text-orange-400"
-                    )}>
-                      {ex.domainFamily || 'MEC'}
-                    </div>
-                    
-                    <div className="space-y-1.5 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-mono font-black text-cyan-400 bg-cyan-500/10 px-2.5 py-0.5 rounded-lg border border-cyan-500/30">
-                          {ex.bonId || `BDC-${ex.id.slice(0, 6)}`}
-                        </span>
-                        
-                        <span className="text-sm font-bold text-white font-mono">
-                          {machine?.referenceCode || 'M-REG'}
-                        </span>
-
-                        {sector && (
-                          <span className="text-[10px] text-slate-400 bg-slate-800 px-2 py-0.5 rounded font-mono">
-                            {sector.name}
-                          </span>
-                        )}
-
-                        <span className="text-[10px] font-mono text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded border border-orange-500/20 uppercase font-black">
-                          {ex.actionType || 'REPAIR'}
-                        </span>
-
-                        {ex.reconciliationStatus === 'PENDING_MATCH' && (
-                          <span className="text-[10px] font-mono text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30 flex items-center gap-1">
-                            <Clock className="w-3 h-3" /> ينتظر مطابقة المخزن
-                          </span>
-                        )}
+                return (
+                  <motion.div
+                    key={ex.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.04 }}
+                    className="p-5 bg-[#0a0a0f]/60 hover:bg-[#0a0a0f]/90 border border-white/10 hover:border-orange-500/30 rounded-2xl flex flex-col justify-between gap-4 transition-all shadow-xl backdrop-blur-xl"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className={cn(
+                        "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border font-mono font-bold text-xs",
+                        ex.componentCondition === 'CRITICAL' 
+                          ? "bg-rose-500/10 border-rose-500/30 text-rose-400" 
+                          : "bg-orange-500/10 border-orange-500/20 text-orange-400"
+                      )}>
+                        {ex.domainFamily || 'MEC'}
                       </div>
+                      
+                      <div className="space-y-1.5 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-sm font-mono font-black text-cyan-400 bg-cyan-500/10 px-2.5 py-0.5 rounded-lg border border-cyan-500/30">
+                            {ex.bonId || `BDC-${ex.id.slice(0, 6)}`}
+                          </span>
+                          
+                          <span className="text-sm font-bold text-white font-mono">
+                            {machine?.referenceCode || 'M-REG'}
+                          </span>
 
-                      <div className="text-xs text-white font-bold flex items-center gap-2 pt-1">
-                        <span className="text-slate-400 font-mono">السبب الرئيسي:</span>
-                        <span className="text-orange-200">{ex.rootCause || ex.notes}</span>
-                      </div>
+                          {sector && (
+                            <span className="text-[10px] text-slate-400 bg-white/10 px-2 py-0.5 rounded font-mono">
+                              {sector.name}
+                            </span>
+                          )}
 
-                      {ex.operatorSymptom && (
-                        <div className="text-[11px] text-slate-400 italic">
-                          عرض المشكل في البون: "{ex.operatorSymptom}"
+                          <span className="text-[10px] font-mono text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded border border-orange-500/20 uppercase font-black">
+                            {ex.actionType || 'REPAIR'}
+                          </span>
                         </div>
-                      )}
 
-                      <div className="flex items-center gap-4 text-[10px] text-slate-400 font-mono pt-1 flex-wrap">
-                        <span className="flex items-center gap-1">
-                          <User className="w-3.5 h-3.5 text-slate-400" /> {tech?.name || ex.doneBy || 'فني الصيانة'}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Clock className="w-3.5 h-3.5 text-slate-400" /> توقف الآلة: {ex.durationMinutes} دقيقة
-                        </span>
-                        {ex.claimedParts && ex.claimedParts.length > 0 && (
-                          <span className="flex items-center gap-1 text-cyan-400">
-                            <Package className="w-3.5 h-3.5" /> قطع الغيار: {ex.claimedParts.length} قطعة
-                          </span>
+                        <div className="text-xs text-white font-bold flex items-center gap-2 pt-1">
+                          <span className="text-slate-400 font-mono">السبب الرئيسي:</span>
+                          <span className="text-orange-200">{ex.rootCause || ex.notes}</span>
+                        </div>
+
+                        {ex.operatorSymptom && (
+                          <div className="text-[11px] text-slate-400 italic">
+                            عرض المشكل: "{ex.operatorSymptom}"
+                          </div>
                         )}
+
+                        <div className="flex items-center gap-4 text-[10px] text-slate-400 font-mono pt-1 flex-wrap">
+                          <span className="flex items-center gap-1">
+                            <User className="w-3.5 h-3.5 text-slate-400" /> {tech?.name || ex.doneBy || 'فني الصيانة'}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Clock className="w-3.5 h-3.5 text-slate-400" /> {ex.durationMinutes} دقيقة
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="flex flex-col items-end shrink-0 border-t md:border-t-0 md:border-r border-slate-800 pt-3 md:pt-0 md:pr-4 justify-center">
-                    <span className={cn(
-                      "text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider",
-                      ex.outcomeStatus === 'COMPLETED'
-                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                        : ex.outcomeStatus === 'PENDING_PARTS'
-                          ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
-                          : "bg-purple-500/20 text-purple-400 border border-purple-500/30"
-                    )}>
-                      {ex.outcomeStatus === 'COMPLETED' ? 'منجز بالكامل' : ex.outcomeStatus === 'PENDING_PARTS' ? 'مؤجل لقطعة' : 'ورشة التصنيع'}
-                    </span>
-                  </div>
-                </motion.div>
-              );
-            })
+                    <div className="flex items-center justify-between border-t border-white/5 pt-3 mt-1">
+                      <span className={cn(
+                        "text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider",
+                        ex.outcomeStatus === 'COMPLETED'
+                          ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                          : ex.outcomeStatus === 'PENDING_PARTS'
+                            ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                            : "bg-purple-500/20 text-purple-400 border border-purple-500/30"
+                      )}>
+                        {ex.outcomeStatus === 'COMPLETED' ? 'منجز بالكامل' : ex.outcomeStatus === 'PENDING_PARTS' ? 'مؤجل لقطعة' : 'ورشة التصنيع'}
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() => setSelectedInspectExecution(ex)}
+                        className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 transition-all font-bold text-xs flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <Eye className="w-3.5 h-3.5 text-cyan-400" />
+                        <span>التفاصيل</span>
+                      </button>
+                    </div>
+                  </motion.div>
+                );
+              })}
+              </div>
+            )
           )}
         </div>
-      </div>
+      </GlassCard>
 
       {/* 4-STEP CORRECTIVE WIZARD MODAL */}
       <AnimatePresence>
@@ -536,17 +716,17 @@ export function BreakdownLogView({ user }: { user: any }) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsWizardOpen(false)}
-              className="absolute inset-0 bg-black/80 backdrop-blur-md"
+              className="absolute inset-0 bg-[#0a0a0f]/80 backdrop-blur-md"
             />
 
             <motion.div
               initial={{ scale: 0.95, opacity: 0, y: 30 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 30 }}
-              className="relative bg-slate-950 border border-orange-500/30 p-6 md:p-8 rounded-3xl w-full max-w-3xl shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar text-right font-sans"
+              className="relative bg-[#0a0a0f] border border-orange-500/30 p-6 md:p-8 rounded-3xl w-full max-w-3xl shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar text-right font-sans"
             >
               {/* MODAL HEADER */}
-              <div className="flex justify-between items-start mb-6 border-b border-slate-800 pb-4">
+              <div className="flex justify-between items-start mb-6 border-b border-white/10 pb-4">
                 <div>
                   <h2 className="text-xl font-black text-white tracking-tight flex items-center gap-2 font-sans">
                     <Wrench className="w-6 h-6 text-orange-400" />
@@ -556,7 +736,7 @@ export function BreakdownLogView({ user }: { user: any }) {
                 </div>
                 <button
                   onClick={() => setIsWizardOpen(false)}
-                  className="p-2 bg-slate-900 hover:bg-slate-800 rounded-xl text-slate-400 hover:text-white transition-colors"
+                  className="p-2 bg-[#0a0a0f] hover:bg-white/10 rounded-xl text-slate-400 hover:text-white transition-colors"
                 >
                   &times;
                 </button>
@@ -578,7 +758,7 @@ export function BreakdownLogView({ user }: { user: any }) {
                         ? 'bg-orange-500/20 border-orange-500/60 text-orange-300 font-bold shadow-lg shadow-orange-500/10'
                         : wizardStep > s.num
                           ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 font-medium'
-                          : 'bg-slate-900 border-slate-800 text-slate-500'
+                          : 'bg-[#0a0a0f] border-white/10 text-slate-500'
                     }`}
                   >
                     <div className="text-[11px] font-mono">{s.label}</div>
@@ -606,7 +786,7 @@ export function BreakdownLogView({ user }: { user: any }) {
                           value={bonId}
                           onChange={(e) => setBonId(e.target.value)}
                           placeholder="مثال: BDC-2026-084"
-                          className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white font-mono font-bold text-sm focus:outline-none focus:border-orange-500"
+                          className="w-full px-4 py-2.5 rounded-xl bg-[#0a0a0f] border border-white/20 text-white font-mono font-bold text-sm focus:outline-none focus:border-orange-500"
                         />
                       </div>
 
@@ -616,7 +796,7 @@ export function BreakdownLogView({ user }: { user: any }) {
                         <select
                           value={selectedSectorId}
                           onChange={(e) => setSelectedSectorId(e.target.value)}
-                          className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:outline-none focus:border-orange-500 cursor-pointer"
+                          className="w-full px-4 py-2.5 rounded-xl bg-[#0a0a0f] border border-white/20 text-white text-xs focus:outline-none focus:border-orange-500 cursor-pointer"
                         >
                           <option value="">جميع القطاعات</option>
                           {sectors.map(sec => (
@@ -634,7 +814,7 @@ export function BreakdownLogView({ user }: { user: any }) {
                           required
                           value={selectedMachineId}
                           onChange={(e) => setSelectedMachineId(e.target.value)}
-                          className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:outline-none focus:border-orange-500 cursor-pointer font-mono font-bold"
+                          className="w-full px-4 py-2.5 rounded-xl bg-[#0a0a0f] border border-white/20 text-white text-xs focus:outline-none focus:border-orange-500 cursor-pointer font-mono font-bold"
                         >
                           <option value="" disabled>اختر الآلة المتوقفة...</option>
                           {availableMachines.map(m => (
@@ -652,7 +832,7 @@ export function BreakdownLogView({ user }: { user: any }) {
                           required
                           value={selectedTechnicianId}
                           onChange={(e) => setSelectedTechnicianId(e.target.value)}
-                          className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:outline-none focus:border-orange-500 cursor-pointer"
+                          className="w-full px-4 py-2.5 rounded-xl bg-[#0a0a0f] border border-white/20 text-white text-xs focus:outline-none focus:border-orange-500 cursor-pointer"
                         >
                           <option value="" disabled>اختر الفني المكلف...</option>
                           {technicians.map(t => (
@@ -671,7 +851,7 @@ export function BreakdownLogView({ user }: { user: any }) {
                           required
                           value={downTimeStart}
                           onChange={(e) => setDownTimeStart(e.target.value)}
-                          className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-mono focus:outline-none focus:border-orange-500"
+                          className="w-full px-4 py-2.5 rounded-xl bg-[#0a0a0f] border border-white/20 text-white text-xs font-mono focus:outline-none focus:border-orange-500"
                         />
                       </div>
 
@@ -683,12 +863,12 @@ export function BreakdownLogView({ user }: { user: any }) {
                           value={operatorSymptom}
                           onChange={(e) => setOperatorSymptom(e.target.value)}
                           placeholder="مثال: Problème de démarrage moteur"
-                          className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:outline-none focus:border-orange-500"
+                          className="w-full px-4 py-2.5 rounded-xl bg-[#0a0a0f] border border-white/20 text-white text-xs focus:outline-none focus:border-orange-500"
                         />
                       </div>
                     </div>
 
-                    <div className="flex justify-end pt-4 border-t border-slate-800">
+                    <div className="flex justify-end pt-4 border-t border-white/10">
                       <Button
                         type="button"
                         onClick={() => {
@@ -723,7 +903,7 @@ export function BreakdownLogView({ user }: { user: any }) {
                           required
                           value={interventionStart}
                           onChange={(e) => setInterventionStart(e.target.value)}
-                          className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-mono focus:outline-none focus:border-cyan-500"
+                          className="w-full px-4 py-2.5 rounded-xl bg-[#0a0a0f] border border-white/20 text-white text-xs font-mono focus:outline-none focus:border-cyan-500"
                         />
                       </div>
 
@@ -745,7 +925,7 @@ export function BreakdownLogView({ user }: { user: any }) {
                               className={`py-2 px-1 rounded-xl text-[11px] font-bold border transition-all ${
                                 domainFamily === d.code
                                   ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300 font-mono'
-                                  : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                                  : 'bg-[#0a0a0f] border-white/10 text-slate-400 hover:text-white'
                               }`}
                             >
                               {d.code}
@@ -762,7 +942,7 @@ export function BreakdownLogView({ user }: { user: any }) {
                         <select
                           value={selectedComponentTemplateId}
                           onChange={(e) => setSelectedComponentTemplateId(e.target.value)}
-                          className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:outline-none focus:border-cyan-500 cursor-pointer"
+                          className="w-full px-4 py-2.5 rounded-xl bg-[#0a0a0f] border border-white/20 text-white text-xs focus:outline-none focus:border-cyan-500 cursor-pointer"
                         >
                           <option value="">اختر المكون المسؤول (اختياري)...</option>
                           {availableComponentTemplates.map(ct => (
@@ -782,12 +962,12 @@ export function BreakdownLogView({ user }: { user: any }) {
                           value={rootCause}
                           onChange={(e) => setRootCause(e.target.value)}
                           placeholder="مثال: Contacteur grillé / Joint d'étanchéité détérioré"
-                          className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:outline-none focus:border-cyan-500 font-bold"
+                          className="w-full px-4 py-2.5 rounded-xl bg-[#0a0a0f] border border-white/20 text-white text-xs focus:outline-none focus:border-cyan-500 font-bold"
                         />
                       </div>
                     </div>
 
-                    <div className="flex justify-between pt-4 border-t border-slate-800">
+                    <div className="flex justify-between pt-4 border-t border-white/10">
                       <Button
                         type="button"
                         onClick={() => setWizardStep(1)}
@@ -839,7 +1019,7 @@ export function BreakdownLogView({ user }: { user: any }) {
                             className={`py-2 px-2 rounded-xl text-xs font-bold border transition-all ${
                               actionType === act.type
                                 ? 'bg-purple-500/20 border-purple-500 text-purple-300'
-                                : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white'
+                                : 'bg-[#0a0a0f] border-white/10 text-slate-400 hover:text-white'
                             }`}
                           >
                             {act.label}
@@ -856,13 +1036,13 @@ export function BreakdownLogView({ user }: { user: any }) {
                         value={notes}
                         onChange={(e) => setNotes(e.target.value)}
                         placeholder="تفاصيل التدخل الميداني، الاختبارات المجراة، أو ملاحظات خاصة للوردية القادمة..."
-                        className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:outline-none focus:border-purple-500"
+                        className="w-full px-4 py-2.5 rounded-xl bg-[#0a0a0f] border border-white/20 text-white text-xs focus:outline-none focus:border-purple-500"
                       />
                     </div>
 
                     {/* SPARE PARTS RECONCILIATION CARD */}
-                    <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800 space-y-3">
-                      <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                    <div className="p-4 rounded-2xl bg-[#0a0a0f]/80 border border-white/10 space-y-3">
+                      <div className="flex items-center justify-between border-b border-white/10 pb-2">
                         <span className="text-xs font-bold text-cyan-300 flex items-center gap-1.5">
                           <Package className="w-4 h-4" /> تسجيل قطع الغيار المستعملة في التدخل
                         </span>
@@ -880,7 +1060,7 @@ export function BreakdownLogView({ user }: { user: any }) {
                       <div className="grid grid-cols-1 md:grid-cols-4 gap-2 items-end pt-1">
                         <div className="md:col-span-1">
                           <label className="text-[10px] text-slate-400 font-bold block mb-1">حالة القطعة</label>
-                          <div className="flex rounded-lg border border-slate-700 p-0.5 bg-slate-950">
+                          <div className="flex rounded-lg border border-white/20 p-0.5 bg-[#0a0a0f]">
                             <button
                               type="button"
                               onClick={() => setPartIsNew(true)}
@@ -904,7 +1084,7 @@ export function BreakdownLogView({ user }: { user: any }) {
                             <select
                               value={selectedStockId}
                               onChange={(e) => setSelectedStockId(e.target.value)}
-                              className="w-full py-1.5 px-3 rounded-lg bg-slate-950 border border-slate-700 text-white text-xs font-mono"
+                              className="w-full py-1.5 px-3 rounded-lg bg-[#0a0a0f] border border-white/20 text-white text-xs font-mono"
                             >
                               <option value="">اختر من مخزن قطع الغيار...</option>
                               {stockOptions.map(opt => (
@@ -917,7 +1097,7 @@ export function BreakdownLogView({ user }: { user: any }) {
                             <select
                               value={selectedBlueprintId}
                               onChange={(e) => setSelectedBlueprintId(e.target.value)}
-                              className="w-full py-1.5 px-3 rounded-lg bg-slate-950 border border-slate-700 text-white text-xs font-mono"
+                              className="w-full py-1.5 px-3 rounded-lg bg-[#0a0a0f] border border-white/20 text-white text-xs font-mono"
                             >
                               <option value="">اختر الموديل الكتالوجي...</option>
                               {pdrBlueprints.map(bp => {
@@ -940,7 +1120,7 @@ export function BreakdownLogView({ user }: { user: any }) {
                               min={1}
                               value={partQty}
                               onChange={(e) => setPartQty(Math.max(1, parseInt(e.target.value) || 1))}
-                              className="w-full py-1.5 px-2 rounded-lg bg-slate-950 border border-slate-700 text-white text-xs font-mono text-center font-bold"
+                              className="w-full py-1.5 px-2 rounded-lg bg-[#0a0a0f] border border-white/20 text-white text-xs font-mono text-center font-bold"
                             />
                           </div>
 
@@ -956,13 +1136,13 @@ export function BreakdownLogView({ user }: { user: any }) {
 
                       {/* Consumed Parts List */}
                       {consumedParts.length > 0 && (
-                        <div className="space-y-1.5 pt-2 border-t border-slate-800">
+                        <div className="space-y-1.5 pt-2 border-t border-white/10">
                           {consumedParts.map((p, idx) => {
                             const bp = p.blueprintId ? blueMap.get(p.blueprintId) : null;
                             const tm = bp ? tempMap.get(bp.templateId) : null;
 
                             return (
-                              <div key={idx} className="flex items-center justify-between p-2 rounded-lg bg-slate-950/60 border border-slate-800 text-xs">
+                              <div key={idx} className="flex items-center justify-between p-2 rounded-lg bg-[#0a0a0f]/60 border border-white/10 text-xs">
                                 <div className="flex items-center gap-2">
                                   <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${p.isNew ? 'bg-cyan-500/20 text-cyan-300' : 'bg-amber-500/20 text-amber-300'}`}>
                                     {p.isNew ? 'جديدة (PDR)' : 'ورشة/مستعملة'}
@@ -987,7 +1167,7 @@ export function BreakdownLogView({ user }: { user: any }) {
                       )}
                     </div>
 
-                    <div className="flex justify-between pt-4 border-t border-slate-800">
+                    <div className="flex justify-between pt-4 border-t border-white/10">
                       <Button
                         type="button"
                         onClick={() => setWizardStep(2)}
@@ -1024,7 +1204,7 @@ export function BreakdownLogView({ user }: { user: any }) {
                           required
                           value={interventionEnd}
                           onChange={(e) => setInterventionEnd(e.target.value)}
-                          className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-mono focus:outline-none focus:border-emerald-500"
+                          className="w-full px-4 py-2.5 rounded-xl bg-[#0a0a0f] border border-white/20 text-white text-xs font-mono focus:outline-none focus:border-emerald-500"
                         />
                       </div>
 
@@ -1034,7 +1214,7 @@ export function BreakdownLogView({ user }: { user: any }) {
                         <select
                           value={outcomeStatus}
                           onChange={(e) => setOutcomeStatus(e.target.value as any)}
-                          className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:outline-none focus:border-emerald-500 cursor-pointer font-bold"
+                          className="w-full px-4 py-2.5 rounded-xl bg-[#0a0a0f] border border-white/20 text-white text-xs focus:outline-none focus:border-emerald-500 cursor-pointer font-bold"
                         >
                           <option value="COMPLETED">✅ منجز بالكامل (COMPLETED)</option>
                           <option value="PENDING_PARTS">⏳ مؤجل لحين توفر/طلب قطعة غيار (PENDING PARTS)</option>
@@ -1050,7 +1230,7 @@ export function BreakdownLogView({ user }: { user: any }) {
                         <select
                           value={condition}
                           onChange={(e) => setCondition(e.target.value as any)}
-                          className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs focus:outline-none focus:border-emerald-500 cursor-pointer"
+                          className="w-full px-4 py-2.5 rounded-xl bg-[#0a0a0f] border border-white/20 text-white text-xs focus:outline-none focus:border-emerald-500 cursor-pointer"
                         >
                           <option value="EXCELLENT">ممتازة - خالية من الأعراض</option>
                           <option value="WATCHFUL">مقبولة - يحتاج المراقبة (Watchful)</option>
@@ -1060,8 +1240,8 @@ export function BreakdownLogView({ user }: { user: any }) {
                     </div>
 
                     {/* Summary Live Card */}
-                    <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-2">
-                      <div className="text-xs font-bold text-slate-400 border-b border-slate-800 pb-2">
+                    <div className="p-4 rounded-2xl bg-[#0a0a0f] border border-white/10 space-y-2">
+                      <div className="text-xs font-bold text-slate-400 border-b border-white/10 pb-2">
                         ملخص محرك الحساب التلقائي للبون {bonId}:
                       </div>
                       <div className="grid grid-cols-2 gap-4 text-xs font-mono">
@@ -1080,7 +1260,7 @@ export function BreakdownLogView({ user }: { user: any }) {
                       </div>
                     </div>
 
-                    <div className="flex justify-between pt-4 border-t border-slate-800">
+                    <div className="flex justify-between pt-4 border-t border-white/10">
                       <Button
                         type="button"
                         onClick={() => setWizardStep(3)}
@@ -1101,6 +1281,169 @@ export function BreakdownLogView({ user }: { user: any }) {
                 )}
 
               </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* VOUCHER INSPECTION DETAILS MODAL */}
+      <AnimatePresence>
+        {selectedInspectExecution && (
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 dir-rtl" dir="rtl">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedInspectExecution(null)}
+              className="absolute inset-0 bg-[#0a0a0f]/80 backdrop-blur-md"
+            />
+
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="relative bg-[#0a0a0f] border border-cyan-500/30 p-6 md:p-8 rounded-3xl w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar text-right font-sans"
+            >
+              {/* Header Plaque */}
+              <div className="flex justify-between items-start pb-4 border-b border-white/10 mb-6">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-xs font-mono font-black text-cyan-400 bg-cyan-500/10 px-3 py-1 rounded-lg border border-cyan-500/30 uppercase">
+                      {selectedInspectExecution.bonId || `BDC-${selectedInspectExecution.id.slice(0, 6)}`}
+                    </span>
+                    <span className="text-xs font-mono font-bold text-slate-400 bg-white/5 px-2.5 py-1 rounded-lg border border-white/10">
+                      {selectedInspectExecution.serviceType === 'CORR' ? 'تدخل طارئ' : 'صيانة وقائية'}
+                    </span>
+                  </div>
+                  <h2 className="text-lg font-black text-white tracking-tight">
+                    تفاصيل بون التدخل الإصلاحي
+                  </h2>
+                </div>
+                <button
+                  onClick={() => setSelectedInspectExecution(null)}
+                  className="p-2 bg-[#0a0a0f] hover:bg-white/10 rounded-xl text-slate-400 hover:text-white transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Details grid */}
+              <div className="space-y-6 text-xs">
+                {/* Equipment & Tech info */}
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3 p-4 rounded-2xl bg-white/[0.02] border border-white/5">
+                  <div>
+                    <span className="text-[10px] text-slate-400 font-mono block mb-0.5">الآلة / المعدة</span>
+                    <span className="font-mono font-bold text-white text-sm">
+                      {machinesMap.get(selectedInspectExecution.machineId)?.referenceCode || 'M-REG'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 font-mono block mb-0.5">القطاع الصناعي</span>
+                    <span className="font-bold text-slate-200">
+                      {sectorsMap.get(machinesMap.get(selectedInspectExecution.machineId)?.sectorId || '')?.name || 'عام'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 font-mono block mb-0.5">الفني المكلف</span>
+                    <span className="font-bold text-slate-200">
+                      {techsMap.get(selectedInspectExecution.doneBy || '')?.name || selectedInspectExecution.doneBy || 'فني الصيانة'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 font-mono block mb-0.5">المجال الصناعي</span>
+                    <span className="font-mono font-bold text-orange-400">
+                      {selectedInspectExecution.domainFamily || 'MEC'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 font-mono block mb-0.5">نوع الإجراء</span>
+                    <span className="font-mono font-bold text-emerald-400">
+                      {selectedInspectExecution.actionType || 'REPAIR'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 font-mono block mb-0.5">مدة التوقف</span>
+                    <span className="font-mono font-bold text-amber-300 text-sm">
+                      {selectedInspectExecution.durationMinutes} دقيقة
+                    </span>
+                  </div>
+                </div>
+
+                {/* Root cause and symptoms */}
+                <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-3">
+                  <div>
+                    <span className="text-[10px] text-slate-400 font-mono block mb-1">السبب الرئيسي بالعطل</span>
+                    <p className="text-slate-100 font-bold leading-relaxed bg-[#0a0a0f]/80 p-3 rounded-xl border border-white/5">
+                      {selectedInspectExecution.rootCause || selectedInspectExecution.notes}
+                    </p>
+                  </div>
+                  {selectedInspectExecution.operatorSymptom && (
+                    <div>
+                      <span className="text-[10px] text-slate-400 font-mono block mb-1">عرض العطل في البون الاصلي</span>
+                      <p className="text-slate-300 italic bg-[#0a0a0f]/50 p-3 rounded-xl border border-white/5">
+                        "{selectedInspectExecution.operatorSymptom}"
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Claimed parts */}
+                <div className="space-y-2">
+                  <h3 className="text-xs font-bold text-slate-300 font-mono flex items-center gap-1.5">
+                    <Package className="w-4 h-4 text-cyan-400" />
+                    <span>قطع الغيار المسحوبة / المستهلكة ({selectedInspectExecution.claimedParts?.length || 0})</span>
+                  </h3>
+                  {(!selectedInspectExecution.claimedParts || selectedInspectExecution.claimedParts.length === 0) ? (
+                    <div className="p-4 text-center text-slate-500 bg-white/[0.02] rounded-xl border border-white/5">
+                      لم يتم سحب أو تسجيل قطع غيار لهذا البون.
+                    </div>
+                  ) : (
+                    <div className="rounded-xl border border-white/10 overflow-hidden bg-[#0a0a0f]/60">
+                      <table className="w-full text-right border-collapse text-[11px]">
+                        <thead>
+                          <tr className="bg-white/[0.04] border-b border-white/10 text-slate-400 font-bold font-mono">
+                            <th className="p-2.5">حالة القطعة</th>
+                            <th className="p-2.5">الكمية</th>
+                            <th className="p-2.5">حالة المطابقة</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/5 font-mono">
+                          {selectedInspectExecution.claimedParts.map((p, pIdx) => (
+                            <tr key={pIdx}>
+                              <td className="p-2.5 font-bold text-white">
+                                {p.isNew ? 'جديدة (NEW)' : 'مستعملة / مجددة (USED)'}
+                              </td>
+                              <td className="p-2.5 font-bold text-cyan-400">
+                                {p.quantity} قطعة
+                              </td>
+                              <td className="p-2.5">
+                                <span className={cn(
+                                  "text-[10px] px-2 py-0.5 rounded font-bold",
+                                  p.reconciled 
+                                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30" 
+                                    : "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                                )}>
+                                  {p.reconciled ? 'مطابقة ومخصومة' : 'في انتظار تسوية المخزن'}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  )}
+                </div>
+
+                {/* Footer action button */}
+                <div className="flex justify-end pt-4 border-t border-white/10">
+                  <button
+                    onClick={() => setSelectedInspectExecution(null)}
+                    className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-5 py-2 text-xs transition-all cursor-pointer shadow-lg"
+                  >
+                    إغلاق المعاينة
+                  </button>
+                </div>
+              </div>
             </motion.div>
           </div>
         )}

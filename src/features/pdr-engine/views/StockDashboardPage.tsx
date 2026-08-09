@@ -36,7 +36,9 @@ import {
   Sparkles,
   ArrowRight,
   RotateCcw,
-  Tag
+  Tag,
+  Table,
+  LayoutGrid
 } from 'lucide-react';
 import { cn } from '@/shared/utils';
 import { StockTransactionModal } from './StockTransactionModal';
@@ -67,6 +69,7 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [preselectedStockId, setPreselectedStockId] = useState<string | undefined>();
   const [urgencyFilter, setUrgencyFilter] = useState<'ALL' | 'LOW' | 'EMPTY' | 'OPTIMAL'>('ALL');
+  const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
 
   // Load blueprints and templates live for UI enrichment
   const blueprints = useLiveQuery(() => db.pdrBlueprints.toArray(), []);
@@ -283,7 +286,7 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
         
         {/* Left Columns: Beautiful Stock Radar Table Panel */}
         <motion.div variants={itemVariants} className="lg:col-span-2 space-y-6">
-          <GlassCard className="!p-0 border-white/5 overflow-hidden shadow-2xl rounded-3xl h-[650px] flex flex-col bg-black/20 backdrop-blur-2xl relative">
+          <GlassCard className="!p-0 border-white/5 overflow-hidden shadow-2xl rounded-3xl h-[650px] flex flex-col bg-[#0a0a0f]/20 backdrop-blur-2xl relative">
             <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent" />
             
             {/* Control Panel Header */}
@@ -347,7 +350,7 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
             </div>
 
             {/* Premium Instrumented Filters */}
-            <div className="px-5 py-2.5 bg-black/20 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
+            <div className="px-5 py-2.5 bg-[#0a0a0f]/20 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
               <div className="flex flex-wrap items-center gap-2">
                 
                 {/* Urgency status filter segment */}
@@ -398,16 +401,45 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                   </button>
                 </div>
 
-                {/* Reset button if filtered */}
-                {(searchTerm || conditionFilter !== 'ALL' || urgencyFilter !== 'ALL') && (
-                  <button 
-                    onClick={resetFilters}
-                    className="px-2.5 py-1.5 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/20 transition-all font-bold text-xs flex items-center gap-1"
-                    title="Reset filters"
-                  >
-                    <RotateCcw className="w-3 h-3" /> Clear
-                  </button>
-                )}
+                {/* View Switcher & Reset button */}
+                <div className="flex items-center gap-2">
+                  <div className="inline-flex items-center gap-1 bg-white/[0.03] p-1 rounded-xl border border-white/5">
+                    <button
+                      onClick={() => setViewMode('table')}
+                      className={cn(
+                        "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5",
+                        viewMode === 'table'
+                          ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-sm"
+                          : "text-slate-400 hover:text-white"
+                      )}
+                      title="Table View"
+                    >
+                      <Table className="w-3.5 h-3.5" /> Table
+                    </button>
+                    <button
+                      onClick={() => setViewMode('grid')}
+                      className={cn(
+                        "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5",
+                        viewMode === 'grid'
+                          ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-sm"
+                          : "text-slate-400 hover:text-white"
+                      )}
+                      title="Cards View"
+                    >
+                      <LayoutGrid className="w-3.5 h-3.5" /> Cards
+                    </button>
+                  </div>
+
+                  {(searchTerm || conditionFilter !== 'ALL' || urgencyFilter !== 'ALL') && (
+                    <button 
+                      onClick={resetFilters}
+                      className="px-2.5 py-1.5 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/20 transition-all font-bold text-xs flex items-center gap-1"
+                      title="Reset filters"
+                    >
+                      <RotateCcw className="w-3 h-3" /> Clear
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="text-[10px] font-mono text-slate-500">
@@ -415,8 +447,8 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
               </div>
             </div>
             
-            {/* Table Area */}
-            <div className="flex-1 overflow-auto custom-scrollbar p-6 bg-black/20">
+            {/* Table / Grid Content Area */}
+            <div className="flex-1 overflow-auto custom-scrollbar p-5 bg-[#0a0a0f]/20">
               {filteredInventory.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center p-8">
                   <Box className="w-12 h-12 mb-3 text-slate-700 mx-auto opacity-20" />
@@ -428,7 +460,104 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                     Reset Filters
                   </button>
                 </div>
+              ) : viewMode === 'table' ? (
+                /* Crystal Clear High-Contrast Table View */
+                <div className="rounded-2xl border border-white/10 bg-[#0a0a0f]/60 backdrop-blur-xl overflow-hidden shadow-2xl">
+                  <div className="overflow-x-auto custom-scrollbar">
+                    <table className="w-full text-right border-collapse font-sans">
+                      <thead className="bg-white/[0.04] border-b border-white/10">
+                        <tr>
+                          <th className="py-3.5 px-4 text-xs font-bold text-slate-300 uppercase tracking-wider text-right">كود القطعة / Reference</th>
+                          <th className="py-3.5 px-4 text-xs font-bold text-slate-300 uppercase tracking-wider text-right">اسم القطعة والعائلة</th>
+                          <th className="py-3.5 px-4 text-xs font-bold text-slate-300 uppercase tracking-wider text-right">موقع التخزين</th>
+                          <th className="py-3.5 px-4 text-xs font-bold text-slate-300 uppercase tracking-wider text-center">الرصيد الفعلي</th>
+                          <th className="py-3.5 px-4 text-xs font-bold text-slate-300 uppercase tracking-wider text-center">الحد الأدنى</th>
+                          <th className="py-3.5 px-4 text-xs font-bold text-slate-300 uppercase tracking-wider text-center">حالة المخزون</th>
+                          <th className="py-3.5 px-4 text-xs font-bold text-slate-300 uppercase tracking-wider text-left">إجراء حركة</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-white/5">
+                        {filteredInventory.map((item) => {
+                          let badgeClass = "";
+                          let statusLabel = "";
+
+                          if (item.isOutOfStock) {
+                            badgeClass = "bg-rose-500/15 text-rose-300 border-rose-500/30";
+                            statusLabel = "نافذ من المخزن";
+                          } else if (item.isLowStock) {
+                            badgeClass = "bg-amber-500/15 text-amber-300 border-amber-500/30 animate-pulse";
+                            statusLabel = "تحت حد الأمان";
+                          } else {
+                            badgeClass = "bg-emerald-500/15 text-emerald-300 border-emerald-500/30";
+                            statusLabel = "آمن ووفير";
+                          }
+
+                          return (
+                            <tr key={item.id} className="hover:bg-white/[0.04] transition-colors border-b border-white/5 group">
+                              {/* Reference Code */}
+                              <td className="py-3.5 px-4 font-mono text-cyan-400 font-bold text-sm tracking-wide">
+                                {item.blueprintReference}
+                              </td>
+
+                              {/* Part Name & Family */}
+                              <td className="py-3.5 px-4">
+                                <div className="font-bold text-white text-sm group-hover:text-cyan-400 transition-colors">
+                                  {item.partName}
+                                </div>
+                                <div className="text-[10px] font-mono text-slate-400 mt-0.5 flex items-center gap-1.5">
+                                  <Tag className="w-3 h-3 text-slate-500" />
+                                  <span>{item.partFamily}</span>
+                                  <span className="px-1 py-0.2 rounded text-[8px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">NEW</span>
+                                </div>
+                              </td>
+
+                              {/* Location */}
+                              <td className="py-3.5 px-4 text-slate-300 text-sm">
+                                <div className="flex items-center gap-1.5 text-slate-300">
+                                  <MapPin className="w-3.5 h-3.5 text-cyan-400/80" />
+                                  <span>{item.locationDetails || 'المخزن الرئيسي (A1)'}</span>
+                                </div>
+                              </td>
+
+                              {/* Current Quantity */}
+                              <td className="py-3.5 px-4 text-center">
+                                <span className="font-mono text-white font-extrabold text-sm tracking-tight">
+                                  {item.quantityCurrent.toFixed(1).replace('.0', '')}
+                                </span>
+                                <span className="text-slate-400 text-xs font-mono mr-1">{item.unit}</span>
+                              </td>
+
+                              {/* Min Threshold */}
+                              <td className="py-3.5 px-4 text-center font-mono text-slate-400 text-sm">
+                                {item.minThreshold} {item.unit}
+                              </td>
+
+                              {/* Status Badge */}
+                              <td className="py-3.5 px-4 text-center">
+                                <span className={cn("px-2.5 py-1 rounded-full text-xs font-bold border inline-block whitespace-nowrap", badgeClass)}>
+                                  {statusLabel}
+                                </span>
+                              </td>
+
+                              {/* Action button */}
+                              <td className="py-3.5 px-4 text-left">
+                                <button
+                                  onClick={() => handleQuickAction(item.id)}
+                                  className="px-3 py-1.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-300 text-xs font-bold transition-all flex items-center gap-1.5 ml-auto shadow-sm"
+                                >
+                                  <ArrowRightLeft className="w-3.5 h-3.5 text-cyan-400" />
+                                  حركة
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               ) : (
+                /* Grid Cards View */
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
                   <AnimatePresence>
                     {filteredInventory.map((item, idx) => {
@@ -468,7 +597,7 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                           transition={{ duration: 0.5, delay: (idx % 12) * 0.05, ease: [0.16, 1, 0.3, 1] }}
                         >
                           <GlassCard 
-                            className={`!p-0 relative overflow-hidden group h-full flex flex-col transition-all duration-300 border border-white/5 bg-black/20 hover:bg-white/[0.02] ${glowColor}`}
+                            className={`!p-0 relative overflow-hidden group h-full flex flex-col transition-all duration-300 border border-white/5 bg-[#0a0a0f]/20 hover:bg-white/[0.02] ${glowColor}`}
                           >
                             <div className="absolute top-0 right-0 w-32 h-32 bg-white/[0.02] rounded-full blur-3xl pointer-events-none" />
                             
@@ -479,7 +608,7 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                             >
                               <div className="flex justify-between items-start mb-5 gap-4">
                                 <div className="flex items-center gap-3 overflow-hidden">
-                                  <div className="w-10 h-10 rounded-xl bg-black/40 border border-white/10 flex items-center justify-center shrink-0 group-hover:border-cyan-500/20 transition-colors shadow-inner">
+                                  <div className="w-10 h-10 rounded-xl bg-[#0a0a0f]/40 border border-white/10 flex items-center justify-center shrink-0 group-hover:border-cyan-500/20 transition-colors shadow-inner">
                                     <Box className="w-5 h-5 text-slate-400 group-hover:text-cyan-400 transition-colors" />
                                   </div>
                                   <div className="overflow-hidden">
@@ -490,7 +619,7 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                                     <p className="text-[10px] text-cyan-400 font-mono mt-0.5 truncate">{item.blueprintReference}</p>
                                   </div>
                                 </div>
-                                <div className="flex items-baseline gap-1.5 bg-black/40 border border-white/10 px-2 py-1 rounded-lg shrink-0">
+                                <div className="flex items-baseline gap-1.5 bg-[#0a0a0f]/40 border border-white/10 px-2 py-1 rounded-lg shrink-0">
                                   <span className="font-mono text-sm font-extrabold text-white tabular-nums">
                                     {item.quantityCurrent.toFixed(1).replace('.0', '')}
                                   </span>
@@ -511,7 +640,7 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                                     {statusText}
                                   </span>
                                 </div>
-                                <div className="w-full h-1 bg-black/40 rounded-full overflow-hidden border border-white/[0.04]">
+                                <div className="w-full h-1 bg-[#0a0a0f]/40 rounded-full overflow-hidden border border-white/[0.04]">
                                   <div 
                                     className={cn("h-full rounded-full transition-all duration-500", barColor)}
                                     style={{ width: `${Math.max(4, pct)}%` }}
@@ -548,7 +677,7 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
 
         {/* Right Column: Premium Cybernetic Log Stream */}
         <motion.div variants={itemVariants} className="space-y-6">
-          <GlassCard className="!p-0 border-white/5 overflow-hidden shadow-2xl rounded-3xl h-[650px] flex flex-col bg-black/20 backdrop-blur-2xl relative">
+          <GlassCard className="!p-0 border-white/5 overflow-hidden shadow-2xl rounded-3xl h-[650px] flex flex-col bg-[#0a0a0f]/20 backdrop-blur-2xl relative">
             
             {/* Feed Header */}
             <div className="p-5 border-b border-white/5 bg-white/[0.01] flex items-center justify-between gap-4 shrink-0">
@@ -633,7 +762,7 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                             Ref: <span className="text-slate-400">{movement.reference}</span>
                           </div>
                           {movement.notes && (
-                            <div className="text-[9px] text-slate-400/80 bg-slate-950/40 p-1.5 rounded border border-white/[0.02] mt-1.5 font-sans leading-relaxed">
+                            <div className="text-[9px] text-slate-400/80 bg-[#0a0a0f]/40 p-1.5 rounded border border-white/[0.02] mt-1.5 font-sans leading-relaxed">
                               {movement.notes}
                             </div>
                           )}
@@ -658,7 +787,7 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                 )}
               </AnimatePresence>
             </div>
-            <div className="absolute bottom-0 inset-x-0 h-10 bg-gradient-to-t from-slate-950 to-transparent z-20 pointer-events-none" />
+            <div className="absolute bottom-0 inset-x-0 h-10 bg-gradient-to-t from-[#0a0a0f] to-transparent z-20 pointer-events-none" />
           </GlassCard>
         </motion.div>
       </div>

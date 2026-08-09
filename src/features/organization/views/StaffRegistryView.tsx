@@ -1,4 +1,5 @@
 import { PageHeader } from "@/shared/components/PageHeader";
+import { StatCompact } from "@/shared/components/StatCompact";
 import React, { useState } from 'react';
 import { motion, AnimatePresence, Variants } from 'motion/react';
 import { Users, Search, UserCircle2, Pocket, Fingerprint, Lock, Edit3, X, Save, Activity } from 'lucide-react';
@@ -6,6 +7,7 @@ import { GlassCard } from '@/shared/components/GlassCard';
 import { useAuthSlots } from '@/features/auth/hooks/useAuthSlots';
 import { useNotifications } from '@/shared/hooks/useNotifications';
 import { db } from '@/core/db';
+import { useTranslation } from 'react-i18next';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -18,6 +20,7 @@ const itemVariants: Variants = {
 };
 
 export function StaffRegistryView() {
+  const { t } = useTranslation();
   const { showSuccess, showError } = useNotifications();
   const [searchTerm, setSearchTerm] = useState('');
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -73,42 +76,43 @@ export function StaffRegistryView() {
       className="w-full h-full flex flex-col gap-6 relative z-10"
     >
       <PageHeader
-        title="Operational Staff"
-        subtitle="Active Maintenance Personnel Directory."
+        title={t('staff.title', 'Operational Staff')}
+        subtitle={t('staff.subtitle', 'Active Maintenance Personnel Directory.')}
         icon={<Users className="w-6 h-6 text-indigo-500" />}
+        badgeColor="indigo"
         actions={
-          <>
-            <StatCompact icon={<Users className="w-4 h-4 text-indigo-500" />} label="Total Slots" value={staffSlots.length.toString()} />
-            <StatCompact icon={<UserCircle2 className="w-4 h-4 text-emerald-500" />} label="Active Personnel" value={activeStaff.length.toString()} />
-          </>
+          <div className="flex flex-wrap items-center gap-3">
+            <StatCompact icon={<Users className="w-4 h-4 text-indigo-400" />} label={t('staff.totalSlots', 'Total Slots')} value={staffSlots.length.toString()} />
+            <StatCompact icon={<UserCircle2 className="w-4 h-4 text-emerald-400" />} label={t('staff.activePersonnel', 'Active Personnel')} value={activeStaff.length.toString()} />
+          </div>
         }
       />
 
       <motion.div variants={itemVariants} className="flex-1 min-h-0 flex flex-col">
-        <GlassCard className="!p-0 border-white/5 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-3xl h-full flex flex-col">
-          <div className="p-8 border-b border-white/5 bg-white/[0.01] flex flex-col lg:flex-row lg:items-center justify-between gap-6 shrink-0 relative z-10">
+        <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl h-full flex flex-col bg-[#0a0a0f]/60 backdrop-blur-xl">
+          <div className="p-6 md:p-8 border-b border-white/10 bg-white/[0.02] flex flex-col md:flex-row md:items-center justify-between gap-6 shrink-0 relative z-10">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0">
                 <Users className="w-6 h-6 text-indigo-400" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-white uppercase tracking-tight">Active Staff Directory</h2>
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Global Personnel Registry</p>
+                <h2 className="text-lg font-bold text-white uppercase tracking-tight">{t('staff.directoryTitle', 'Active Staff Directory')}</h2>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('staff.directorySubtitle', 'Global Personnel Registry')}</p>
               </div>
             </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="relative group">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-indigo-500 transition-colors" />
+            <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
+              <div className="relative group flex-1 md:w-64">
+                <Search className="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-indigo-400 transition-colors" />
                 <input 
                   type="text" 
-                  placeholder="Search personnel..." 
+                  placeholder={t('staff.searchPlaceholder', 'Search personnel...')} 
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="titan-input py-2.5 pl-11 pr-3 w-64 shadow-none"
+                  className="titan-input py-2.5 pl-11 pr-3 rtl:pr-11 rtl:pl-3 w-full shadow-none"
                 />
               </div>
-              <div className="px-4 py-2 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-xl text-xs font-bold uppercase flex items-center gap-2">
-                <Lock className="w-3 h-3" /> Matrix Locked
+              <div className="px-4 py-2.5 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 shrink-0">
+                <Lock className="w-3.5 h-3.5" /> {t('staff.matrixLocked', 'Matrix Locked')}
               </div>
             </div>
           </div>
@@ -117,18 +121,18 @@ export function StaffRegistryView() {
             <motion.div 
               initial={{ opacity: 0, height: 0 }} 
               animate={{ opacity: 1, height: 'auto' }} 
-              className="border-b border-white/5 bg-white/[0.02]"
+              className="border-b border-white/10 bg-white/[0.02]"
             >
               <div className="p-8 relative">
                 <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent" />
                 <h2 className="text-sm font-bold text-white uppercase tracking-widest mb-6 flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-indigo-400" /> Configure Slot [{editingId}]
+                  <Activity className="w-4 h-4 text-indigo-400" /> {t('staff.configureSlotTitle', 'Configure Slot')} [{editingId}]
                 </h2>
                 
                 <form onSubmit={handleSave} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="space-y-2">
-                       <label className="text-[10px] uppercase font-bold text-slate-400 tracking-widest ml-1">Real Name</label>
+                       <label className="text-[10px] uppercase font-bold text-slate-400 tracking-widest ml-1">{t('staff.realName', 'Real Name')}</label>
                        <input 
                          required 
                          type="text"
@@ -139,7 +143,7 @@ export function StaffRegistryView() {
                        />
                     </div>
                     <div className="space-y-2">
-                       <label className="text-[10px] uppercase font-bold text-slate-400 tracking-widest ml-1">Physical Badge ID</label>
+                       <label className="text-[10px] uppercase font-bold text-slate-400 tracking-widest ml-1">{t('staff.badgeId', 'Physical Badge ID')}</label>
                        <input 
                          type="text"
                          value={formBadgeId}
@@ -153,8 +157,8 @@ export function StaffRegistryView() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div className="space-y-2 flex flex-col justify-end">
                       <label className="flex items-center gap-3 bg-white/5 p-3 rounded-xl border border-white/10 cursor-pointer hover:bg-white/10 transition-colors">
-                        <input type="checkbox" checked={formIsActive} onChange={e => setFormIsActive(e.target.checked)} className="rounded border-none bg-black/50 text-indigo-500 focus:ring-offset-0 focus:ring-0 w-5 h-5 cursor-pointer" />
-                        <span className="text-sm font-bold text-white uppercase tracking-wider">Slot Active Status</span>
+                        <input type="checkbox" checked={formIsActive} onChange={e => setFormIsActive(e.target.checked)} className="rounded border-none bg-[#0a0a0f]/50 text-indigo-500 focus:ring-offset-0 focus:ring-0 w-5 h-5 cursor-pointer" />
+                        <span className="text-sm font-bold text-white uppercase tracking-wider">{t('staff.slotActiveStatus', 'Slot Active Status')}</span>
                       </label>
                     </div>
                   </div>
@@ -163,15 +167,15 @@ export function StaffRegistryView() {
                     <button 
                       type="button" 
                       onClick={handleCancel}
-                      className="titan-button titan-button-outline !px-6"
+                      className="bg-white/[0.04] text-slate-300 hover:bg-white/[0.08] hover:text-white border border-white/10 font-bold rounded-xl px-5 py-2.5 text-xs transition-all"
                     >
-                      Abort
+                      {t('staff.abortBtn', 'Abort')}
                     </button>
                     <button 
                       type="submit" 
-                      className="titan-button titan-button-primary bg-indigo-500 hover:bg-indigo-400 text-white shadow-[0_0_15px_rgba(99,102,241,0.3)] !px-8"
+                      className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-6 py-2.5 text-xs shadow-lg transition-all flex items-center gap-2"
                     >
-                      <Save className="w-4 h-4" /> Save Configuration
+                      <Save className="w-4 h-4" /> {t('staff.saveBtn', 'Save Configuration')}
                     </button>
                   </div>
                 </form>
@@ -179,7 +183,7 @@ export function StaffRegistryView() {
             </motion.div>
           )}
 
-          <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar bg-black/10 p-6 md:p-8">
+          <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar bg-[#0a0a0f]/40 p-6 md:p-8">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               <AnimatePresence mode="popLayout">
                 {filteredStaff.map((tech) => (
@@ -188,7 +192,7 @@ export function StaffRegistryView() {
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
-                      className="titan-card overflow-hidden flex flex-col group relative shadow-2xl p-0 hover:border-indigo-500/30 transition-all duration-300"
+                      className="titan-card overflow-hidden flex flex-col group relative shadow-2xl p-0 hover:border-indigo-500/40 transition-all duration-300 border-white/10 bg-[#0a0a0f]/60 backdrop-blur-xl"
                     >
                       <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl group-hover:bg-indigo-500/10 transition-colors pointer-events-none" />
                       
@@ -198,7 +202,7 @@ export function StaffRegistryView() {
                            <div className={`w-1.5 h-1.5 rounded-full ${tech.isActive ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)] animate-pulse' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]'}`} />
                            <span className={`text-[10px] font-mono tracking-widest uppercase font-bold ${tech.isActive ? 'text-slate-200' : 'text-slate-500'}`}>{tech.id}</span>
                         </div>
-                        <div className="flex opacity-0 group-hover:opacity-100 transition-all duration-300 gap-1 bg-black/60 backdrop-blur-md border border-white/10 p-1 rounded-lg">
+                        <div className="flex opacity-0 group-hover:opacity-100 transition-all duration-300 gap-1 bg-[#0a0a0f]/60 backdrop-blur-md border border-white/10 p-1 rounded-lg">
                            <button 
                              onClick={() => handleEdit(tech)}
                              className="p-1.5 rounded-md hover:bg-white/10 text-slate-400 hover:text-indigo-400 transition-colors"
@@ -221,7 +225,7 @@ export function StaffRegistryView() {
                           <span>{tech.role}</span>
                         </div>
                         
-                        <div className="w-full bg-black/20 rounded-xl p-4 border border-white/5 flex flex-col gap-2 mt-auto text-left">
+                        <div className="w-full bg-[#0a0a0f]/20 rounded-xl p-4 border border-white/5 flex flex-col gap-2 mt-auto text-left">
                           <span className="text-[10px] uppercase tracking-widest font-bold text-slate-500 flex items-center gap-1.5">
                             <Fingerprint className="w-3.5 h-3.5 text-emerald-500" /> Physical Badge ID
                           </span>
@@ -246,20 +250,6 @@ export function StaffRegistryView() {
         </GlassCard>
       </motion.div>
     </motion.div>
-  );
-}
-
-function StatCompact({ icon, label, value }: { icon: React.ReactNode, label: string, value: string }) {
-  return (
-    <div className="flex items-center gap-3 px-4 py-2.5 bg-white/[0.02] border border-white/5 rounded-xl hover:bg-white/[0.04] transition-colors group">
-      <div className="w-9 h-9 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center shrink-0">
-        {icon}
-      </div>
-      <div className="flex flex-col">
-        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{label}</span>
-        <span className="text-base font-bold text-white -mt-0.5">{value}</span>
-      </div>
-    </div>
   );
 }
 

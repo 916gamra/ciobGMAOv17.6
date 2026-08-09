@@ -16,22 +16,10 @@ import { useAuditTrail } from '@/features/system/hooks/useAuditTrail';
 import { runDatabaseSeed } from '@/core/db/useDatabaseSeeder';
 import { ConfirmationModal } from '@/shared/components/ConfirmationModal';
 import { PageHeader } from '@/shared/components/PageHeader';
+import { StatCompact } from '@/shared/components/StatCompact';
 import type { User } from '@/core/db';
 import { cn, EMPTY_ARRAY } from '@/shared/utils';
-
-function StatCompact({ icon, label, value }: { icon: React.ReactNode, label: string, value: string }) {
-  return (
-    <div className="flex items-center gap-3 px-4 py-2.5 bg-white/[0.02] border border-white/5 rounded-xl hover:bg-white/[0.04] transition-colors group">
-      <div className="w-9 h-9 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-        {icon}
-      </div>
-      <div className="flex flex-col">
-        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{label}</span>
-        <span className="text-base font-bold text-white -mt-0.5">{value}</span>
-      </div>
-    </div>
-  );
-}
+import { useTranslation } from 'react-i18next';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -43,7 +31,8 @@ const itemVariants: Variants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
 };
 
-export function EngineeringLabView({ tabId, user }: { tabId: string, user?: User | null }) {
+export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: User | null }) {
+  const { t } = useTranslation();
   const { families, templates, blueprints, templateCounts, blueprintCounts, isLoading } = useMachineLibrary();
   const [isSyncing, setIsSyncing] = useState(false);
   const [showSyncModal, setShowSyncModal] = useState(false);
@@ -444,16 +433,16 @@ export function EngineeringLabView({ tabId, user }: { tabId: string, user?: User
       className="w-full h-full flex flex-col gap-6 relative z-10"
     >
       <PageHeader
-        title="Engineering Lab"
-        subtitle="Master data and genetic code for your machinery."
+        title={t('lab.title', 'Engineering Lab')}
+        subtitle={t('lab.subtitle', 'Master data and genetic code for your machinery.')}
         icon={<Wrench className="w-8 h-8 text-indigo-400" />}
         badgeColor="indigo"
         actions={
           <div className="flex flex-wrap items-center gap-3">
-            <StatCompact icon={<Folder className="w-4 h-4 text-indigo-500" />} label="Families" value={families.length.toString()} />
-            <StatCompact icon={<Layers className="w-4 h-4 text-blue-500" />} label="Templates" value={templates.length.toString()} />
-            <StatCompact icon={<Hash className="w-4 h-4 text-violet-500" />} label="Blueprints" value={blueprints.length.toString()} />
-            <StatCompact icon={<Component className="w-4 h-4 text-emerald-500" />} label="Components" value={standardComponents.length.toString()} />
+            <StatCompact icon={<Folder className="w-4 h-4 text-indigo-400" />} label={t('lab.statFamilies', 'Families')} value={families.length.toString()} />
+            <StatCompact icon={<Layers className="w-4 h-4 text-blue-400" />} label={t('lab.statTemplates', 'Templates')} value={templates.length.toString()} />
+            <StatCompact icon={<Hash className="w-4 h-4 text-violet-400" />} label={t('lab.statBlueprints', 'Blueprints')} value={blueprints.length.toString()} />
+            <StatCompact icon={<Component className="w-4 h-4 text-emerald-400" />} label={t('lab.statComponents', 'Components')} value={standardComponents.length.toString()} />
           </div>
         }
       />
@@ -482,31 +471,31 @@ export function EngineeringLabView({ tabId, user }: { tabId: string, user?: User
           }} 
           className="flex flex-col min-h-0 flex-1"
         >
-        <GlassCard className="!p-0 border-white/5 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-3xl flex flex-col flex-1 min-h-0">
-          <div className="p-6 md:p-8 border-b border-white/5 bg-white/[0.01] shrink-0 relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+        <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl flex flex-col flex-1 min-h-0 bg-[#0a0a0f]/60 backdrop-blur-xl">
+          <div className="p-6 md:p-8 border-b border-white/10 bg-white/[0.02] shrink-0 relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0">
                 <Database className="w-6 h-6 text-indigo-400" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-white uppercase tracking-tight">Active Hierarchy</h2>
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Global Master Data Directory</p>
+                <h2 className="text-lg font-bold text-white uppercase tracking-tight">{t('lab.activeHierarchy', 'Active Hierarchy')}</h2>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('lab.masterDirectory', 'Global Master Data Directory')}</p>
               </div>
             </div>
             
             <div className="relative group w-full lg:w-auto">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
+              <Search className="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-indigo-400 transition-colors" />
               <input 
                 type="text" 
-                placeholder="Search database..." 
+                placeholder={t('lab.searchPlaceholder', 'Search database...')} 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="titan-input py-2.5 pl-11 pr-3 w-full lg:w-64 shadow-none"
+                className="titan-input py-2.5 pl-11 pr-3 rtl:pr-11 rtl:pl-3 w-full lg:w-64 shadow-none"
               />
             </div>
           </div>
 
-          <div className="flex-1 flex flex-col bg-black/20 overflow-hidden relative z-0">
+          <div className="flex-1 flex flex-col bg-[#0a0a0f]/20 overflow-hidden relative z-0">
             <div className="p-6 md:p-8 pb-0 shrink-0">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <Tabs.List className="flex items-center p-1.5 bg-[#121318] rounded-xl border border-white/10 w-full md:w-max shadow-inner overflow-x-auto">
@@ -515,32 +504,32 @@ export function EngineeringLabView({ tabId, user }: { tabId: string, user?: User
                     className="flex items-center whitespace-nowrap gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all data-[state=active]:bg-indigo-500/10 data-[state=active]:text-indigo-400 text-slate-400 hover:text-white"
                   >
                     <Folder className="w-4 h-4 shrink-0" />
-                    Families
-                    <span className="ml-1.5 px-2 py-0.5 rounded-full bg-black/30 text-[10px]">{families.length}</span>
+                    {t('lab.tabFamilies', 'Families')}
+                    <span className="ml-1.5 px-2 py-0.5 rounded-full bg-[#0a0a0f]/30 text-[10px]">{families.length}</span>
                   </Tabs.Trigger>
                   <Tabs.Trigger 
                     value="templates"
                     className="flex items-center whitespace-nowrap gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all data-[state=active]:bg-blue-500/10 data-[state=active]:text-blue-400 text-slate-400 hover:text-white"
                   >
                     <Layers className="w-4 h-4 shrink-0" />
-                    Templates
-                    <span className="ml-1.5 px-2 py-0.5 rounded-full bg-black/30 text-[10px]">{templates.length}</span>
+                    {t('lab.tabTemplates', 'Templates')}
+                    <span className="ml-1.5 px-2 py-0.5 rounded-full bg-[#0a0a0f]/30 text-[10px]">{templates.length}</span>
                   </Tabs.Trigger>
                   <Tabs.Trigger 
                     value="blueprints"
                     className="flex items-center whitespace-nowrap gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all data-[state=active]:bg-violet-500/10 data-[state=active]:text-violet-400 text-slate-400 hover:text-white"
                   >
                     <Hash className="w-4 h-4 shrink-0" />
-                    Blueprints
-                    <span className="ml-1.5 px-2 py-0.5 rounded-full bg-black/30 text-[10px]">{blueprints.length}</span>
+                    {t('lab.tabBlueprints', 'Blueprints')}
+                    <span className="ml-1.5 px-2 py-0.5 rounded-full bg-[#0a0a0f]/30 text-[10px]">{blueprints.length}</span>
                   </Tabs.Trigger>
                   <Tabs.Trigger 
                     value="actions"
                     className="flex items-center whitespace-nowrap gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-all data-[state=active]:bg-purple-500/10 data-[state=active]:text-purple-400 text-slate-400 hover:text-white"
                   >
                     <Wrench className="w-4 h-4 shrink-0" />
-                    Actions
-                    <span className="ml-1.5 px-2 py-0.5 rounded-full bg-black/30 text-[10px]">{standardActions.length}</span>
+                    {t('lab.tabActions', 'Actions')}
+                    <span className="ml-1.5 px-2 py-0.5 rounded-full bg-[#0a0a0f]/30 text-[10px]">{standardActions.length}</span>
                   </Tabs.Trigger>
                 </Tabs.List>
                 
@@ -548,20 +537,20 @@ export function EngineeringLabView({ tabId, user }: { tabId: string, user?: User
                   <button 
                     onClick={() => setShowSyncModal(true)}
                     disabled={isSyncing}
-                    className="titan-button bg-black/40 border border-indigo-500/30 hover:bg-indigo-500/10 text-indigo-400 shrink-0 !py-2.5 flex items-center justify-center gap-2 group/sync disabled:opacity-50"
+                    className="bg-white/[0.04] text-slate-300 hover:bg-white/[0.08] hover:text-white border border-white/10 font-bold rounded-xl px-4 py-2.5 text-xs transition-all shrink-0 flex items-center justify-center gap-2 group/sync disabled:opacity-50"
                     title="Genetic Injection: Synchronize with Master Data"
                   >
                     <RefreshCw className={cn("w-4 h-4 group-hover/sync:rotate-180 transition-transform duration-500", isSyncing && "animate-spin")} />
-                    <span className="hidden sm:inline">Sync Lab</span>
+                    <span className="hidden sm:inline">{t('lab.syncLab', 'Sync Lab')}</span>
                   </button>
                   
                   { activeTab === 'blueprints' && (
                     <button 
                       onClick={openAddModal}
-                      className="titan-button bg-indigo-600 hover:bg-indigo-500 text-white shrink-0 !py-2.5 flex items-center justify-center gap-2 flex-1 md:flex-none"
+                      className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all shrink-0 flex items-center justify-center gap-2 flex-1 md:flex-none"
                     >
-                      <Plus className="w-4 h-4" />
-                      {getAddButtonTitle()}
+                      <Plus className="w-4 h-4 shrink-0" />
+                      {t('lab.newBlueprint', 'New Blueprint')}
                     </button>
                   )}
 
@@ -573,10 +562,10 @@ export function EngineeringLabView({ tabId, user }: { tabId: string, user?: User
                         setActionDesc('');
                         setIsActionModalOpen(true);
                       }}
-                      className="titan-button bg-purple-600 hover:bg-purple-500 text-white shrink-0 !py-2.5 flex items-center justify-center gap-2 flex-1 md:flex-none"
+                      className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all shrink-0 flex items-center justify-center gap-2 flex-1 md:flex-none"
                     >
-                      <Plus className="w-4 h-4" />
-                      New Action Verb
+                      <Plus className="w-4 h-4 shrink-0" />
+                      {t('lab.newAction', 'New Action Verb')}
                     </button>
                   )}
                 </div>
@@ -756,7 +745,7 @@ export function EngineeringLabView({ tabId, user }: { tabId: string, user?: User
                             </div>
                             
                             <div className="mt-auto flex items-center justify-between shrink-0">
-                              <div className="bg-black/30 px-3 py-1.5 rounded-lg border border-white/10">
+                              <div className="bg-[#0a0a0f]/30 px-3 py-1.5 rounded-lg border border-white/10">
                                 <span className="text-[10px] text-slate-400 uppercase mr-2">SKU Base</span>
                                 <span className="font-mono text-sm text-white tracking-wider">{template.skuBase}</span>
                               </div>
@@ -814,7 +803,7 @@ export function EngineeringLabView({ tabId, user }: { tabId: string, user?: User
                                     transition={{ duration: 0.6, delay: (virtualRow.index % 10) * 0.1, ease: [0.16, 1, 0.3, 1] }}
                                     className="h-full"
                                   >
-                                    <MachineLibraryCard onClick={() => openBlueprintDetail(blueprint.id, blueprint.reference)} className="flex flex-col group overflow-hidden relative border border-white/5 transition-all duration-700 hover:border-white/20 hover:shadow-[0_20px_60px_-15px_rgba(99,102,241,0.15)] hover:bg-white/[0.02] p-0 bg-black/20 cursor-pointer rounded-2xl">
+                                    <MachineLibraryCard onClick={() => openBlueprintDetail(blueprint.id, blueprint.reference)} className="flex flex-col group overflow-hidden relative border border-white/5 transition-all duration-700 hover:border-white/20 hover:shadow-[0_20px_60px_-15px_rgba(99,102,241,0.15)] hover:bg-white/[0.02] p-0 bg-[#0a0a0f]/20 cursor-pointer rounded-2xl">
                                      {/* Animated Gradient Border Top */}
                                      <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent scale-x-0 group-hover:scale-x-100 transition-transform duration-700 origin-left" />
                                      
@@ -954,7 +943,7 @@ export function EngineeringLabView({ tabId, user }: { tabId: string, user?: User
             <motion.div 
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={handleCloseActionModal}
-              className="absolute inset-0 bg-black/80 backdrop-blur-md"
+              className="absolute inset-0 bg-[#0a0a0f]/80 backdrop-blur-md"
             />
             <motion.div 
               initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
@@ -997,7 +986,7 @@ export function EngineeringLabView({ tabId, user }: { tabId: string, user?: User
                   <select
                     value={actionType}
                     onChange={(e) => setActionType(e.target.value as any)}
-                    className="titan-input py-2 px-3 text-sm bg-black"
+                    className="titan-input py-2 px-3 text-sm bg-[#0a0a0f]"
                   >
                     <option value="PREV">PREV (Preventive: Lubricate, Clean, Scheduled Swap)</option>
                     <option value="CORR">CORR (Corrective: Emergency Repair, Sudden Swap)</option>
@@ -1012,7 +1001,7 @@ export function EngineeringLabView({ tabId, user }: { tabId: string, user?: User
                     value={actionDesc}
                     onChange={(e) => setActionDesc(e.target.value)}
                     rows={3}
-                    className="titan-input py-2 px-3 text-sm bg-black font-sans resize-none"
+                    className="titan-input py-2 px-3 text-sm bg-[#0a0a0f] font-sans resize-none"
                   />
                 </div>
 
@@ -1020,13 +1009,13 @@ export function EngineeringLabView({ tabId, user }: { tabId: string, user?: User
                   <button 
                     type="button" 
                     onClick={handleCloseActionModal}
-                    className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-white font-medium text-xs uppercase"
+                    className="flex-1 py-2.5 bg-white/[0.04] text-slate-300 hover:bg-white/[0.08] hover:text-white border border-white/10 font-bold rounded-xl text-xs uppercase transition-all"
                   >
                     Abort
                   </button>
                   <button 
                     type="submit"
-                    className="flex-1 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-extrabold rounded-xl text-xs uppercase tracking-widest shadow-[0_4px_12px_rgba(168,85,247,0.2)]"
+                    className="flex-1 py-2.5 bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl text-xs uppercase tracking-wider shadow-lg transition-all"
                   >
                     {editingActionId ? 'Save Changes' : 'Register Verb'}
                   </button>
@@ -1052,7 +1041,7 @@ export function EngineeringLabView({ tabId, user }: { tabId: string, user?: User
       <AnimatePresence>
         {lifeHistoryComponentId && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setLifeHistoryComponentId(null)} className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setLifeHistoryComponentId(null)} className="absolute inset-0 bg-[#0a0a0f]/80 backdrop-blur-sm" />
             <motion.div initial={{ scale: 0.95, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.95, opacity: 0, y: 20 }} className="relative bg-[#0d0e15] border border-white/10 p-6 md:p-8 rounded-3xl w-full max-w-4xl shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar">
               <div className="flex justify-between items-start mb-6">
                 <div>

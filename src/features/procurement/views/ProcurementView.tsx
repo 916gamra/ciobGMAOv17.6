@@ -134,7 +134,7 @@ export function ProcurementView() {
                 <th className="px-8 py-5 font-bold text-slate-500 text-[10px] uppercase tracking-widest text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/[0.03] bg-black/5">
+            <tbody className="divide-y divide-white/[0.03] bg-[#0a0a0f]/5">
               <AnimatePresence mode="popLayout">
                 {filteredOrders.map((order, idx) => {
                   const style = getStatusStyle(order.status);
@@ -217,7 +217,7 @@ export function ProcurementView() {
                 })}
               </AnimatePresence>
               {filteredOrders.length === 0 && (
-                <tr className="bg-black/20">
+                <tr className="bg-[#0a0a0f]/20">
                   <td colSpan={7} className="py-24 text-center">
                     <div className="flex flex-col items-center opacity-20">
                       <AlertCircle className="w-16 h-16 mb-4 text-white" />

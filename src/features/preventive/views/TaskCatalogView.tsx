@@ -2,11 +2,14 @@ import React, { useState } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, PreventiveTask } from '@/core/db';
 import { GlassCard } from '@/shared/components/GlassCard';
+import { PageHeader } from '@/shared/components/PageHeader';
+import { useTranslation } from 'react-i18next';
 import { Plus, Search, Settings2, Wrench, Zap, Droplet, Wind, Cpu, Trash2, Box, Activity } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
 
 export function TaskCatalogView() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'tasks' | 'actions'>('tasks');
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -143,30 +146,29 @@ export function TaskCatalogView() {
 
   return (
     <div className="flex flex-col h-full bg-[#0a0a0f] p-6 space-y-6 text-slate-200 custom-scrollbar overflow-y-auto">
-      <header className="flex justify-between items-end mb-4 border-b border-white/10 pb-6">
-        <div>
-          <h1 className="text-3xl font-bold text-white flex items-center gap-3 tracking-tight font-sans">
-            <Settings2 className="w-8 h-8 text-emerald-400" /> Tasks Catalog
-          </h1>
-          <p className="text-slate-400 text-sm mt-2 rtl:text-right" dir="rtl">
-            مكتبة المهام الهندسية والإجراءات الخاصة بأجزاء المصنع
-          </p>
-        </div>
-        <div className="flex bg-black/40 p-1 rounded-xl border border-white/5">
-          <button
-            onClick={() => setActiveTab('tasks')}
-            className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'tasks' ? 'bg-emerald-500/20 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'text-slate-400 hover:text-white'}`}
-          >
-            المهام (Tasks)
-          </button>
-          <button
-            onClick={() => setActiveTab('actions')}
-            className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'actions' ? 'bg-purple-500/20 text-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.1)]' : 'text-slate-400 hover:text-white'}`}
-          >
-            الإجراءات (Actions)
-          </button>
-        </div>
-      </header>
+      <PageHeader
+        title={t("preventive.catalog.title", "كتالوج المهام القياسية")}
+        subtitle={t("preventive.catalog.subtitle", "مكتبة المهام الهندسية والإجراءات الفنية المنظمة لأعمال الصيانة الوقائية للأجزاء والمكونات")}
+        icon={<Settings2 className="w-8 h-8 text-emerald-400" />}
+        badgeColor="emerald"
+        badgeText={t("portals.preventive", "الصيانة الوقائية")}
+        actions={
+          <div className="flex bg-[#0a0a0f]/40 p-1 rounded-xl border border-white/5">
+            <button
+              onClick={() => setActiveTab('tasks')}
+              className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'tasks' ? 'bg-emerald-500/20 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.1)]' : 'text-slate-400 hover:text-white'}`}
+            >
+              المهام (Tasks)
+            </button>
+            <button
+              onClick={() => setActiveTab('actions')}
+              className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'actions' ? 'bg-purple-500/20 text-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.1)]' : 'text-slate-400 hover:text-white'}`}
+            >
+              الإجراءات (Actions)
+            </button>
+          </div>
+        }
+      />
       
       {activeTab === 'tasks' && (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -325,7 +327,7 @@ export function TaskCatalogView() {
         {isModalOpen && (
           <motion.div 
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0a0a0f]/80 backdrop-blur-md"
             onClick={() => setIsModalOpen(false)}
           >
             <motion.div 
@@ -350,7 +352,7 @@ export function TaskCatalogView() {
                       value={title}
                       onChange={e => setTitle(e.target.value)}
                       placeholder="مثال: فحص مستوى الزيت والتشحيم"
-                      className="w-full bg-black/50 border border-white/10 rounded-xl py-3 px-4 text-white focus:ring-1 focus:ring-emerald-500 outline-none"
+                      className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl py-3 px-4 text-white focus:ring-1 focus:ring-emerald-500 outline-none"
                     />
                   </div>
                   
@@ -363,11 +365,11 @@ export function TaskCatalogView() {
                         setPdrFamilyId(e.target.value);
                         setPdrTemplateId(''); // Reset template when family changes
                       }}
-                      className="w-full bg-black/50 border border-white/10 rounded-xl py-3 px-4 text-white focus:ring-1 focus:ring-emerald-500 outline-none appearance-none font-sans"
+                      className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl py-3 px-4 text-white focus:ring-1 focus:ring-emerald-500 outline-none appearance-none font-sans"
                     >
-                      <option value="" className="bg-slate-900">-- إختر عائلة القطع --</option>
+                      <option value="" className="bg-[#0a0a0f]">-- إختر عائلة القطع --</option>
                       {pdrFamilies?.map(fam => (
-                        <option key={fam.id} value={fam.id} className="bg-slate-900">{fam.name}</option>
+                        <option key={fam.id} value={fam.id} className="bg-[#0a0a0f]">{fam.name}</option>
                       ))}
                     </select>
                   </div>
@@ -377,12 +379,12 @@ export function TaskCatalogView() {
                     <select 
                       value={pdrTemplateId}
                       onChange={e => setPdrTemplateId(e.target.value)}
-                      className="w-full bg-black/50 border border-white/10 rounded-xl py-3 px-4 text-white focus:ring-1 focus:ring-emerald-500 outline-none appearance-none"
+                      className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl py-3 px-4 text-white focus:ring-1 focus:ring-emerald-500 outline-none appearance-none"
                       disabled={!pdrFamilyId}
                     >
-                      <option value="" className="bg-slate-900">-- عام (ينطبق على كل العائلة) --</option>
+                      <option value="" className="bg-[#0a0a0f]">-- عام (ينطبق على كل العائلة) --</option>
                       {pdrTemplates?.filter(t => t.familyId === pdrFamilyId).map(tpl => (
-                        <option key={tpl.id} value={tpl.id} className="bg-slate-900">
+                        <option key={tpl.id} value={tpl.id} className="bg-[#0a0a0f]">
                           {tpl.name} ({tpl.skuBase})
                         </option>
                       ))}
@@ -395,11 +397,11 @@ export function TaskCatalogView() {
                       required
                       value={actionId}
                       onChange={e => setActionId(e.target.value)}
-                      className="w-full bg-black/50 border border-white/10 rounded-xl py-3 px-4 text-white focus:ring-1 focus:ring-emerald-500 outline-none appearance-none"
+                      className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl py-3 px-4 text-white focus:ring-1 focus:ring-emerald-500 outline-none appearance-none"
                     >
-                      <option value="" className="bg-slate-900">-- إختر الإجراء --</option>
+                      <option value="" className="bg-[#0a0a0f]">-- إختر الإجراء --</option>
                       {standardActions?.map(action => (
-                        <option key={action.id} value={action.id} className="bg-slate-900">
+                        <option key={action.id} value={action.id} className="bg-[#0a0a0f]">
                           {action.code ? `[${action.code}] ` : ''}{action.name} ({action.type})
                         </option>
                       ))}
@@ -415,7 +417,7 @@ export function TaskCatalogView() {
                         required
                         value={frequencyValue}
                         onChange={e => setFrequencyValue(parseInt(e.target.value))}
-                        className="w-full bg-black/50 border border-white/10 rounded-xl py-3 px-4 text-white focus:ring-1 focus:ring-emerald-500 outline-none"
+                        className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl py-3 px-4 text-white focus:ring-1 focus:ring-emerald-500 outline-none"
                       />
                     </div>
                     <div className="space-y-2">
@@ -425,7 +427,7 @@ export function TaskCatalogView() {
                         value={description}
                         onChange={e => setDescription(e.target.value)}
                         placeholder="تفاصيل إضافية..."
-                        className="w-full bg-black/50 border border-white/10 rounded-xl py-3 px-4 text-white focus:ring-1 focus:ring-emerald-500 outline-none"
+                        className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl py-3 px-4 text-white focus:ring-1 focus:ring-emerald-500 outline-none"
                       />
                     </div>
                   </div>
@@ -467,7 +469,7 @@ export function TaskCatalogView() {
         {isActionModalOpen && (
           <motion.div 
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0a0a0f]/80 backdrop-blur-md"
             onClick={handleCloseActionModal}
           >
             <motion.div 
@@ -496,7 +498,7 @@ export function TaskCatalogView() {
                         value={actionCode}
                         maxLength={4}
                         onChange={e => setActionCode(e.target.value.toUpperCase())}
-                        className="w-full bg-black/50 border border-white/10 rounded-xl py-3 px-4 text-white focus:ring-1 focus:ring-purple-500 outline-none font-mono text-center"
+                        className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl py-3 px-4 text-white focus:ring-1 focus:ring-purple-500 outline-none font-mono text-center"
                       />
                     </div>
                     <div className="flex-[3] space-y-2">
@@ -507,7 +509,7 @@ export function TaskCatalogView() {
                         value={actionName}
                         onChange={e => setActionName(e.target.value)}
                         placeholder="مثال: تشحيم، استبدال، فحص"
-                        className="w-full bg-black/50 border border-white/10 rounded-xl py-3 px-4 text-white focus:ring-1 focus:ring-purple-500 outline-none"
+                        className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl py-3 px-4 text-white focus:ring-1 focus:ring-purple-500 outline-none"
                       />
                     </div>
                   </div>
@@ -517,11 +519,11 @@ export function TaskCatalogView() {
                     <select 
                       value={actionType}
                       onChange={e => setActionType(e.target.value as any)}
-                      className="w-full bg-black/50 border border-white/10 rounded-xl py-3 px-4 text-white focus:ring-1 focus:ring-purple-500 outline-none appearance-none font-sans"
+                      className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl py-3 px-4 text-white focus:ring-1 focus:ring-purple-500 outline-none appearance-none font-sans"
                     >
-                      <option value="PREV" className="bg-slate-900">صيانة وقائية (Preventive)</option>
-                      <option value="CORR" className="bg-slate-900">صيانة علاجية (Corrective)</option>
-                      <option value="BOTH" className="bg-slate-900">كلاهما (Dual Purpose)</option>
+                      <option value="PREV" className="bg-[#0a0a0f]">صيانة وقائية (Preventive)</option>
+                      <option value="CORR" className="bg-[#0a0a0f]">صيانة علاجية (Corrective)</option>
+                      <option value="BOTH" className="bg-[#0a0a0f]">كلاهما (Dual Purpose)</option>
                     </select>
                   </div>
 
@@ -532,7 +534,7 @@ export function TaskCatalogView() {
                       onChange={e => setActionDesc(e.target.value)}
                       placeholder="تفاصيل وشرح هذا الإجراء..."
                       rows={3}
-                      className="w-full bg-black/50 border border-white/10 rounded-xl py-3 px-4 text-white focus:ring-1 focus:ring-purple-500 outline-none resize-none"
+                      className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl py-3 px-4 text-white focus:ring-1 focus:ring-purple-500 outline-none resize-none"
                     />
                   </div>
 

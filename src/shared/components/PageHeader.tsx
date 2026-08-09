@@ -12,7 +12,7 @@ interface PageHeaderProps {
   subtitle?: React.ReactNode;
   icon?: React.ReactNode;
   badgeText?: string;
-  badgeColor?: 'cyan' | 'indigo' | 'fuchsia' | 'emerald' | 'amber' | 'rose' | 'orange' | 'purple';
+  badgeColor?: 'cyan' | 'indigo' | 'fuchsia' | 'emerald' | 'amber' | 'rose' | 'orange' | 'purple' | 'blue';
   actions?: React.ReactNode;
   className?: string;
 }
@@ -26,49 +26,126 @@ export function PageHeader({
   actions,
   className
 }: PageHeaderProps) {
-  const badgeStyles = {
-    cyan: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
-    indigo: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
-    fuchsia: 'bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/20',
-    emerald: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-    amber: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-    rose: 'bg-rose-500/10 text-rose-400 border-rose-500/20',
-    orange: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
-    purple: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
+  const colorMap = {
+    cyan: {
+      bg: 'bg-gradient-to-r from-cyan-950/60 via-[#0a0a0f]/90 to-[#0a0a0f]/80',
+      border: 'border-cyan-500/30',
+      glow: 'bg-cyan-500/15',
+      shadow: 'shadow-[0_10px_30px_rgba(6,182,212,0.12)]',
+      badge: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30',
+      iconContainer: 'bg-gradient-to-br from-cyan-500/20 to-cyan-700/30 border-cyan-400/40 shadow-cyan-900/30',
+    },
+    indigo: {
+      bg: 'bg-gradient-to-r from-indigo-950/60 via-[#0a0a0f]/90 to-[#0a0a0f]/80',
+      border: 'border-indigo-500/30',
+      glow: 'bg-indigo-500/15',
+      shadow: 'shadow-[0_10px_30px_rgba(99,102,241,0.12)]',
+      badge: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/30',
+      iconContainer: 'bg-gradient-to-br from-indigo-500/20 to-indigo-700/30 border-indigo-400/40 shadow-indigo-900/30',
+    },
+    fuchsia: {
+      bg: 'bg-gradient-to-r from-fuchsia-950/60 via-[#0a0a0f]/90 to-[#0a0a0f]/80',
+      border: 'border-fuchsia-500/30',
+      glow: 'bg-fuchsia-500/15',
+      shadow: 'shadow-[0_10px_30px_rgba(217,70,239,0.12)]',
+      badge: 'bg-fuchsia-500/10 text-fuchsia-400 border-fuchsia-500/30',
+      iconContainer: 'bg-gradient-to-br from-fuchsia-500/20 to-fuchsia-700/30 border-fuchsia-400/40 shadow-fuchsia-900/30',
+    },
+    emerald: {
+      bg: 'bg-gradient-to-r from-emerald-950/60 via-[#0a0a0f]/90 to-[#0a0a0f]/80',
+      border: 'border-emerald-500/30',
+      glow: 'bg-emerald-500/15',
+      shadow: 'shadow-[0_10px_30px_rgba(16,185,129,0.12)]',
+      badge: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
+      iconContainer: 'bg-gradient-to-br from-emerald-500/20 to-emerald-700/30 border-emerald-400/40 shadow-emerald-900/30',
+    },
+    amber: {
+      bg: 'bg-gradient-to-r from-amber-950/60 via-[#0a0a0f]/90 to-[#0a0a0f]/80',
+      border: 'border-amber-500/30',
+      glow: 'bg-amber-500/15',
+      shadow: 'shadow-[0_10px_30px_rgba(245,158,11,0.12)]',
+      badge: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
+      iconContainer: 'bg-gradient-to-br from-amber-500/20 to-amber-700/30 border-amber-400/40 shadow-amber-900/30',
+    },
+    rose: {
+      bg: 'bg-gradient-to-r from-rose-950/60 via-[#0a0a0f]/90 to-[#0a0a0f]/80',
+      border: 'border-rose-500/30',
+      glow: 'bg-rose-500/15',
+      shadow: 'shadow-[0_10px_30px_rgba(244,63,94,0.12)]',
+      badge: 'bg-rose-500/10 text-rose-400 border-rose-500/30',
+      iconContainer: 'bg-gradient-to-br from-rose-500/20 to-rose-700/30 border-rose-400/40 shadow-rose-900/30',
+    },
+    orange: {
+      bg: 'bg-gradient-to-r from-orange-950/60 via-[#0a0a0f]/90 to-[#0a0a0f]/80',
+      border: 'border-orange-500/30',
+      glow: 'bg-orange-500/15',
+      shadow: 'shadow-[0_10px_30px_rgba(249,115,22,0.12)]',
+      badge: 'bg-orange-500/10 text-orange-400 border-orange-500/30',
+      iconContainer: 'bg-gradient-to-br from-orange-500/20 to-orange-700/30 border-orange-400/40 shadow-orange-900/30',
+    },
+    purple: {
+      bg: 'bg-gradient-to-r from-purple-950/60 via-[#0a0a0f]/90 to-[#0a0a0f]/80',
+      border: 'border-purple-500/30',
+      glow: 'bg-purple-500/15',
+      shadow: 'shadow-[0_10px_30px_rgba(168,85,247,0.12)]',
+      badge: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
+      iconContainer: 'bg-gradient-to-br from-purple-500/20 to-purple-700/30 border-purple-400/40 shadow-purple-900/30',
+    },
+    blue: {
+      bg: 'bg-gradient-to-r from-blue-950/60 via-[#0a0a0f]/90 to-[#0a0a0f]/80',
+      border: 'border-blue-500/30',
+      glow: 'bg-blue-500/15',
+      shadow: 'shadow-[0_10px_30px_rgba(59,130,246,0.12)]',
+      badge: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
+      iconContainer: 'bg-gradient-to-br from-blue-500/20 to-blue-700/30 border-blue-400/40 shadow-blue-900/30',
+    },
   };
+
+  const activeTheme = colorMap[badgeColor] || colorMap.cyan;
 
   return (
     <motion.header 
       variants={pageItemVariants} 
       className={cn(
-        "flex flex-col md:flex-row md:items-start justify-between gap-6 mb-6 shrink-0 relative z-10", 
-        "p-6 bg-white/[0.03] backdrop-blur-2xl border border-white/[0.08] rounded-3xl shadow-[0_15px_40px_rgba(0,0,0,0.4)] card-neon-hover",
+        "relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6 shrink-0 z-10", 
+        "p-6 md:p-7 backdrop-blur-xl rounded-3xl border shadow-xl transition-all duration-300",
+        activeTheme.bg,
+        activeTheme.border,
+        activeTheme.shadow,
         className
       )}
     >
-      <div>
-        <h1 className="text-[32px] font-bold text-slate-100 tracking-tight mb-2 flex items-center gap-4 uppercase">
-          {icon && (
-            <div className="w-12 h-12 rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-center shrink-0 shadow-inner">
-              {icon}
-            </div>
-          )}
-          {title}
-          {badgeText && (
-            <span className={cn("px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider border ml-1", badgeStyles[badgeColor])}>
-              {badgeText}
-            </span>
-          )}
-        </h1>
-        {subtitle && (
-          <p className="text-slate-400 text-lg font-medium opacity-80 font-sans max-w-2xl mt-2">
-            {subtitle}
-          </p>
+      {/* AMBIENT BACKGROUND GLOW LIGHT */}
+      <div className={cn("absolute -top-24 -left-24 w-72 h-72 rounded-full blur-3xl pointer-events-none transition-all duration-500", activeTheme.glow)} />
+      <div className="absolute -bottom-24 -right-24 w-60 h-60 bg-white/5 rounded-full blur-2xl pointer-events-none" />
+
+      <div className="flex items-start md:items-center gap-3.5 relative z-10 text-start">
+        {icon && (
+          <div className="shrink-0 flex items-center justify-center">
+            {icon}
+          </div>
         )}
+        <div className="text-start min-w-0">
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-xl md:text-2xl font-black text-white tracking-tight text-start">
+              {title}
+            </h1>
+            {badgeText && (
+              <span className={cn("px-3 py-1 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider border shadow-sm", activeTheme.badge)}>
+                {badgeText}
+              </span>
+            )}
+          </div>
+          {subtitle && (
+            <p className="text-slate-300/80 text-xs md:text-sm font-medium mt-1.5 max-w-2xl leading-relaxed text-start">
+              {subtitle}
+            </p>
+          )}
+        </div>
       </div>
 
       {actions && (
-        <div className="flex flex-wrap items-center gap-3 shrink-0 mt-2 md:mt-0 [&_.titan-button]:!p-3">
+        <div className="flex flex-wrap items-center gap-3 shrink-0 relative z-10 mt-2 md:mt-0">
           {actions}
         </div>
       )}

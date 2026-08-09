@@ -196,34 +196,47 @@ export function GeminiCommandBar() {
     }
   };
 
-  const getCategoryIcon = (cat: SearchResultItem['category']) => {
-    switch (cat) {
+  const getCategoryIcon = (item: SearchResultItem) => {
+    if (item.category === 'ENGINE') {
+      switch (item.portalId) {
+        case 'PDR': return <Box className="w-4 h-4 text-cyan-400" />;
+        case 'PREVENTIVE': return <ShieldCheck className="w-4 h-4 text-emerald-400" />;
+        case 'CORRECTIVE': return <Wrench className="w-4 h-4 text-orange-400" />;
+        case 'ORGANIZATION': return <Network className="w-4 h-4 text-amber-400" />;
+        case 'FACTORY': return <Factory className="w-4 h-4 text-indigo-400" />;
+        case 'ANALYTICS': return <PieChart className="w-4 h-4 text-fuchsia-400" />;
+        case 'SETTINGS': return <Settings className="w-4 h-4 text-rose-400" />;
+        default: return <Sparkles className="w-4 h-4 text-slate-400" />;
+      }
+    }
+
+    switch (item.category) {
       case 'PDR':
         return <Box className="w-4 h-4 text-cyan-400" />;
       case 'MACHINE':
         return <Factory className="w-4 h-4 text-indigo-400" />;
       case 'TASK':
         return <Wrench className="w-4 h-4 text-amber-400" />;
-      case 'ENGINE':
-        return <Sparkles className="w-4 h-4 text-emerald-400" />;
+      default:
+        return <Sparkles className="w-4 h-4 text-slate-400" />;
     }
   };
 
   return (
     <div ref={containerRef} className="relative w-full max-w-2xl mx-auto mb-10 z-40">
-      {/* Gemini Capsule Search Input Container */}
+      {/* Search Input Container */}
       <div
         className={cn(
-          "relative flex items-center w-full rounded-full transition-all duration-300",
-          "bg-black/50 backdrop-blur-2xl border px-4 py-2.5 shadow-[0_10px_40px_rgba(0,0,0,0.5)]",
+          "relative flex items-center w-full rounded-2xl transition-all duration-300",
+          "bg-white/[0.03] backdrop-blur-xl border px-4 py-2.5",
           isOpen
-            ? "border-cyan-400/60 shadow-[0_0_30px_rgba(6,182,212,0.3)] bg-black/80"
-            : "border-white/15 hover:border-cyan-400/40 hover:bg-black/60"
+            ? "border-cyan-500/50 shadow-[0_0_15px_rgba(6,182,212,0.15)] bg-white/[0.06]"
+            : "border-white/10 hover:border-white/20 hover:bg-white/[0.05]"
         )}
       >
-        <Sparkles className={cn(
-          "w-5 h-5 ml-2 shrink-0 transition-all duration-300",
-          isOpen ? "text-cyan-400 animate-pulse scale-110" : "text-slate-400"
+        <Search className={cn(
+          "w-5 h-5 ml-3 shrink-0 transition-colors duration-300",
+          isOpen ? "text-cyan-400" : "text-slate-400"
         )} />
 
         <input
@@ -236,30 +249,24 @@ export function GeminiCommandBar() {
           }}
           onFocus={() => setIsOpen(true)}
           onKeyDown={handleKeyDown}
-          placeholder="ابحث عن قطعة غيار، آلة، أمر عمل، أو محرك تشغيل... (Ctrl + K)"
-          className="w-full bg-transparent text-slate-100 placeholder:text-slate-500 text-xs md:text-sm font-medium outline-none px-2"
+          placeholder="ابحث عن قطعة غيار، آلة، أمر عمل، أو محرك تشغيل..."
+          className="w-full bg-transparent text-slate-100 placeholder:text-slate-500 text-sm font-medium outline-none px-2"
         />
-
-        {/* Keyboard shortcut hint pill */}
-        <div className="flex items-center gap-1 shrink-0 mr-1 bg-white/[0.06] border border-white/10 rounded-full px-2.5 py-1 text-[10px] font-mono font-bold text-slate-400 select-none">
-          <Command className="w-3 h-3 text-cyan-400" />
-          <span>K</span>
-        </div>
       </div>
 
       {/* Dropdown Results Overlay */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -8, scale: 0.98 }}
-            animate={{ opacity: 1, y: 6, scale: 1 }}
-            exit={{ opacity: 0, y: -8, scale: 0.98 }}
-            transition={{ duration: 0.2 }}
-            className="absolute top-full inset-x-0 bg-black/85 backdrop-blur-3xl border border-white/15 rounded-3xl p-3 shadow-[0_25px_60px_rgba(0,0,0,0.8)] overflow-hidden max-h-[380px] overflow-y-auto custom-scrollbar"
+            initial={{ opacity: 0, y: -4, scale: 0.99 }}
+            animate={{ opacity: 1, y: 4, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.99 }}
+            transition={{ duration: 0.15 }}
+            className="absolute top-full inset-x-0 bg-[#0a0a0f]/95 backdrop-blur-2xl border border-white/10 rounded-2xl p-2 shadow-2xl overflow-hidden max-h-[400px] overflow-y-auto custom-scrollbar"
           >
-            <div className="flex items-center justify-between px-3 py-2 text-[10px] font-mono uppercase tracking-wider text-slate-400 border-b border-white/10 mb-1">
-              <span>نتائج البحث والتوجيه السريع</span>
-              <span className="text-cyan-400 font-bold">{results.length} خيارات متاحة</span>
+            <div className="flex items-center justify-between px-3 py-2 text-xs font-medium text-slate-400 mb-1">
+              <span>نتائج البحث</span>
+              <span className="text-cyan-400/80">{results.length} نتائج</span>
             </div>
 
             {results.length === 0 ? (
@@ -276,28 +283,31 @@ export function GeminiCommandBar() {
                       onClick={() => handleSelectResult(item)}
                       onMouseEnter={() => setSelectedIndex(index)}
                       className={cn(
-                        "flex items-center justify-between p-3 rounded-2xl cursor-pointer transition-all duration-200 group text-right",
+                        "flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition-all duration-150 text-right",
                         isSelected
-                          ? "bg-cyan-500/15 border border-cyan-400/40 text-white shadow-[0_0_20px_rgba(6,182,212,0.15)]"
-                          : "bg-white/[0.02] border border-transparent text-slate-300 hover:bg-white/[0.06]"
+                          ? "bg-white/10 text-white"
+                          : "bg-transparent text-slate-300 hover:bg-white/[0.04]"
                       )}
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className={cn(
-                          "w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border transition-all",
-                          isSelected ? "bg-cyan-400/20 border-cyan-400/50 scale-105" : "bg-white/5 border-white/10"
+                          "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border transition-all duration-150",
+                          isSelected ? "bg-white/10 border-white/20" : "bg-transparent border-transparent"
                         )}>
-                          {getCategoryIcon(item.category)}
+                          {getCategoryIcon(item)}
                         </div>
 
                         <div className="flex flex-col min-w-0">
                           <span className={cn(
-                            "text-xs font-bold truncate transition-colors",
-                            isSelected ? "text-cyan-300" : "text-slate-200"
+                            "text-sm font-semibold truncate transition-colors duration-150",
+                            isSelected ? "text-cyan-100" : "text-slate-200"
                           )}>
                             {item.title}
                           </span>
-                          <span className="text-[11px] text-slate-400 truncate mt-0.5">
+                          <span className={cn(
+                            "text-[11px] truncate mt-0.5",
+                            isSelected ? "text-cyan-100/70" : "text-slate-400"
+                          )}>
                             {item.subtitle}
                           </span>
                         </div>
@@ -305,14 +315,10 @@ export function GeminiCommandBar() {
 
                       <div className="flex items-center gap-2 shrink-0 ml-2">
                         {item.badge && (
-                          <span className="text-[9px] font-mono font-bold px-2 py-0.5 rounded-full bg-white/10 text-slate-300 border border-white/15">
+                          <span className="text-[10px] font-medium px-2 py-0.5 rounded bg-white/5 text-slate-300 border border-white/10">
                             {item.badge}
                           </span>
                         )}
-                        <ArrowRight className={cn(
-                          "w-4 h-4 transition-transform duration-200",
-                          isSelected ? "text-cyan-400 translate-x-0.5" : "text-slate-600 group-hover:text-slate-400"
-                        )} />
                       </div>
                     </div>
                   );
@@ -320,12 +326,12 @@ export function GeminiCommandBar() {
               </div>
             )}
 
-            <div className="mt-2 pt-2 border-t border-white/10 flex items-center justify-between px-3 text-[10px] text-slate-500 font-mono">
-              <span className="flex items-center gap-1">
-                <CornerDownLeft className="w-3 h-3 text-cyan-400" />
-                اضغط Enter للانتقال السريع
+            <div className="mt-2 pt-2 border-t border-white/5 flex items-center justify-between px-3 text-[11px] text-slate-500">
+              <span className="flex items-center gap-1.5">
+                <CornerDownLeft className="w-3 h-3 opacity-70" />
+                <span>انتقال سريع</span>
               </span>
-              <span>استخدم الأسهم ↑ ↓ للتنقل</span>
+              <span>استخدم ↑ ↓ للتنقل</span>
             </div>
           </motion.div>
         )}

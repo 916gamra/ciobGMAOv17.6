@@ -42,12 +42,12 @@ export function FilterBar({
 
   return (
     <div className={cn(
-      "flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 p-3 bg-black/40 border border-white/5 backdrop-blur-xl rounded-2xl shrink-0 text-right font-sans",
+      "flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 p-3 bg-[#0a0a0f]/40 border border-white/5 backdrop-blur-xl rounded-2xl shrink-0 text-right font-sans",
       className
     )}>
       {/* Tabs list if provided */}
       {tabs && tabs.length > 0 && (
-        <div className="flex items-center gap-1.5 bg-black/40 border border-white/10 p-1 rounded-xl overflow-x-auto custom-scrollbar">
+        <div className="flex items-center gap-1.5 bg-[#0a0a0f]/40 border border-white/10 p-1 rounded-xl overflow-x-auto custom-scrollbar">
           {tabs.map(tab => {
             const isActive = activeTab === tab.id;
             const activeClass = tab.color ? tabColorStyles[tab.color] : 'bg-white/10 text-white border border-white/20';
@@ -65,7 +65,7 @@ export function FilterBar({
                 {tab.count !== undefined && (
                   <span className={cn(
                     "text-[10px] font-mono font-extrabold px-1.5 py-0.2 rounded-full",
-                    isActive ? "bg-black/20 text-current" : "bg-white/10 text-slate-300"
+                    isActive ? "bg-[#0a0a0f]/20 text-current" : "bg-white/10 text-slate-300"
                   )}>
                     {tab.count}
                   </span>
@@ -88,7 +88,7 @@ export function FilterBar({
             placeholder={searchPlaceholder}
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="w-full bg-black/50 border border-white/10 rounded-xl py-1.5 pl-9 pr-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 transition-colors"
+            className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl py-1.5 pl-9 pr-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 transition-colors"
           />
         </div>
       </div>

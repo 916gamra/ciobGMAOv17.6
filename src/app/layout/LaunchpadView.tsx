@@ -252,7 +252,7 @@ export function LaunchpadView({ user }: { user: User | null }) {
                   <GlassCard 
                     onClick={() => setPortal(app.id)}
                     className={cn(
-                      "group flex flex-col p-0 h-[240px] !bg-black/40 border-white/5 hover:border-white/30 transition-all duration-500 overflow-hidden cursor-pointer relative",
+                      "group flex flex-col p-0 h-[240px] !bg-[#0a0a0f]/40 border-white/5 hover:border-white/30 transition-all duration-500 overflow-hidden cursor-pointer relative",
                       "hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.6)]"
                     )}
                   >

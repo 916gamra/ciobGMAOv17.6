@@ -81,12 +81,12 @@ export function DesktopLayout({ user, onLogout }: { user: User | null, onLogout:
       <div className="flex flex-1 flex-col overflow-hidden relative">
         {/* Persistent Tab Bar */}
         {activePortal !== 'HOME' && (
-          <div className="w-full pl-[84px] md:pl-[96px] pr-36 md:pr-56 pt-2 shrink-0">
+          <div className="w-full pl-[84px] md:pl-[88px] pr-36 md:pr-56 pt-2 shrink-0">
             <PortalTabs />
           </div>
         )}
         
-        <div className={`flex-1 flex overflow-hidden relative ${activePortal !== 'HOME' ? 'pl-[84px] md:pl-[96px] pt-1' : ''}`}>
+        <div className={`flex-1 flex overflow-hidden relative ${activePortal !== 'HOME' ? 'pl-[84px] md:pl-[88px] pt-1' : ''}`}>
           <ErrorBoundary>
             {activePortal === 'HOME' ? (
               <LaunchpadView user={user} />
@@ -119,7 +119,7 @@ export function DesktopLayout({ user, onLogout }: { user: User | null, onLogout:
           </button>
         </DropdownMenu.Trigger>
         <DropdownMenu.Portal>
-           <DropdownMenu.Content align="end" sideOffset={10} className="z-50 bg-black/80 backdrop-blur-3xl border border-white/10 rounded-2xl p-2 min-w-[220px] shadow-2xl animate-in fade-in slide-in-from-bottom-5">
+           <DropdownMenu.Content align="end" sideOffset={10} className="z-50 bg-[#0a0a0f]/80 backdrop-blur-3xl border border-white/10 rounded-2xl p-2 min-w-[220px] shadow-2xl animate-in fade-in slide-in-from-bottom-5">
               <DropdownMenu.Label className="px-3 py-2 text-[10px] uppercase tracking-widest text-slate-500 font-bold">Quick Inject</DropdownMenu.Label>
               <DropdownMenu.Separator className="h-px bg-white/10 my-1" />
               <DropdownMenu.Item 

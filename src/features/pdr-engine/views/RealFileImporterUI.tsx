@@ -115,7 +115,7 @@ export function RealFileImporterUI() {
           <div className="space-y-4">
             <h4 className="font-medium text-slate-300">Sheet Breakdown:</h4>
             {analysis.sheets.map((sheet: any, idx: number) => (
-              <div key={idx} className="bg-black/20 rounded-xl p-4 space-y-3">
+              <div key={idx} className="bg-[#0a0a0f]/20 rounded-xl p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <p className="font-medium text-slate-200">{sheet.name}</p>
                   <span className="text-sm px-2 py-1 bg-slate-700/50 rounded-md text-slate-300">{sheet.rowCount} rows</span>

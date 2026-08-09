@@ -33,6 +33,7 @@ import {
   Radar
 } from "lucide-react";
 import { PageHeader } from "@/shared/components/PageHeader";
+import { useTranslation } from "react-i18next";
 import {
   format,
   startOfMonth,
@@ -48,7 +49,7 @@ import {
   differenceInDays,
 } from "date-fns";
 import { GlassCard } from "@/shared/components/GlassCard";
-import { EMPTY_ARRAY } from "@/shared/utils";
+import { EMPTY_ARRAY, cn } from "@/shared/utils";
 import { useAuthStore } from "@/app/store/useAuthStore";
 import { isUserAdmin } from "@/core/permissions";
 import { useAuditTrail } from "@/features/system/hooks/useAuditTrail";
@@ -65,6 +66,7 @@ const ACTION_VERBS = [
 ];
 
 export function PreventiveRadarView() {
+  const { t } = useTranslation();
   const { currentUser } = useAuthStore();
   const { logEvent } = useAuditTrail();
   const isAdmin = isUserAdmin(currentUser);
@@ -579,120 +581,143 @@ export function PreventiveRadarView() {
     <div className="flex flex-col h-full bg-[#0a0a0f] p-6 text-slate-200 relative overflow-hidden custom-scrollbar">
       {/* Page Header */}
       <PageHeader
-        title="Preventive Radar & System Awareness"
-        subtitle="Sovereign Command Center: Global asset health telemetry and scheduled maintenance radar."
-        actions={
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 bg-white/[0.02] p-1.5 rounded-2xl border border-white/5 shadow-2xl">
-              <div className="flex items-center bg-black/40 rounded-xl px-3 py-1.5 border border-white/5 focus-within:border-emerald-500/30 transition-all">
-                <Search className="w-4 h-4 text-slate-400 mr-2 shrink-0" />
-                <input
-                  type="text"
-                  placeholder="Search Machine..."
-                  className="bg-transparent border-none outline-none text-xs text-white w-36 placeholder-slate-500 font-medium"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-
-              <select
-                value={selectedSector}
-                onChange={(e) => setSelectedSector(e.target.value)}
-                className="bg-black/40 border border-white/5 rounded-xl py-1.5 px-3 text-xs text-slate-300 focus:outline-none focus:border-emerald-500/50 appearance-none min-w-[110px]"
-              >
-                <option value="ALL">All Sectors</option>
-                {sectors.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name}
-                  </option>
-                ))}
-              </select>
-
-              <select
-                value={selectedTech}
-                onChange={(e) => setSelectedTech(e.target.value)}
-                className="bg-black/40 border border-white/5 rounded-xl py-1.5 px-3 text-xs text-slate-300 focus:outline-none focus:border-emerald-500/50 appearance-none min-w-[110px]"
-              >
-                <option value="ALL">All Technicians</option>
-                {technicians.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <button
-              onClick={() => {
-                setServiceMachineId("");
-                setServiceComponentId("");
-                setServiceActionId("");
-                setServiceType("PREV");
-                setServiceNotes("");
-                setServiceDuration(30);
-                setServiceTechnicianId("");
-                setServiceConsumedParts([]);
-                setIsServiceEntryModalOpen(true);
-              }}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold uppercase tracking-widest shadow-[0_4px_12px_rgba(139,92,246,0.3)] transition-all shrink-0"
-            >
-              <Wrench className="w-4 h-4 shrink-0" />
-              Surgery Log
-            </button>
-
-            <div className="flex bg-black/40 rounded-xl border border-white/5 p-1">
-              <button
-                onClick={() => setViewMode("CALENDAR")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
-                  viewMode === "CALENDAR"
-                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                    : "text-slate-400 hover:text-white"
-                }`}
-                title="Calendar Overload View"
-              >
-                <CalendarIcon className="w-3.5 h-3.5" />
-                Calendar
-              </button>
-              <button
-                onClick={() => setViewMode("GRID")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
-                  viewMode === "GRID"
-                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                    : "text-slate-400 hover:text-white"
-                }`}
-                title="Tactical Grid View"
-              >
-                <LayoutGrid className="w-3.5 h-3.5" />
-                Grid
-              </button>
-              <button
-                onClick={() => setViewMode("LIST")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
-                  viewMode === "LIST"
-                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                    : "text-slate-400 hover:text-white"
-                }`}
-                title="Execution Registry"
-              >
-                <ListIcon className="w-3.5 h-3.5" />
-                List
-              </button>
-              <button
-                onClick={() => setViewMode("BULK_BOARD")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
-                  viewMode === "BULK_BOARD"
-                    ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                    : "text-slate-400 hover:text-white"
-                }`}
-                title="Bulk Dispatcher Board"
-              >
-                <ClipboardCheck className="w-3.5 h-3.5" />
-                Bulk Board
-              </button>
-            </div>
-          </div>
-        }
+        title={t("preventive.radar.title", "رادار الصيانة الوقائية")}
+        subtitle={t("preventive.radar.subtitle", "البث اللحظي لصحة أصول ومعدات المصنع وتتبع تنفيذ خطط الصيانة وجدولتها")}
+        icon={<Radar className="w-8 h-8 text-emerald-400" />}
+        badgeColor="emerald"
+        badgeText={t("portals.preventive", "الصيانة الوقائية")}
       />
+
+      {/* Control Cockpit Card */}
+      <div className="mb-6 bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-4" dir="rtl">
+        {/* Filters and Search Bar */}
+        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          {/* Search Input */}
+          <div className="flex items-center bg-[#0a0a0f]/40 rounded-xl px-3 py-1.5 border border-white/5 focus-within:border-emerald-500/30 transition-all w-full md:w-auto">
+            <Search className="w-4 h-4 text-slate-400 shrink-0 ml-2" />
+            <input
+              type="text"
+              placeholder={t("preventive.radar.search", "بحث عن آلة...")}
+              className="bg-transparent border-none outline-none text-xs text-white placeholder-slate-500 font-medium text-right w-full md:w-36"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              dir="rtl"
+            />
+          </div>
+
+          {/* Sector Filter */}
+          <div className="relative w-full md:w-auto">
+            <select
+              value={selectedSector}
+              onChange={(e) => setSelectedSector(e.target.value)}
+              className="w-full md:w-auto bg-[#0a0a0f]/40 border border-white/5 rounded-xl py-1.5 px-3 text-xs text-slate-300 focus:outline-none focus:border-emerald-500/50 appearance-none min-w-[110px] text-right"
+              dir="rtl"
+            >
+              <option value="ALL" className="bg-[#0a0a0f]">{t("preventive.radar.allSectors", "كل القطاعات")}</option>
+              {sectors.map((s) => (
+                <option key={s.id} value={s.id} className="bg-[#0a0a0f]">
+                  {s.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Technician Filter */}
+          <div className="relative w-full md:w-auto">
+            <select
+              value={selectedTech}
+              onChange={(e) => setSelectedTech(e.target.value)}
+              className="w-full md:w-auto bg-[#0a0a0f]/40 border border-white/5 rounded-xl py-1.5 px-3 text-xs text-slate-300 focus:outline-none focus:border-emerald-500/50 appearance-none min-w-[110px] text-right"
+              dir="rtl"
+            >
+              <option value="ALL" className="bg-[#0a0a0f]">{t("preventive.radar.allTechnicians", "كل التقنيين")}</option>
+              {technicians.map((t) => (
+                <option key={t.id} value={t.id} className="bg-[#0a0a0f]">
+                  {t.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Action Button & View Switcher */}
+        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
+          {/* Primary Action Button - Surgery Log: High contrast white button */}
+          <button
+            onClick={() => {
+              setServiceMachineId("");
+              setServiceComponentId("");
+              setServiceActionId("");
+              setServiceType("PREV");
+              setServiceNotes("");
+              setServiceDuration(30);
+              setServiceTechnicianId("");
+              setServiceConsumedParts([]);
+              setIsServiceEntryModalOpen(true);
+            }}
+            className="w-full md:w-auto bg-white text-slate-950 hover:bg-[#e2e8f0] font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+          >
+            <Wrench className="w-4 h-4 text-slate-950" />
+            <span>{t("preventive.radar.surgeryLog", "سجل التدخلات الجراحية")}</span>
+          </button>
+
+          {/* View Mode Switcher */}
+          <div className="flex bg-[#0a0a0f]/40 rounded-xl border border-white/5 p-1 w-full md:w-auto justify-between md:justify-start">
+            <button
+              onClick={() => setViewMode("CALENDAR")}
+              className={cn(
+                "px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5",
+                viewMode === "CALENDAR"
+                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                  : "text-slate-400 hover:text-white"
+              )}
+              title="Calendar Overload View"
+            >
+              <CalendarIcon className="w-3.5 h-3.5" />
+              <span>{t("preventive.radar.calendar", "التقويم")}</span>
+            </button>
+            <button
+              onClick={() => setViewMode("GRID")}
+              className={cn(
+                "px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5",
+                viewMode === "GRID"
+                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                  : "text-slate-400 hover:text-white"
+              )}
+              title="Tactical Grid View"
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+              <span>{t("preventive.radar.grid", "الشبكة")}</span>
+            </button>
+            <button
+              onClick={() => setViewMode("LIST")}
+              className={cn(
+                "px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5",
+                viewMode === "LIST"
+                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                  : "text-slate-400 hover:text-white"
+              )}
+              title="Execution Registry"
+            >
+              <ListIcon className="w-3.5 h-3.5" />
+              <span>{t("preventive.radar.list", "القائمة")}</span>
+            </button>
+            <button
+              onClick={() => setViewMode("BULK_BOARD")}
+              className={cn(
+                "px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5",
+                viewMode === "BULK_BOARD"
+                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                  : "text-slate-400 hover:text-white"
+              )}
+              title="Bulk Dispatcher Board"
+            >
+              <ClipboardCheck className="w-3.5 h-3.5" />
+              <span>{t("preventive.radar.bulkBoard", "المكتب")}</span>
+            </button>
+          </div>
+        </div>
+      </div>
 
       {/* Main Container */}
       <div className="flex-1 overflow-hidden relative">
@@ -703,7 +728,7 @@ export function PreventiveRadarView() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="h-full flex flex-col bg-[#12141c] rounded-3xl border border-white/5 p-6 custom-scrollbar overflow-y-auto"
+              className="h-full flex flex-col bg-[#0a0a0f]/90 rounded-3xl border border-white/10 p-6 backdrop-blur-xl shadow-2xl custom-scrollbar overflow-y-auto"
             >
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-bold text-white tracking-wider">
@@ -876,7 +901,7 @@ export function PreventiveRadarView() {
                       </div>
 
                       {/* Health & Readiness Index widget */}
-                      <div className="my-5 p-4 rounded-2xl bg-black/30 border border-white/5 relative overflow-hidden">
+                      <div className="my-5 p-4 rounded-2xl bg-[#0a0a0f]/30 border border-white/5 relative overflow-hidden">
                         <div className="flex justify-between items-center mb-2">
                           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                             Health & Readiness Index
@@ -943,7 +968,7 @@ export function PreventiveRadarView() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="h-full bg-[#12141c] rounded-3xl border border-white/5 overflow-hidden flex flex-col"
+              className="h-full bg-[#0a0a0f]/90 rounded-3xl border border-white/10 backdrop-blur-xl shadow-2xl overflow-hidden flex flex-col"
             >
               <div className="overflow-x-auto flex-1 custom-scrollbar">
                 <table className="w-full text-left" dir="ltr">
@@ -1020,7 +1045,7 @@ export function PreventiveRadarView() {
               className="h-full flex flex-col lg:flex-row gap-6 custom-scrollbar overflow-y-auto"
             >
               {/* Left Side: Tasks Registry */}
-              <div className="flex-1 bg-[#12141c] rounded-3xl border border-white/5 p-6 flex flex-col overflow-hidden">
+              <div className="flex-1 bg-[#0a0a0f]/90 rounded-3xl border border-white/10 backdrop-blur-xl shadow-2xl p-6 flex flex-col overflow-hidden">
                 <div className="flex justify-between items-center mb-6 border-b border-white/5 pb-4">
                   <div>
                     <h3 className="text-lg font-bold text-white flex items-center gap-2">
@@ -1156,7 +1181,7 @@ export function PreventiveRadarView() {
               </div>
 
               {/* Right Side: Command Deck */}
-              <div className="w-full lg:w-[380px] bg-[#12141c] rounded-3xl border border-white/5 p-6 flex flex-col justify-between self-start">
+              <div className="w-full lg:w-[380px] bg-[#0a0a0f]/90 rounded-3xl border border-white/10 backdrop-blur-xl shadow-2xl p-6 flex flex-col justify-between self-start">
                 <div>
                   <div className="border-b border-white/5 pb-4 mb-6">
                     <h4 className="text-sm font-black text-white uppercase tracking-widest">
@@ -1172,7 +1197,7 @@ export function PreventiveRadarView() {
                       <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
                         Selected Tasks Count
                       </label>
-                      <div className="bg-black/40 border border-white/5 rounded-xl px-4 py-3 text-emerald-400 font-mono text-lg font-black flex justify-between items-center bg-opacity-80">
+                      <div className="bg-[#0a0a0f]/40 border border-white/5 rounded-xl px-4 py-3 text-emerald-400 font-mono text-lg font-black flex justify-between items-center bg-opacity-80">
                         <span>{selectedExecutionsForBulk.length} Tasks</span>
                         <span className="text-[10px] text-slate-500 tracking-widest font-sans uppercase">
                           Armed to Dispatch
@@ -1253,7 +1278,7 @@ export function PreventiveRadarView() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm z-40"
+              className="absolute inset-0 bg-[#0a0a0f]/60 backdrop-blur-sm z-40"
               onClick={() => setSelectedDay(null)}
             />
             <motion.div
@@ -1264,7 +1289,7 @@ export function PreventiveRadarView() {
               className="absolute top-0 right-0 bottom-0 w-full max-w-md bg-[#0a0a0f] border-l border-emerald-500/20 z-50 flex flex-col shadow-2xl"
               dir="rtl"
             >
-              <div className="p-6 border-b border-white/5 flex justify-between items-center bg-[#12141c]">
+              <div className="p-6 border-b border-white/5 flex justify-between items-center bg-[#0a0a0f]">
                 <div className="flex flex-col gap-1">
                   <h2 className="text-2xl font-bold text-white tracking-tight">
                     {format(selectedDay, "dd MMMM yyyy")}
@@ -1359,7 +1384,7 @@ export function PreventiveRadarView() {
                             return (
                               <div
                                 key={ex.id}
-                                className="bg-black/40 rounded-lg p-3 text-xs border border-white/5 flex flex-col gap-2"
+                                className="bg-[#0a0a0f]/40 rounded-lg p-3 text-xs border border-white/5 flex flex-col gap-2"
                               >
                                 <div className="flex items-center justify-between">
                                   <span className="text-slate-300 font-medium">
@@ -1435,7 +1460,7 @@ export function PreventiveRadarView() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-md z-[60] flex items-center justify-center p-4"
+            className="fixed inset-0 bg-[#0a0a0f]/80 backdrop-blur-md z-[60] flex items-center justify-center p-4"
             onClick={() => setClosingExecutionId(null)}
           >
             <motion.div
@@ -1443,7 +1468,7 @@ export function PreventiveRadarView() {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-[#12141c] border border-emerald-500/30 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden"
+              className="bg-[#0a0a0f] border border-emerald-500/30 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden"
               dir="rtl"
             >
               <div className="h-1 bg-emerald-500 w-full" />
@@ -1484,9 +1509,9 @@ export function PreventiveRadarView() {
                       }
                       className="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-2.5 py-3 text-white focus:outline-none focus:border-emerald-500 transition-colors bg-opacity-95"
                     >
-                      <option value="EXCELLENT" className="bg-[#12141c]">🟩 ممتاز (Excellent)</option>
-                      <option value="WATCHFUL" className="bg-[#12141c]">🟨 يستحق المراقبة (Watchful)</option>
-                      <option value="CRITICAL" className="bg-[#12141c]">🟥 حرج / بحاجة صيانة وتغيير فوري (Critical)</option>
+                      <option value="EXCELLENT" className="bg-[#0a0a0f]">🟩 ممتاز (Excellent)</option>
+                      <option value="WATCHFUL" className="bg-[#0a0a0f]">🟨 يستحق المراقبة (Watchful)</option>
+                      <option value="CRITICAL" className="bg-[#0a0a0f]">🟥 حرج / بحاجة صيانة وتغيير فوري (Critical)</option>
                     </select>
                   </div>
                   <div className="space-y-2">
@@ -1530,7 +1555,7 @@ export function PreventiveRadarView() {
             <motion.div 
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setIsServiceEntryModalOpen(false)}
-              className="absolute inset-0 bg-black/85 backdrop-blur-md"
+              className="absolute inset-0 bg-[#0a0a0f]/85 backdrop-blur-md"
             />
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 15 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 15 }}
@@ -1562,7 +1587,7 @@ export function PreventiveRadarView() {
                     required
                     value={serviceMachineId}
                     onChange={(e) => setServiceMachineId(e.target.value)}
-                    className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-purple-500 transition-colors"
+                    className="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-purple-500 transition-colors"
                   >
                     <option value="">-- Choose Physical Asset --</option>
                     {machines.map(m => {
@@ -1584,7 +1609,7 @@ export function PreventiveRadarView() {
                     <select
                       value={serviceComponentId}
                       onChange={(e) => setServiceComponentId(e.target.value)}
-                      className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-purple-500 transition-colors"
+                      className="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-purple-500 transition-colors"
                     >
                       <option value="">-- General / Non-Part Specific --</option>
                       {pdrTemplates.map(comp => (
@@ -1602,7 +1627,7 @@ export function PreventiveRadarView() {
                       required
                       value={serviceActionId}
                       onChange={(e) => setServiceActionId(e.target.value)}
-                      className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-purple-500 transition-colors"
+                      className="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-purple-500 transition-colors"
                     >
                       <option value="">-- Select Master Action --</option>
                       {ACTION_VERBS.map(act => (
@@ -1625,7 +1650,7 @@ export function PreventiveRadarView() {
                         className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold uppercase transition-all flex items-center justify-center gap-1.5 ${
                           serviceType === "PREV" 
                             ? "bg-emerald-500/10 border border-emerald-500/30 text-emerald-400" 
-                            : "bg-black/30 border border-transparent text-slate-500 hover:text-slate-300"
+                            : "bg-[#0a0a0f]/30 border border-transparent text-slate-500 hover:text-slate-300"
                         }`}
                       >
                         <span className="w-2 h-2 rounded-full bg-emerald-400" />
@@ -1637,7 +1662,7 @@ export function PreventiveRadarView() {
                         className={`flex-1 py-2 px-3 rounded-lg text-xs font-bold uppercase transition-all flex items-center justify-center gap-1.5 ${
                           serviceType === "CORR" 
                             ? "bg-red-500/10 border border-red-500/30 text-red-400" 
-                            : "bg-black/30 border border-transparent text-slate-500 hover:text-slate-300"
+                            : "bg-[#0a0a0f]/30 border border-transparent text-slate-500 hover:text-slate-300"
                         }`}
                       >
                         <span className="w-2 h-2 rounded-full bg-red-400" />
@@ -1651,7 +1676,7 @@ export function PreventiveRadarView() {
                     <select
                       value={serviceTechnicianId}
                       onChange={(e) => setServiceTechnicianId(e.target.value)}
-                      className="w-full bg-black border border-white/10 rounded-lg px-3 py-2 text-white text-xs focus:outline-none"
+                      className="w-full bg-[#0a0a0f] border border-white/10 rounded-lg px-3 py-2 text-white text-xs focus:outline-none"
                     >
                       <option value="">-- Set Executed By --</option>
                       {technicians.map(tech => (
@@ -1665,7 +1690,7 @@ export function PreventiveRadarView() {
 
                 {/* Step 4: Associated DNA Spares Panel */}
                 {serviceComponentId && (
-                  <div className="border border-white/5 rounded-2xl p-4 md:p-5 bg-black/40">
+                  <div className="border border-white/5 rounded-2xl p-4 md:p-5 bg-[#0a0a0f]/40">
                     <div className="flex justify-between items-center mb-3">
                       <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wide flex items-center gap-2">
                         <Component className="w-4 h-4 text-cyan-400" /> DNA Sibling Spare Parts consumption (PDR)
@@ -1721,7 +1746,7 @@ export function PreventiveRadarView() {
                                       updated[index].quantity = val;
                                       setServiceConsumedParts(updated);
                                     }}
-                                    className="w-12 bg-black border border-white/10 rounded text-center text-xs text-white py-1 focus:outline-none"
+                                    className="w-12 bg-[#0a0a0f] border border-white/10 rounded text-center text-xs text-white py-1 focus:outline-none"
                                   />
                                   <button
                                     type="button"
@@ -1756,7 +1781,7 @@ export function PreventiveRadarView() {
                         required
                         value={serviceDuration}
                         onChange={(e) => setServiceDuration(Number(e.target.value))}
-                        className="w-full bg-black border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white text-sm focus:outline-none"
+                        className="w-full bg-[#0a0a0f] border border-white/10 rounded-xl pl-10 pr-4 py-3 text-white text-sm focus:outline-none"
                       />
                     </div>
                   </div>
@@ -1769,7 +1794,7 @@ export function PreventiveRadarView() {
                       value={serviceNotes}
                       onChange={(e) => setServiceNotes(e.target.value)}
                       rows={1}
-                      className="w-full bg-black border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none resize-none font-sans"
+                      className="w-full bg-[#0a0a0f] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none resize-none font-sans"
                     />
                   </div>
                 </div>

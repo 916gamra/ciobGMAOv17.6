@@ -497,7 +497,7 @@ export function DataExchangeView() {
           <motion.div key={card.id} variants={itemVariants}>
             <GlassCard className="p-6 border border-white/10 bg-white/[0.06] flex flex-col relative overflow-hidden group hover:border-white/30 transition-all shadow-xl hover:shadow-2xl backdrop-blur-md h-full">
                <div className="flex items-start gap-5 mb-6">
-                  <div className={`p-4 rounded-2xl bg-black/40 border border-white/5 shadow-inner`}>
+                  <div className={`p-4 rounded-2xl bg-[#0a0a0f]/40 border border-white/5 shadow-inner`}>
                     {card.icon}
                   </div>
                   <div>
@@ -513,7 +513,7 @@ export function DataExchangeView() {
                   <button 
                     onClick={() => handleDownloadTemplate(card.filename, card.cols)}
                     disabled={isProcessing}
-                    className="flex-1 flex justify-center items-center gap-2 px-4 py-2.5 bg-black/40 hover:bg-white/10 text-slate-300 rounded-xl font-medium text-sm transition-colors border border-white/10 disabled:opacity-50"
+                    className="flex-1 flex justify-center items-center gap-2 px-4 py-2.5 bg-[#0a0a0f]/40 hover:bg-white/10 text-slate-300 rounded-xl font-medium text-sm transition-colors border border-white/10 disabled:opacity-50"
                   >
                     <DownloadCloud className="w-4 h-4" /> Get Template
                   </button>

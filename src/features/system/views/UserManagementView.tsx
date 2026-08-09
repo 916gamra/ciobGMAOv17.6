@@ -50,7 +50,7 @@ export function UserManagementView() {
   // SECURITY GUARD: Absolute gate for non-admins
   if (!isUserAdmin(currentUser)) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-black/40 rounded-[2rem] border border-rose-500/10 md:min-h-[500px] relative overflow-hidden backdrop-blur-xl">
+      <div className="flex-1 flex flex-col items-center justify-center p-12 text-center bg-[#0a0a0f]/40 rounded-[2rem] border border-rose-500/10 md:min-h-[500px] relative overflow-hidden backdrop-blur-xl">
          <div className="w-20 h-20 rounded-2xl bg-rose-500/10 flex items-center justify-center mb-6 border border-rose-500/20 shadow-inner">
             <Lock className="w-8 h-8 text-rose-500" />
          </div>
@@ -170,12 +170,12 @@ export function UserManagementView() {
                   <p className="text-xs font-mono text-slate-400 mb-4">{slot.id}</p>
 
                   <div className="space-y-3 text-sm text-slate-400">
-                    <div className="flex items-center gap-2 bg-slate-900/50 p-2 rounded-lg border border-white/5">
+                    <div className="flex items-center gap-2 bg-[#0a0a0f]/50 p-2 rounded-lg border border-white/5">
                       <ShieldCheck className="w-4 h-4 text-slate-500" />
                       <span>{slot.role}</span>
                     </div>
                     {slot.realBadgeId && (
-                      <div className="flex items-center gap-2 bg-slate-900/50 p-2 rounded-lg border border-white/5">
+                      <div className="flex items-center gap-2 bg-[#0a0a0f]/50 p-2 rounded-lg border border-white/5">
                         <Fingerprint className="w-4 h-4 text-slate-500" />
                         <span className="font-mono text-xs">{slot.realBadgeId}</span>
                       </div>
@@ -236,7 +236,7 @@ export function UserManagementView() {
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
               exit={{ opacity: 0 }} 
-              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              className="absolute inset-0 bg-[#0a0a0f]/80 backdrop-blur-sm"
               onClick={() => setEditingSlot(null)}
             />
             <motion.div
@@ -281,7 +281,7 @@ export function UserManagementView() {
                       <label className="text-xs font-bold text-slate-400 uppercase tracking-widest block">Operational Engines (Portals)</label>
                       <div className="grid grid-cols-2 gap-3">
                         {AVAILABLE_PORTALS.map(portal => (
-                          <div key={portal.id} className={cn("p-4 rounded-xl border flex justify-between items-center", editAllowedPortals.includes(portal.id) ? "bg-white/5 border-white/10" : "bg-black/20 border-transparent")}>
+                          <div key={portal.id} className={cn("p-4 rounded-xl border flex justify-between items-center", editAllowedPortals.includes(portal.id) ? "bg-white/5 border-white/10" : "bg-[#0a0a0f]/20 border-transparent")}>
                              <span className={cn("text-xs font-bold uppercase tracking-wide", portal.color)}>{portal.name}</span>
                              {editingSlot.id === 'SY-ADMIN' ? (
                                <Lock className="w-4 h-4 text-slate-500" />
@@ -307,7 +307,7 @@ export function UserManagementView() {
                         type="text" 
                         value={editName}
                         onChange={(e) => setEditName(e.target.value)}
-                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-slate-600 focus:outline-none focus:border-slate-500 transition-colors"
+                        className="w-full bg-[#0a0a0f]/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-slate-600 focus:outline-none focus:border-slate-500 transition-colors"
                         required
                       />
                     </div>
@@ -321,7 +321,7 @@ export function UserManagementView() {
                             value={editPin}
                             onChange={(e) => setEditPin(e.target.value)}
                             placeholder="••••"
-                            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-slate-600 focus:outline-none focus:border-slate-500 transition-colors pl-10"
+                            className="w-full bg-[#0a0a0f]/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-slate-600 focus:outline-none focus:border-slate-500 transition-colors pl-10"
                           />
                           <KeyRound className="w-4 h-4 text-slate-500 absolute left-4 top-1/2 -translate-y-1/2" />
                         </div>
@@ -337,7 +337,7 @@ export function UserManagementView() {
                         value={editBadgeId}
                         onChange={(e) => setEditBadgeId(e.target.value)}
                         placeholder="e.g., PHY-BADGE-091"
-                        className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-slate-600 focus:outline-none focus:border-slate-500 transition-colors"
+                        className="w-full bg-[#0a0a0f]/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder:text-slate-600 focus:outline-none focus:border-slate-500 transition-colors"
                       />
                     </div>
                   )}
@@ -376,7 +376,7 @@ export function UserManagementView() {
               initial={{ opacity: 0 }} 
               animate={{ opacity: 1 }} 
               exit={{ opacity: 0 }} 
-              className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+              className="absolute inset-0 bg-[#0a0a0f]/80 backdrop-blur-sm"
               onClick={() => setConfirmDeactivateSlot(null)}
             />
             <motion.div

@@ -68,7 +68,7 @@ export class ErrorBoundary extends Component<Props, State> {
               A critical rendering fault occurred within the <strong className="text-white">{this.props.portalId || this.props.componentName || 'Subsystem'}</strong> module. The error signature has been logged for engineering review.
             </p>
 
-            <div className="w-full bg-black/50 rounded-xl p-5 mb-8 border border-rose-500/20 overflow-x-auto text-left backdrop-blur-sm">
+            <div className="w-full bg-[#0a0a0f]/50 rounded-xl p-5 mb-8 border border-rose-500/20 overflow-x-auto text-left backdrop-blur-sm">
               <div className="flex items-center gap-2 mb-3 text-rose-400 font-semibold border-b border-rose-500/20 pb-2">
                 <FileText className="w-4 h-4" />
                 <span>Error Diagnostics</span>

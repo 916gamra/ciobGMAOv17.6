@@ -296,7 +296,7 @@ export function StockReconciliationView({ user }: { user: any }) {
       </div>
 
       {/* FILTER & CONTROL BAR */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-slate-900/60 border border-slate-800 backdrop-blur-md">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-[#0a0a0f]/60 border border-slate-800 backdrop-blur-md">
         <div className="relative flex-1 w-full">
           <Search className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2" />
           <input
@@ -304,7 +304,7 @@ export function StockReconciliationView({ user }: { user: any }) {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="بحث برقم البون، اسم القطعة، كود الآلة، أو اسم الفني..."
-            className="w-full pl-4 pr-10 py-2.5 rounded-xl bg-slate-950/80 border border-slate-700/60 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-all font-mono"
+            className="w-full pl-4 pr-10 py-2.5 rounded-xl bg-[#0a0a0f]/80 border border-slate-700/60 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500 transition-all font-mono"
           />
         </div>
 
@@ -343,22 +343,22 @@ export function StockReconciliationView({ user }: { user: any }) {
       </div>
 
       {/* TABLE RADAR */}
-      <GlassCard className="overflow-hidden border border-slate-800/80 p-0">
+      <div className="rounded-2xl border border-white/10 bg-[#0a0a0f]/60 backdrop-blur-xl overflow-hidden shadow-2xl">
         <div className="overflow-x-auto custom-scrollbar">
-          <table className="w-full text-right text-xs">
-            <thead className="bg-slate-950/80 text-slate-400 border-b border-slate-800 font-bold uppercase tracking-wider">
+          <table className="w-full text-right text-xs border-collapse">
+            <thead className="bg-white/[0.04] text-slate-300 border-b border-white/10 font-bold uppercase tracking-wider">
               <tr>
-                <th className="py-3.5 px-4">رقم البون (Voucher ID)</th>
-                <th className="py-3.5 px-4">الآلة والقطاع</th>
-                <th className="py-3.5 px-4">الفني وتاريخ التدخل</th>
-                <th className="py-3.5 px-4">القطعة المسجلة</th>
+                <th className="py-3.5 px-4 text-right">رقم البون (Voucher ID)</th>
+                <th className="py-3.5 px-4 text-right">الآلة والقطاع</th>
+                <th className="py-3.5 px-4 text-right">الفني وتاريخ التدخل</th>
+                <th className="py-3.5 px-4 text-right">القطعة المسجلة</th>
                 <th className="py-3.5 px-4 text-center">الكمية</th>
                 <th className="py-3.5 px-4 text-center">رصيد المخزن الفعلي</th>
                 <th className="py-3.5 px-4 text-center">حالة المطابقة</th>
                 <th className="py-3.5 px-4 text-left">إجراء أمين المخزن</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 font-medium">
+            <tbody className="divide-y divide-white/5 font-medium">
               {filteredClaims.length === 0 ? (
                 <tr>
                   <td colSpan={8} className="py-12 text-center text-slate-500 font-bold">
@@ -374,7 +374,7 @@ export function StockReconciliationView({ user }: { user: any }) {
                   return (
                     <tr 
                       key={`${item.executionId}-${idx}`}
-                      className="hover:bg-slate-900/40 transition-colors"
+                      className="hover:bg-white/[0.04] transition-colors border-b border-white/5"
                     >
                       {/* BON ID */}
                       <td className="py-3.5 px-4">
@@ -479,7 +479,7 @@ export function StockReconciliationView({ user }: { user: any }) {
             </tbody>
           </table>
         </div>
-      </GlassCard>
+      </div>
     </div>
   );
 }

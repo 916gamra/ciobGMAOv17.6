@@ -189,7 +189,7 @@ export function SmartImporterModal({ onClose }: SmartImporterModalProps) {
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
        <motion.div 
          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-         className="absolute inset-0 bg-black/80 backdrop-blur-md"
+         className="absolute inset-0 bg-[#0a0a0f]/80 backdrop-blur-md"
          onClick={onClose}
        />
        
@@ -245,7 +245,7 @@ export function SmartImporterModal({ onClose }: SmartImporterModalProps) {
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="p-6 rounded-2xl border border-white/10 bg-black/40 space-y-4">
+                  <div className="p-6 rounded-2xl border border-white/10 bg-[#0a0a0f]/40 space-y-4">
                     <h4 className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4 border-b border-white/5 pb-2">Nexus Variables</h4>
                     
                     <div className="space-y-4">
@@ -305,7 +305,7 @@ export function SmartImporterModal({ onClose }: SmartImporterModalProps) {
                     <h3 className="text-lg font-bold text-white mb-2">Preview & Fix</h3>
                     <p className="text-xs text-slate-400">Review alignments before injecting data into the registry.</p>
                   </div>
-                  <div className="flex gap-4 items-center bg-black/40 px-4 py-2 rounded-lg border border-white/5">
+                  <div className="flex gap-4 items-center bg-[#0a0a0f]/40 px-4 py-2 rounded-lg border border-white/5">
                      <div className="flex items-center gap-2">
                        <div className="w-2 h-2 rounded-full bg-emerald-500" />
                        <span className="text-xs font-bold text-white">{mappedRows.filter(r => r.isValid).length} Valid</span>
@@ -317,7 +317,7 @@ export function SmartImporterModal({ onClose }: SmartImporterModalProps) {
                   </div>
                 </div>
 
-                <div className="flex-1 overflow-y-auto custom-scrollbar border border-white/5 rounded-2xl bg-black/20">
+                <div className="flex-1 overflow-y-auto custom-scrollbar border border-white/5 rounded-2xl bg-[#0a0a0f]/20">
                   <table className="w-full text-left text-xs">
                     <thead className="sticky top-0 bg-[#0f111a] text-slate-400 uppercase tracking-widest">
                       <tr>

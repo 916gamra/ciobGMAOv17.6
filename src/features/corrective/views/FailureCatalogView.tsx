@@ -7,9 +7,13 @@ import {
 } from 'lucide-react';
 import { useFailureCatalog } from '../hooks/useFailureCatalog';
 import { useNotifications } from '@/shared/hooks/useNotifications';
+import { PageHeader } from '@/shared/components/PageHeader';
+import { StatCompact } from '@/shared/components/StatCompact';
 import { cn } from '@/shared/utils';
+import { useTranslation } from 'react-i18next';
 
 export function FailureCatalogView() {
+  const { t } = useTranslation();
   const { categories, templates, seedDefaultCategories, addCategory, addTemplate, deleteCategory, deleteTemplate } = useFailureCatalog();
   const { showSuccess, showError } = useNotifications();
 
@@ -78,28 +82,36 @@ export function FailureCatalogView() {
 
   return (
     <div className="flex flex-col h-full bg-[#0a0a0f] text-slate-200">
-      {/* Header */}
-      <header className="shrink-0 p-8 border-b border-white/5 bg-white/[0.02]">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-          <div>
-            <h1 className="text-3xl font-bold text-white tracking-tighter flex items-center gap-3 font-sans">
-              <AlertTriangle className="w-8 h-8 text-orange-500" /> كتالوج الأعطال (Failure Catalog)
-            </h1>
-            <p className="text-slate-400 max-w-2xl text-base opacity-80 mt-2">
-              بناء وإدارة شجرة الأعطال والمشاكل حسب العائلات الصناعية (ميكانيك، كهرباء، هيدروليك...) لتسهيل إدخال تدخلات الصيانة العلاجية.
-            </p>
-          </div>
-          <div className="flex gap-3">
-            <button 
-              onClick={() => setIsAddingCategory(true)}
-              className="flex items-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 text-white font-bold rounded-xl border border-white/10 hover:border-white/20 transition-all shadow-lg"
-            >
-              <Plus className="w-5 h-5" />
-              <span>إضافة عائلة جديدة</span>
-            </button>
-          </div>
-        </div>
-      </header>
+      {/* Header Cockpit */}
+      <div className="p-6 md:p-8 pb-0">
+        <PageHeader
+          title={t('corrective.failureCatalog.title', 'كتالوج الأعطال والشجرة التشخيصية')}
+          subtitle={t('corrective.failureCatalog.subtitle', 'بناء وإدارة شجرة الأعطال والمشاكل حسب العائلات الصناعية لتسهيل إدخال تدخلات الصيانة العلاجية.')}
+          icon={<AlertTriangle className="w-8 h-8 text-orange-400" />}
+          badgeColor="orange"
+          actions={
+            <div className="flex flex-wrap items-center gap-3">
+              <StatCompact 
+                icon={<Settings2 className="w-4 h-4 text-orange-400" />} 
+                label={t('corrective.failureCatalog.families', 'العائلات الصناعية')} 
+                value={categories.length.toString()} 
+              />
+              <StatCompact 
+                icon={<AlertTriangle className="w-4 h-4 text-amber-400" />} 
+                label={t('corrective.failureCatalog.types', 'أنواع الأعطال')} 
+                value={templates.length.toString()} 
+              />
+              <button 
+                onClick={() => setIsAddingCategory(true)}
+                className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+              >
+                <Plus className="w-4 h-4 text-slate-950" />
+                <span>{t('corrective.failureCatalog.newFamily', 'إضافة عائلة جديدة')}</span>
+              </button>
+            </div>
+          }
+        />
+      </div>
 
       {/* Main Content Area */}
       <div className="flex-1 flex min-h-0">
@@ -107,7 +119,7 @@ export function FailureCatalogView() {
         {/* Left Sidebar - Categories */}
         <div className="w-80 border-r border-white/5 bg-white/[0.01] flex flex-col overflow-y-auto custom-scrollbar">
           <div className="p-4">
-            <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest mb-4">العائلات (Disciplines)</h3>
+            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">العائلات والتخصصات</h3>
             
             <div className="space-y-2">
               {categories.map(cat => (
@@ -146,7 +158,7 @@ export function FailureCatalogView() {
         </div>
 
         {/* Right Content - Failure Templates */}
-        <div className="flex-1 bg-black/20 overflow-y-auto custom-scrollbar p-8">
+        <div className="flex-1 bg-[#0a0a0f]/20 overflow-y-auto custom-scrollbar p-8">
           {selectedCategory ? (
             <div className="max-w-5xl mx-auto">
               
@@ -167,7 +179,7 @@ export function FailureCatalogView() {
                       placeholder="بحث في الأعطال..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="w-full bg-black/50 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/50 transition-all"
+                      className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/50 transition-all"
                     />
                   </div>
                   <button 
@@ -263,7 +275,7 @@ export function FailureCatalogView() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-[#0a0a0f]/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
@@ -280,7 +292,7 @@ export function FailureCatalogView() {
                     required
                     value={newCategoryName}
                     onChange={(e) => setNewCategoryName(e.target.value)}
-                    className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-500/50"
+                    className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-500/50"
                     placeholder="مثال: ميكانيك، هيدروليك..."
                   />
                 </div>
@@ -312,7 +324,7 @@ export function FailureCatalogView() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-[#0a0a0f]/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
@@ -335,7 +347,7 @@ export function FailureCatalogView() {
                     required
                     value={newTemplateName}
                     onChange={(e) => setNewTemplateName(e.target.value)}
-                    className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-500/50"
+                    className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-500/50"
                     placeholder="مثال: Fuite d'huile, Manque de phase..."
                   />
                 </div>
@@ -345,7 +357,7 @@ export function FailureCatalogView() {
                   <textarea
                     value={newTemplateDesc}
                     onChange={(e) => setNewTemplateDesc(e.target.value)}
-                    className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-500/50 h-24 resize-none"
+                    className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-500/50 h-24 resize-none"
                     placeholder="تفاصيل إضافية حول هذا العطل لتوجيه الفني..."
                   />
                 </div>
@@ -355,7 +367,7 @@ export function FailureCatalogView() {
                   <select
                     value={newTemplateSeverity}
                     onChange={(e) => setNewTemplateSeverity(e.target.value as any)}
-                    className="w-full bg-black/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-500/50"
+                    className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-500/50"
                   >
                     <option value="low">منخفض (Low)</option>
                     <option value="medium">متوسط (Medium)</option>

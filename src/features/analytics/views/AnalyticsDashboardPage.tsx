@@ -218,7 +218,7 @@ export function AnalyticsDashboardPage() {
                        0{idx + 1}
                      </div>
                      <h3 className="text-sm font-bold text-white w-full truncate px-2 tracking-wide">{tech.name}</h3>
-                     <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-2 bg-black/40 px-3 py-1 rounded-md border border-white/5 group-hover:text-fuchsia-400 transition-colors">{tech.count} requests</span>
+                     <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 mt-2 bg-[#0a0a0f]/40 px-3 py-1 rounded-md border border-white/5 group-hover:text-fuchsia-400 transition-colors">{tech.count} requests</span>
                   </div>
                 )) : (
                   <div className="col-span-full py-12 flex flex-col items-center justify-center text-center border border-dashed border-white/10 rounded-3xl ">

@@ -47,12 +47,12 @@ export function SystemBackground({ portalId }: SystemBackgroundProps) {
   const spotlight = PORTAL_SPOTLIGHTS[currentPortal] || PORTAL_SPOTLIGHTS.HOME;
 
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 select-none bg-[#090a0f]">
+    <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 select-none bg-[#0a0a0f]">
       {/* Gemini-Style Dynamic Central Soft Radial Spotlight Glow */}
       <div 
         className="absolute inset-0 transition-all duration-1000 ease-in-out"
         style={{
-          background: `radial-gradient(ellipse 65% 55% at 50% 50%, rgba(${spotlight.primaryRgb}, 0.25) 0%, rgba(15, 23, 42, 0.12) 50%, rgba(9, 10, 15, 0) 80%)`
+          background: `radial-gradient(ellipse 65% 55% at 50% 50%, rgba(${spotlight.primaryRgb}, 0.25) 0%, rgba(10, 10, 15, 0.5) 50%, rgba(9, 10, 15, 0) 80%)`
         }}
       />
       

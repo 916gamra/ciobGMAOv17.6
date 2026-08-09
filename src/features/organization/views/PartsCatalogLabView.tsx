@@ -34,6 +34,7 @@ import { cn } from '@/shared/utils';
 import { generatePdrSlotId } from '@/core/config/pdrMatrix';
 import { db } from '@/core/db';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -121,7 +122,8 @@ const GROUP_CONFIG: Record<FamilyGroup, GroupMeta> = {
   }
 };
 
-export function PartsCatalogLabView() {
+export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: string }) {
+  const { t } = useTranslation();
   const { families, templates, blueprints, isLoading, createFamily, createTemplate } = useMasterCatalogEngine();
   const { showSuccess, showError } = useNotifications();
 
@@ -317,10 +319,10 @@ export function PartsCatalogLabView() {
     >
       {/* HEADER SECTION */}
       <PageHeader
-        title="Parts Catalogue Lab"
-        subtitle="Centralized laboratory workspace for configuring structural classification families (Component Classifications) and standardized specification templates under the 999 Dormant slots rule."
+        title={t('partsCatalogLab.title', 'مختبر عائلات وقوالب قطع الغيار')}
+        subtitle={t('partsCatalogLab.subtitle', 'المساحة المركزية لتصميم عائلات التصنيف والقوالب القياسية لقطع الغيار والمكونات تحت قاعدة الـ 999 مقعداً.')}
         icon={<FolderTree className="w-6 h-6 text-amber-500" />}
-        badgeText="Core Catalogue Workspace"
+        badgeText={t('partsCatalogLab.badgeText', 'مختبر الكتالوج')}
         badgeColor="amber"
       />
 
@@ -339,8 +341,8 @@ export function PartsCatalogLabView() {
               className={cn(
                 "p-4 rounded-2xl border transition-all duration-300 cursor-pointer relative group overflow-hidden select-none",
                 isFilterActive 
-                  ? "bg-slate-900/90 border-amber-500/40 shadow-[0_5px_15px_rgba(245,158,11,0.1)] scale-[1.02]" 
-                  : "bg-black/30 border-white/5 hover:bg-white/[0.02]"
+                  ? "bg-[#0a0a0f]/90 border-amber-500/40 shadow-[0_5px_15px_rgba(245,158,11,0.1)] scale-[1.02]" 
+                  : "bg-[#0a0a0f]/30 border-white/5 hover:bg-white/[0.02]"
               )}
             >
               <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-white/[0.02] to-transparent pointer-events-none" />
@@ -385,7 +387,7 @@ export function PartsCatalogLabView() {
                   activeTab === 'families' ? "bg-amber-500 text-black font-extrabold shadow-[0_5px_15px_rgba(245,158,11,0.2)]" : "text-slate-400 hover:text-white hover:bg-white/[0.02]"
                 )}
               >
-                <FolderTree className="w-3.5 h-3.5" /> Families ({families.length})
+                <FolderTree className="w-3.5 h-3.5" /> {t('partsCatalogLab.familiesTab', 'عائلات التصنيف')} ({families.length})
               </Tabs.Trigger>
               <Tabs.Trigger 
                 value="templates" 
@@ -394,7 +396,7 @@ export function PartsCatalogLabView() {
                   activeTab === 'templates' ? "bg-emerald-500 text-black font-extrabold shadow-[0_5px_15px_rgba(16,185,129,0.2)]" : "text-slate-400 hover:text-white hover:bg-white/[0.02]"
                 )}
               >
-                <Component className="w-3.5 h-3.5" /> Tech Templates ({templates.length})
+                <Component className="w-3.5 h-3.5" /> {t('partsCatalogLab.templatesTab', 'قوالب المواصفات')} ({templates.length})
               </Tabs.Trigger>
             </Tabs.List>
 
@@ -405,7 +407,7 @@ export function PartsCatalogLabView() {
                   onClick={() => setSelectedGroupFilter('all')}
                   className="px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs font-semibold text-amber-400 hover:bg-amber-500/20 transition-all flex items-center gap-1"
                 >
-                  Group: <span className="font-bold uppercase font-mono">{selectedGroupFilter}</span>
+                  {t('partsCatalogLab.group', 'المجموعة')}: <span className="font-bold uppercase font-mono">{selectedGroupFilter}</span>
                 </button>
               )}
 
@@ -415,19 +417,19 @@ export function PartsCatalogLabView() {
                   onClick={() => setSelectedFamilyFilterId(null)}
                   className="px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-xs font-semibold text-emerald-400 hover:bg-emerald-500/20 transition-all flex items-center gap-1.5"
                 >
-                  Family: <span className="font-bold uppercase font-mono text-white">{families.find(f => f.id === selectedFamilyFilterId)?.name}</span>
+                  {t('partsCatalogLab.family', 'العائلة')}: <span className="font-bold uppercase font-mono text-white">{families.find(f => f.id === selectedFamilyFilterId)?.name}</span>
                   <span className="text-[11px] font-bold text-emerald-400 bg-emerald-500/20 w-4 h-4 rounded-full flex items-center justify-center hover:bg-emerald-500/40">×</span>
                 </button>
               )}
 
               <div className="relative group flex-1 sm:flex-none">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-amber-500 transition-colors" />
+                <Search className="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-amber-500 transition-colors" />
                 <input 
                   type="text" 
-                  placeholder={`Search in ${activeTab}...`} 
+                  placeholder={activeTab === 'families' ? t('partsCatalogLab.searchFamilies', 'البحث في عائلات التصنيف...') : t('partsCatalogLab.searchTemplates', 'البحث في قوالب المواصفات...')} 
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="titan-input py-2.5 pl-11 pr-3 w-full sm:w-64 shadow-none text-slate-100"
+                  className="titan-input py-2.5 pl-11 pr-3 rtl:pr-11 rtl:pl-3 w-full sm:w-64 shadow-none text-slate-100"
                 />
               </div>
 
@@ -436,7 +438,7 @@ export function PartsCatalogLabView() {
                   onClick={() => setIsAddingFamily(true)}
                   className="titan-button titan-button-primary bg-amber-500 hover:bg-amber-400 text-black shadow-amber-500/10 shrink-0 !py-2.5 !px-5 font-bold"
                 >
-                  <Plus className="w-4 h-4" /> Add Family Class
+                  <Plus className="w-4 h-4" /> {t('partsCatalogLab.addFamily', 'إضافة عائلة جديدة')}
                 </button>
               )}
               {activeTab === 'templates' && (
@@ -444,7 +446,7 @@ export function PartsCatalogLabView() {
                   onClick={() => setIsAddingTemplate(true)}
                   className="titan-button titan-button-primary bg-emerald-500 hover:bg-emerald-400 text-black shadow-emerald-500/10 shrink-0 !py-2.5 !px-5 font-bold"
                 >
-                  <Plus className="w-4 h-4" /> Add Template Spec
+                  <Plus className="w-4 h-4" /> {t('partsCatalogLab.addTemplate', 'إضافة قالب مواصفات')}
                 </button>
               )}
             </div>
@@ -467,12 +469,12 @@ export function PartsCatalogLabView() {
                   >
                     <GlassCard className="!p-6 border-amber-500/20 bg-amber-500/[0.01]">
                       <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-4 flex items-center gap-2">
-                        <FolderTree className="w-4 h-4 text-amber-500" /> Create Part Family Classification
+                        <FolderTree className="w-4 h-4 text-amber-500" /> {t('partsCatalogLab.createFamilyTitle', 'إنشاء عائلة تصنيف جديدة لقطع الغيار')}
                       </h3>
                       <form onSubmit={handleCreateFamily} className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-end">
                           <div className="space-y-2">
-                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Classification Group</label>
+                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('partsCatalogLab.groupLabel', 'مجموعة التصنيف')}</label>
                             <select 
                               value={newFamilyGroup} 
                               onChange={e => setNewFamilyGroup(e.target.value as FamilyGroup)}
@@ -487,20 +489,20 @@ export function PartsCatalogLabView() {
                           </div>
                           
                           <div className="space-y-2 col-span-2">
-                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Classification Family Name (Technical Name)</label>
+                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('partsCatalogLab.familyNameLabel', 'اسم عائلة التصنيف (الاسم الفني)')}</label>
                             <input 
                               required value={newFamilyName} onChange={e => setNewFamilyName(e.target.value)} 
-                              placeholder="e.g. BEARINGS, BELTS, VALVES, CYLINDERS, PLC MODULES..." 
+                              placeholder={t('partsCatalogLab.familyNamePlaceholder', 'مثال: BEARINGS, BELTS, VALVES, CYLINDERS, PLC MODULES...')} 
                               className="titan-input uppercase py-2.5 text-slate-100 font-bold"
                             />
                           </div>
                         </div>
 
                         <div className="space-y-2">
-                          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Scope / Technical Description</label>
+                          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('partsCatalogLab.familyDescLabel', 'النطاق / الوصف الهندسي')}</label>
                           <input 
                             value={newFamilyDesc} onChange={e => setNewFamilyDesc(e.target.value)} 
-                            placeholder="Specify detailed technical process boundaries or engineering guidelines for this spare parts family" 
+                            placeholder={t('partsCatalogLab.familyDescPlaceholder', 'حدد النطاق الفني التفصيلي أو المبادئ التوجيهية الهندسية لهذه العائلة')} 
                             className="titan-input py-2.5 text-slate-200"
                           />
                         </div>
@@ -511,13 +513,13 @@ export function PartsCatalogLabView() {
                             onClick={() => setIsAddingFamily(false)}
                             className="titan-button titan-button-outline !py-2.5 !px-6"
                           >
-                            Cancel
+                            {t('common.cancel', 'إلغاء')}
                           </button>
                           <button 
                             type="submit" 
                             className="titan-button titan-button-primary bg-amber-500 hover:bg-amber-400 text-black shadow-amber-500/20 !py-2.5 !px-8 font-bold"
                           >
-                            Instantiate Family
+                            {t('partsCatalogLab.submitFamily', 'تفعيل وتجسيد العائلة')}
                           </button>
                         </div>
                       </form>
@@ -753,7 +755,7 @@ export function PartsCatalogLabView() {
                               <span className="text-[10px] font-bold text-emerald-400 font-mono">{999 - bCount} Dormant / {bCount} Active</span>
                             </div>
                             
-                            <div className="grid grid-cols-10 gap-1 p-1.5 bg-black/40 rounded-xl border border-white/5">
+                            <div className="grid grid-cols-10 gap-1 p-1.5 bg-[#0a0a0f]/40 rounded-xl border border-white/5">
                               {Array.from({ length: 40 }).map((_, idx) => {
                                 const slotNum = idx + 1;
                                 const isFilled = slotNum <= bCount;
@@ -765,7 +767,7 @@ export function PartsCatalogLabView() {
                                       "aspect-square rounded text-[8px] flex items-center justify-center transition-all border font-mono",
                                       isFilled 
                                         ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-400 font-bold" 
-                                        : "bg-black/30 border-white/5 hover:border-white/20 text-slate-600"
+                                        : "bg-[#0a0a0f]/30 border-white/5 hover:border-white/20 text-slate-600"
                                     )}
                                     title={isFilled ? `Active Slot: ${slotId}` : `Dormant Slot ${slotNum}: ${slotId}`}
                                   >

@@ -312,7 +312,7 @@ export function PdrWizardModal({
           animate={{ opacity: 1 }} 
           exit={{ opacity: 0 }}
           onClick={onClose}
-          className="absolute inset-0 bg-black/80 backdrop-blur-md"
+          className="absolute inset-0 bg-[#0a0a0f]/80 backdrop-blur-md"
         />
 
         {/* Modal Content */}
@@ -355,7 +355,7 @@ export function PdrWizardModal({
               {[1, 2, 3].map((num) => (
                 <div 
                   key={num}
-                  className={`relative z-10 w-9 h-9 rounded-full flex items-center justify-center font-mono font-bold text-sm transition-all ${step >= num ? 'bg-indigo-500 text-black border-2 border-indigo-400' : 'bg-slate-900 text-slate-500 border border-white/10'}`}
+                  className={`relative z-10 w-9 h-9 rounded-full flex items-center justify-center font-mono font-bold text-sm transition-all ${step >= num ? 'bg-indigo-500 text-black border-2 border-indigo-400' : 'bg-[#0a0a0f] text-slate-500 border border-white/10'}`}
                 >
                   {step > num ? <Check className="w-4 h-4" /> : num}
                 </div>
@@ -618,7 +618,7 @@ export function PdrWizardModal({
                         <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Nomenclature Slot ID Assigned</span>
                         <span className="text-[9px] font-mono text-slate-500">Slot {slotDetails.num} of 999</span>
                       </div>
-                      <div className="text-2xl font-extrabold font-mono text-cyan-400 text-center tracking-widest py-2 bg-black/60 rounded-xl border border-white/5 shadow-inner">
+                      <div className="text-2xl font-extrabold font-mono text-cyan-400 text-center tracking-widest py-2 bg-[#0a0a0f]/60 rounded-xl border border-white/5 shadow-inner">
                         {slotDetails.activeId}
                       </div>
                       <p className="text-[10px] text-slate-400 text-center">

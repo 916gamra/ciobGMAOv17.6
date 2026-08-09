@@ -84,7 +84,7 @@ export function ConfirmationModal({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100]"
+                className="fixed inset-0 bg-[#0a0a0f]/80 backdrop-blur-sm z-[100]"
               />
             </Dialog.Overlay>
             
@@ -95,7 +95,7 @@ export function ConfirmationModal({
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: 10 }}
                   transition={{ type: "spring", damping: 25, stiffness: 350 }}
-                  className="w-full max-w-md bg-slate-900/90 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl relative"
+                  className="w-full max-w-md bg-[#0a0a0f]/90 border border-slate-800 rounded-3xl overflow-hidden shadow-2xl relative"
                 >
                   {/* Industrial Background Accent */}
                   <div className={cn("absolute -top-24 -right-24 w-48 h-48 rounded-full blur-[60px] opacity-20 pointer-events-none", styles.accent)} />
@@ -138,7 +138,7 @@ export function ConfirmationModal({
                                  autoFocus
                                  value={verificationValue}
                                  onChange={(e) => setVerificationValue(e.target.value)}
-                                 className="w-full bg-black/40 border border-slate-800 rounded-xl px-4 py-3 text-center font-mono text-white placeholder:text-slate-600 focus:border-rose-500/50 focus:ring-0 transition-all uppercase"
+                                 className="w-full bg-[#0a0a0f]/40 border border-slate-800 rounded-xl px-4 py-3 text-center font-mono text-white placeholder:text-slate-600 focus:border-rose-500/50 focus:ring-0 transition-all uppercase"
                                  placeholder="Verification"
                                />
                             </div>

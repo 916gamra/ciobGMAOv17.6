@@ -159,7 +159,7 @@ export function DataCoreView({ user }: { user: User | null }) {
 
       {/* Stats Terminal */}
       <motion.div variants={itemVariants}>
-        <div className="titan-card p-0 overflow-hidden bg-black/40 relative border-white/10 group">
+        <div className="titan-card p-0 overflow-hidden bg-[#0a0a0f]/40 relative border-white/10 group">
           <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
             <Terminal className="w-48 h-48 text-rose-500" />
           </div>
@@ -220,7 +220,7 @@ export function DataCoreView({ user }: { user: User | null }) {
                          <span>Extraction Integrity</span>
                          <span className="font-mono">{progressPercentage}%</span>
                       </div>
-                      <div className="w-full h-1.5 bg-black rounded-full overflow-hidden border border-white/5 shadow-inner">
+                      <div className="w-full h-1.5 bg-[#0a0a0f] rounded-full overflow-hidden border border-white/5 shadow-inner">
                         <motion.div 
                           className="h-full bg-rose-500 shadow-[0_0_15px_#f43f5e]"
                           initial={{ width: "0%" }}
@@ -286,7 +286,7 @@ export function DataCoreView({ user }: { user: User | null }) {
                          <span>Injection Flux</span>
                          <span className="font-mono">{progressPercentage}%</span>
                       </div>
-                      <div className="w-full h-1.5 bg-black rounded-full overflow-hidden border border-white/5 shadow-inner">
+                      <div className="w-full h-1.5 bg-[#0a0a0f] rounded-full overflow-hidden border border-white/5 shadow-inner">
                         <motion.div 
                           className="h-full bg-amber-500 shadow-[0_0_15px_#f59e0b]"
                           initial={{ width: "0%" }}
@@ -301,7 +301,7 @@ export function DataCoreView({ user }: { user: User | null }) {
               <button
                 onClick={handleImportClick}
                 disabled={isImporting || isExporting}
-                className="w-full py-5 rounded-2xl bg-black/60 border border-amber-500/30 hover:bg-amber-500/10 text-amber-500 font-bold uppercase tracking-widest text-xs transition-all hover:shadow-[0_0_30px_rgba(245,158,11,0.2)] disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-4 relative overflow-hidden active:scale-95 group/bit"
+                className="w-full py-5 rounded-2xl bg-[#0a0a0f]/60 border border-amber-500/30 hover:bg-amber-500/10 text-amber-500 font-bold uppercase tracking-widest text-xs transition-all hover:shadow-[0_0_30px_rgba(245,158,11,0.2)] disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center gap-4 relative overflow-hidden active:scale-95 group/bit"
               >
                 <div className="absolute inset-0 bg-white/5 translate-x-[-100%] group-hover/bit:translate-x-[100%] transition-transform duration-700" />
                 {isImporting ? (

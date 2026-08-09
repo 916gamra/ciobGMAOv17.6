@@ -224,7 +224,7 @@ export function PartMasterView() {
           {/* Virtualized Blueprints List */}
           <div 
             ref={parentRef} 
-            className="flex-1 w-full custom-scrollbar bg-black/10 p-8 overflow-auto"
+            className="flex-1 w-full custom-scrollbar bg-[#0a0a0f]/10 p-8 overflow-auto"
           >
             <div style={{ height: `${virtualizer.getTotalSize()}px`, width: '100%', position: 'relative' }}>
               {virtualizer.getVirtualItems().map((virtualItem) => {
@@ -247,7 +247,7 @@ export function PartMasterView() {
                     }}
                   >
                     <div className="bg-white/[0.02] hover:bg-white/[0.04] rounded-2xl border border-white/5 hover:border-amber-500/30 overflow-hidden flex flex-col md:flex-row group transition-all duration-300">
-                      <div className="p-5 border-b md:border-b-0 md:border-r border-white/5 bg-black/20 flex flex-col justify-center min-w-[280px] shrink-0">
+                      <div className="p-5 border-b md:border-b-0 md:border-r border-white/5 bg-[#0a0a0f]/20 flex flex-col justify-center min-w-[280px] shrink-0">
                          <div className="flex items-center gap-1.5 mb-3">
                            <span className="text-[9px] font-bold tracking-widest uppercase text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 shadow-sm">
                              {fam?.name || 'GEN'}
@@ -279,7 +279,7 @@ export function PartMasterView() {
                         </div>
                         
                         <div className="flex flex-col items-end justify-center relative z-10 shrink-0">
-                          <span className="text-[9px] font-mono font-bold tracking-widest text-slate-500 mb-3 bg-black/40 px-2 py-1 rounded-md border border-white/5">{blueprint.id}</span>
+                          <span className="text-[9px] font-mono font-bold tracking-widest text-slate-500 mb-3 bg-[#0a0a0f]/40 px-2 py-1 rounded-md border border-white/5">{blueprint.id}</span>
                           <button className="text-amber-400 hover:text-black uppercase tracking-widest font-bold px-4 py-2 bg-amber-500/10 hover:bg-amber-500 rounded-xl transition-colors text-[10px] border border-amber-500/20 hover:shadow-[0_0_15px_rgba(245,158,11,0.3)]">
                             View Slot
                           </button>

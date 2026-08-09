@@ -16,7 +16,9 @@ import { MachineWizardModal } from '../components/MachineWizardModal';
 import { MachineDetailsModal } from '../components/MachineDetailsModal';
 import { MachinePdrLinkModal } from '../components/MachinePdrLinkModal';
 import { PageHeader } from '@/shared/components/PageHeader';
+import { StatCompact } from '@/shared/components/StatCompact';
 import { cn } from '@/shared/utils';
+import { useTranslation } from 'react-i18next';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -29,6 +31,7 @@ const itemVariants: Variants = {
 };
 
 export function MachineRegistryView() {
+  const { t } = useTranslation();
   const { machines, sectors, technicians, families, createMachine, updateMachine, deleteMachine } = useOrganizationEngine();
   const { blueprints, templates } = useMachineLibrary();
   const { showSuccess, showError } = useNotifications();
@@ -149,47 +152,47 @@ export function MachineRegistryView() {
       className="w-full h-full flex flex-col gap-6 relative z-10"
     >
       <PageHeader
-        title="Machine Registry"
-        subtitle="Digital Twin Hub: Register and monitor physical assets across sectors."
+        title={t('machines.title', 'Machine Registry')}
+        subtitle={t('machines.subtitle', 'Comprehensive Machinery & Asset Directory.')}
         icon={<Factory className="w-8 h-8 text-indigo-500" />}
         badgeColor="indigo"
         actions={
           <div className="flex flex-wrap items-center gap-3">
-            <StatCompact icon={<Factory className="w-4 h-4 text-indigo-500" />} label="Total Machines" value={machines.length.toString()} />
-            <StatCompact icon={<Cpu className="w-4 h-4 text-emerald-500" />} label="Monitored" value={machines.length.toString()} />
+            <StatCompact icon={<Factory className="w-4 h-4 text-indigo-400" />} label={t('machines.total', 'Total Machines')} value={machines.length.toString()} />
+            <StatCompact icon={<Cpu className="w-4 h-4 text-emerald-400" />} label={t('machines.running', 'Running')} value={machines.length.toString()} />
           </div>
         }
       />
 
       <motion.div variants={itemVariants} className="flex-1 min-h-0 flex flex-col">
-        <GlassCard className="!p-0 border-white/5 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-3xl h-full flex flex-col">
-          <div className="p-8 border-b border-white/5 bg-white/[0.01] flex flex-col lg:flex-row lg:items-center justify-between gap-6 shrink-0 relative z-10">
+        <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl h-full flex flex-col bg-[#0a0a0f]/60 backdrop-blur-xl">
+          <div className="p-6 md:p-8 border-b border-white/10 bg-white/[0.02] flex flex-col lg:flex-row lg:items-center justify-between gap-6 shrink-0 relative z-10">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0">
                 <Cpu className="w-6 h-6 text-indigo-400" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-white uppercase tracking-tight">Active Machinery Directory</h2>
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Global Asset Overview</p>
+                <h2 className="text-lg font-bold text-white uppercase tracking-tight">{t('machines.directoryTitle', 'Active Machinery Directory')}</h2>
+                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('machines.directorySubtitle', 'Global Asset Overview')}</p>
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              <div className="relative group">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-indigo-500 transition-colors" />
+              <div className="relative group flex-1 lg:flex-none">
+                <Search className="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-indigo-400 transition-colors" />
                 <input 
                   type="text" 
-                  placeholder="Search assets..." 
+                  placeholder={t('machines.searchPlaceholder', 'Search assets...')} 
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="titan-input py-2.5 pl-11 pr-3 w-48 lg:w-64 shadow-none"
+                  className="titan-input py-2.5 pl-11 pr-3 rtl:pr-11 rtl:pl-3 w-full lg:w-64 shadow-none"
                 />
               </div>
               <select 
                 value={filterSector}
                 onChange={e => setFilterSector(e.target.value)}
-                className="titan-input py-2.5 px-4 bg-white/[0.03] text-sm font-medium w-40"
+                className="titan-input py-2.5 px-4 bg-white/[0.03] border-white/10 text-sm font-medium w-36 lg:w-40"
               >
-                <option value="ALL">All Sectors</option>
+                <option value="ALL">{t('machines.allSectors', 'All Sectors')}</option>
                 {sectors.map(s => (
                   <option key={s.id} value={s.id}>{s.name}</option>
                 ))}
@@ -197,39 +200,39 @@ export function MachineRegistryView() {
               <select 
                 value={filterTemplate}
                 onChange={e => setFilterTemplate(e.target.value)}
-                className="titan-input py-2.5 px-4 bg-white/[0.03] text-sm font-medium w-40"
+                className="titan-input py-2.5 px-4 bg-white/[0.03] border-white/10 text-sm font-medium w-36 lg:w-40"
               >
-                <option value="ALL">All Templates</option>
+                <option value="ALL">{t('machines.allTemplates', 'All Templates')}</option>
                 {uniqueTemplates.map(t => (
                   <option key={t} value={t}>{t}</option>
                 ))}
               </select>
               <button 
                 onClick={() => setIsImporterOpen(true)}
-                className="titan-button titan-button-outline text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/10 shrink-0 !py-2.5 gap-2"
+                className="bg-white/[0.04] text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/30 font-bold rounded-xl px-4 py-2.5 text-xs transition-all shrink-0 flex items-center justify-center gap-2"
               >
-                 <Upload className="w-4 h-4" /> Smart Import
+                 <Upload className="w-4 h-4" /> {t('machines.smartImport', 'Smart Import')}
               </button>
               <button 
                 onClick={handleTriggerNewAssetWizard}
-                className="titan-button titan-button-primary bg-indigo-500 hover:bg-indigo-400 text-white shadow-[0_0_15px_rgba(99,102,241,0.3)] shrink-0 !py-2.5"
+                className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all shrink-0 flex items-center justify-center gap-2"
               >
-                <Plus className="w-4 h-4" /> New Asset
+                <Plus className="w-4 h-4 shrink-0" /> {t('machines.newAsset', 'New Asset')}
               </button>
             </div>
           </div>
 
-          <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar bg-black/10 p-6 md:p-8">
+          <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar bg-[#0a0a0f]/40 p-6 md:p-8">
             {filteredMachines.length === 0 ? (
               <div className="py-20 text-center border border-dashed border-white/10 rounded-3xl bg-white/[0.02]">
                 <Cpu className="w-16 h-16 text-slate-500 mx-auto mb-4 opacity-50" />
-                <h3 className="text-xl font-bold text-slate-100 uppercase tracking-widest mb-2 mt-4">Null Results Detected</h3>
-                <p className="text-slate-400 text-sm font-medium">No assets matching your query or registry is empty.</p>
+                <h3 className="text-xl font-bold text-slate-100 uppercase tracking-widest mb-2 mt-4">{t('machines.nullResultsTitle', 'Null Results Detected')}</h3>
+                <p className="text-slate-400 text-sm font-medium">{t('machines.nullResultsDesc', 'No assets matching your query or registry is empty.')}</p>
                 <button
                   onClick={handleTriggerNewAssetWizard}
                   className="mt-8 px-6 py-2.5 rounded-xl border border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10 transition-colors uppercase tracking-widest text-xs font-bold"
                 >
-                  + Sync First Machine
+                  + {t('machines.syncFirst', 'Sync First Machine')}
                 </button>
               </div>
             ) : (
@@ -244,7 +247,7 @@ export function MachineRegistryView() {
                       transition={{ duration: 0.5, delay: idx * 0.1, ease: [0.16, 1, 0.3, 1] }}
                     >
                       <GlassCard 
-                        className="!p-0 relative overflow-hidden group h-full flex flex-col hover:border-indigo-500/30 transition-all duration-300"
+                        className="!p-0 relative overflow-hidden group h-full flex flex-col hover:border-indigo-500/40 transition-all duration-300 border-white/10 bg-[#0a0a0f]/60 backdrop-blur-xl"
                       >
                         <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl group-hover:bg-indigo-500/10 transition-colors pointer-events-none" />
                         
@@ -257,7 +260,7 @@ export function MachineRegistryView() {
                             <span className="inline-block px-3 py-1.5 bg-white/[0.03] border border-white/10 rounded-lg text-[10px] font-mono font-bold text-indigo-400 tracking-widest shadow-sm">
                               {machine.referenceCode}
                             </span>
-                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 backdrop-blur-md border border-white/10 p-1 rounded-lg">
+                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-[#0a0a0f]/60 backdrop-blur-md border border-white/10 p-1 rounded-lg">
                               <button 
                                 onClick={(e) => { 
                                   e.stopPropagation(); 
@@ -327,7 +330,7 @@ export function MachineRegistryView() {
                             }}
                             className="mt-4 w-full py-2 px-3.5 rounded-xl border border-teal-500/20 hover:border-teal-500/40 text-teal-400 hover:bg-teal-500/5 text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all relative z-20"
                           >
-                            <Link2 className="w-4 h-4" /> Link Spare Part / ربط قطعة غيار
+                            <Link2 className="w-4 h-4" /> {t('machines.linkSparePart', 'Link Spare Part')}
                           </button>
                         </div>
                         
@@ -406,7 +409,7 @@ export function MachineRegistryView() {
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div 
                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-               className="absolute inset-0 bg-black/80 backdrop-blur-md"
+               className="absolute inset-0 bg-[#0a0a0f]/80 backdrop-blur-md"
                onClick={handleEditClose}
             />
              <motion.div
@@ -453,7 +456,7 @@ export function MachineRegistryView() {
                     <label className="text-[10px] uppercase font-bold text-slate-400 tracking-widest ml-1">Asset ID (READ-ONLY)</label>
                     <input 
                       type="text" disabled value={referenceCode}
-                      className="titan-input font-mono text-indigo-400 py-3 opacity-60 bg-black/50 border-white/5 cursor-not-allowed text-center tracking-widest text-lg"
+                      className="titan-input font-mono text-indigo-400 py-3 opacity-60 bg-[#0a0a0f]/50 border-white/5 cursor-not-allowed text-center tracking-widest text-lg"
                     />
                   </div>
 
@@ -482,11 +485,11 @@ export function MachineRegistryView() {
                   </div>
 
                   <div className="pt-6 flex justify-end gap-3">
-                    <button type="button" onClick={handleEditClose} className="titan-button titan-button-outline !px-6 !py-2.5">
-                      Abort
+                    <button type="button" onClick={handleEditClose} className="bg-white/[0.04] text-slate-300 hover:bg-white/[0.08] hover:text-white border border-white/10 font-bold rounded-xl px-5 py-2.5 text-xs transition-all">
+                      {t('machines.abortBtn', 'Abort')}
                     </button>
-                    <button type="submit" className="titan-button titan-button-primary !px-8 !py-2.5 bg-indigo-500 hover:bg-indigo-400 text-white shadow-[0_0_15px_rgba(99,102,241,0.3)]">
-                       <Save className="w-4 h-4"/> Push Update
+                    <button type="submit" className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-6 py-2.5 text-xs shadow-lg transition-all flex items-center gap-2">
+                       <Save className="w-4 h-4"/> {t('machines.pushUpdate', 'Push Update')}
                     </button>
                   </div>
                 </form>
@@ -522,19 +525,5 @@ export function MachineRegistryView() {
       </AnimatePresence>
 
     </motion.div>
-  );
-}
-
-function StatCompact({ icon, label, value }: { icon: React.ReactNode, label: string, value: string }) {
-  return (
-    <div className="flex items-center gap-3 px-4 py-2.5 bg-white/[0.02] border border-white/5 rounded-xl hover:bg-white/[0.04] transition-colors group">
-      <div className="w-9 h-9 rounded-lg bg-white/5 border border-white/5 flex items-center justify-center shrink-0">
-        {icon}
-      </div>
-      <div className="flex flex-col">
-        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{label}</span>
-        <span className="text-base font-bold text-white -mt-0.5">{value}</span>
-      </div>
-    </div>
   );
 }

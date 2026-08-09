@@ -217,7 +217,7 @@ export function LoginScreen() {
 
         {!selectedUser && (
           <div className="flex flex-col items-center mb-10 relative z-10 w-full max-w-sm">
-             <div className="flex items-center justify-between w-full bg-black/40 border border-white/5 rounded-full p-1.5 backdrop-blur-md shadow-2xl">
+             <div className="flex items-center justify-between w-full bg-[#0a0a0f]/40 border border-white/5 rounded-full p-1.5 backdrop-blur-md shadow-2xl">
                <span className={cn("text-[10px] sm:text-xs font-black tracking-widest uppercase transition-colors duration-300 w-1/3 text-center", !isSandboxMode ? "text-cyan-400 drop-shadow-[0_0_5px_rgba(34,211,238,0.8)]" : "text-white/30")}>Production</span>
                <button
                  onClick={() => handleToggleSandbox(!isSandboxMode)}
@@ -360,7 +360,7 @@ export function LoginScreen() {
                     ROOT PIN: 0000
                   </span>
                 ) : (
-                  <span className="inline-block text-[10px] font-bold text-slate-400 bg-slate-900 border border-slate-800 px-3 py-1 rounded-full uppercase tracking-widest">
+                  <span className="inline-block text-[10px] font-bold text-slate-400 bg-[#0a0a0f] border border-slate-800 px-3 py-1 rounded-full uppercase tracking-widest">
                     OPERATOR PIN: 1234
                   </span>
                 )}
@@ -407,7 +407,7 @@ export function LoginScreen() {
                       initial={{ opacity: 0, y: -5 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0 }}
-                      className="text-white/80 font-medium text-xs text-center drop-shadow-md bg-black/20 backdrop-blur-md px-4 py-1.5 rounded-full"
+                      className="text-white/80 font-medium text-xs text-center drop-shadow-md bg-[#0a0a0f]/20 backdrop-blur-md px-4 py-1.5 rounded-full"
                     >
                       {error}
                     </motion.p>

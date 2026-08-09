@@ -152,7 +152,7 @@ export function SettingsView({ onLogout, user }: { onLogout?: () => void, user?:
                     <h3 className="text-[15px] font-medium text-white">Theme</h3>
                     <p className="text-[13px] text-slate-400 mt-1">Application is currently optimized for dark mode environments.</p>
                   </div>
-                  <div className="flex items-center gap-2 bg-black/20 border border-white/10 rounded-lg p-1">
+                  <div className="flex items-center gap-2 bg-[#0a0a0f]/20 border border-white/10 rounded-lg p-1">
                     <button className="px-3 py-1.5 rounded-md text-xs font-medium bg-[white/5] text-white shadow-sm">
                       Dark
                     </button>
@@ -254,7 +254,7 @@ export function SettingsView({ onLogout, user }: { onLogout?: () => void, user?:
                       </button>
                     </Dialog.Trigger>
                     <Dialog.Portal>
-                      <Dialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50" />
+                      <Dialog.Overlay className="fixed inset-0 bg-[#0a0a0f]/60 backdrop-blur-sm z-50" />
                       <Dialog.Content className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-transparent border border-white/10 rounded-2xl p-6 z-50 shadow-2xl">
                         <Dialog.Title className="text-lg font-semibold text-red-400 mb-2">Are you absolutely sure?</Dialog.Title>
                         <Dialog.Description className="text-[14px] text-slate-400 mb-6">
@@ -304,7 +304,7 @@ export function SettingsView({ onLogout, user }: { onLogout?: () => void, user?:
 
               {/* KPI Grid for Performance */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="bg-black/40 border border-white/10 rounded-2xl p-4 flex flex-col">
+                <div className="bg-[#0a0a0f]/40 border border-white/10 rounded-2xl p-4 flex flex-col">
                   <span className="text-[10px] uppercase font-bold text-slate-400 font-sans">Framerate (FPS)</span>
                   <div className="flex items-baseline gap-2 mt-1">
                     <span className="text-2xl font-black font-mono text-emerald-400">{telemetry.fps}</span>
@@ -313,7 +313,7 @@ export function SettingsView({ onLogout, user }: { onLogout?: () => void, user?:
                   <Cpu className="w-4 h-4 text-emerald-400/50 self-end -mt-4" />
                 </div>
 
-                <div className="bg-black/40 border border-white/10 rounded-2xl p-4 flex flex-col">
+                <div className="bg-[#0a0a0f]/40 border border-white/10 rounded-2xl p-4 flex flex-col">
                   <span className="text-[10px] uppercase font-bold text-slate-400 font-sans">Query Cache Hit Rate</span>
                   <div className="flex items-baseline gap-2 mt-1">
                     <span className="text-2xl font-black font-mono text-cyan-400">{cacheStats.hitRate}</span>
@@ -322,7 +322,7 @@ export function SettingsView({ onLogout, user }: { onLogout?: () => void, user?:
                   <Zap className="w-4 h-4 text-cyan-400/50 self-end -mt-4" />
                 </div>
 
-                <div className="bg-black/40 border border-white/10 rounded-2xl p-4 flex flex-col">
+                <div className="bg-[#0a0a0f]/40 border border-white/10 rounded-2xl p-4 flex flex-col">
                   <span className="text-[10px] uppercase font-bold text-slate-400 font-sans">Avg DB Latency</span>
                   <div className="flex items-baseline gap-2 mt-1">
                     <span className="text-2xl font-black font-mono text-indigo-400">{telemetry.avgDbLatencyMs} ms</span>
@@ -331,7 +331,7 @@ export function SettingsView({ onLogout, user }: { onLogout?: () => void, user?:
                   <HardDrive className="w-4 h-4 text-indigo-400/50 self-end -mt-4" />
                 </div>
 
-                <div className="bg-black/40 border border-white/10 rounded-2xl p-4 flex flex-col">
+                <div className="bg-[#0a0a0f]/40 border border-white/10 rounded-2xl p-4 flex flex-col">
                   <span className="text-[10px] uppercase font-bold text-slate-400 font-sans">Avg Component Render</span>
                   <div className="flex items-baseline gap-2 mt-1">
                     <span className="text-2xl font-black font-mono text-fuchsia-400">{telemetry.avgRenderTimeMs} ms</span>
@@ -373,7 +373,7 @@ export function SettingsView({ onLogout, user }: { onLogout?: () => void, user?:
                 <span className="text-xs font-mono font-bold text-slate-400 uppercase tracking-wider">
                   سجل الأداء والمقاييس المباشرة (Recent Metrics Stream)
                 </span>
-                <div className="bg-black/60 border border-white/10 rounded-2xl p-3 max-h-[220px] overflow-y-auto font-mono text-[11px] space-y-1.5 custom-scrollbar">
+                <div className="bg-[#0a0a0f]/60 border border-white/10 rounded-2xl p-3 max-h-[220px] overflow-y-auto font-mono text-[11px] space-y-1.5 custom-scrollbar">
                   {telemetry.recentMetrics.length === 0 ? (
                     <div className="text-slate-500 text-center py-4">لا توجد سجلات أداء سابقة حالياً...</div>
                   ) : (

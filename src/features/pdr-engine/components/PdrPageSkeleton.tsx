@@ -5,7 +5,7 @@ export function PdrPageSkeleton() {
   return (
     <div className="w-full space-y-6 pb-12 px-4 lg:px-8 text-left animate-in fade-in duration-300">
       {/* 1. Header Skeleton */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-black/20 border border-white/5 p-6 rounded-3xl backdrop-blur-md">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-[#0a0a0f]/20 border border-white/5 p-6 rounded-3xl backdrop-blur-md">
         <div className="flex items-center gap-4">
           <Skeleton className="w-12 h-12 rounded-2xl shrink-0" />
           <div className="space-y-2">
@@ -25,7 +25,7 @@ export function PdrPageSkeleton() {
       {/* 2. KPI Stat Cards Grid Skeleton (4 Cards) */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="p-5 rounded-2xl bg-black/20 border border-white/5 backdrop-blur-md space-y-3">
+          <div key={i} className="p-5 rounded-2xl bg-[#0a0a0f]/20 border border-white/5 backdrop-blur-md space-y-3">
             <div className="flex justify-between items-center">
               <Skeleton className="w-9 h-9 rounded-xl" />
               <Skeleton className="w-12 h-4 rounded-full" />
@@ -37,7 +37,7 @@ export function PdrPageSkeleton() {
       </div>
 
       {/* 3. Controls & Filter Bar Skeleton */}
-      <div className="p-4 rounded-2xl bg-black/20 border border-white/5 backdrop-blur-md flex flex-wrap justify-between items-center gap-4">
+      <div className="p-4 rounded-2xl bg-[#0a0a0f]/20 border border-white/5 backdrop-blur-md flex flex-wrap justify-between items-center gap-4">
         <div className="flex items-center gap-3 flex-1 min-w-[280px]">
           <Skeleton className="h-10 w-full max-w-sm rounded-xl" />
           <Skeleton className="h-10 w-32 rounded-xl" />
@@ -49,7 +49,7 @@ export function PdrPageSkeleton() {
       </div>
 
       {/* 4. Main Data Table / Rows Skeleton */}
-      <div className="rounded-2xl bg-black/20 border border-white/5 backdrop-blur-md overflow-hidden p-4 space-y-3">
+      <div className="rounded-2xl bg-[#0a0a0f]/20 border border-white/5 backdrop-blur-md overflow-hidden p-4 space-y-3">
         {/* Table Header Placeholder */}
         <div className="grid grid-cols-6 gap-4 pb-3 border-b border-white/5 px-4">
           <Skeleton className="h-4 w-20 rounded" />

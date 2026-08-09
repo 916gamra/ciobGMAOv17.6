@@ -6,6 +6,7 @@ import {
   Plus, ArrowRight, Database, FolderTree, X, Link2, Unlink, ExternalLink
 } from 'lucide-react';
 import { GlassCard } from '@/shared/components/GlassCard';
+import { PageHeader } from '@/shared/components/PageHeader';
 import { useNotifications } from '@/shared/hooks/useNotifications';
 import { useMasterCatalogEngine } from '@/features/organization/hooks/useMasterCatalogEngine';
 import { useStockEngine } from '@/features/pdr-engine/hooks/useStockEngine';
@@ -199,58 +200,56 @@ export function ComponentCatalogView() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#0a0a0f] text-slate-200">
+    <div className="flex flex-col h-full bg-[#0a0a0f] text-slate-200 dir-rtl" dir="rtl">
       
       {/* Header */}
-      <header className="shrink-0 p-8 border-b border-white/5 bg-white/[0.02]">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-          <div>
-            <h1 className="text-3xl font-bold text-white tracking-tighter flex items-center gap-3 font-sans">
-              <FolderTree className="w-8 h-8 text-indigo-400" /> PDR Catalog (كتالوج قطع الغيار)
-            </h1>
-            <p className="text-slate-400 max-w-2xl text-base opacity-80 mt-2">
-              Browse, activate, and manage your operational spare parts catalog.
-              <br/>This view lists only your selected and active spare part specifications.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-3 shrink-0">
+      <div className="p-6 md:p-8 pb-0">
+        <PageHeader
+          title="كتالوج قطع الغيار الاستهلاكية (PDR)"
+          subtitle="استعرض وتصفح جميع قطع الغيار الاستهلاكية والمخزنية النشطة ضمن الكتالوج"
+          icon={<FolderTree className="w-8 h-8 text-cyan-400" />}
+          badgeColor="cyan"
+          actions={
             <button 
               onClick={() => {
                 setWizardPrefill(false);
                 setIsWizardOpen(true);
               }}
-              className="px-5 py-2.5 bg-indigo-500 hover:bg-indigo-400 text-black font-extrabold text-sm rounded-xl flex items-center gap-2 shadow-[0_0_20px_rgba(99,102,241,0.3)] transition-all"
+              className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
             >
-              <Plus className="w-4 h-4" /> Add PDR Parts (تسجيل قطعة غيار)
+              <Plus className="w-4 h-4" /> 
+              <span>تسجيل قطعة غيار</span>
             </button>
-          </div>
-        </div>
-        
-        <div className="mt-8 relative max-w-2xl">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+          }
+        />
+      </div>
+
+      <div className="px-6 md:px-8 pb-4 mt-6">
+        <div className="relative max-w-2xl">
+          <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
           <input 
             type="text" 
-            placeholder="Search catalog by reference, model, or custom ID... (ابحث برمز القطعة أو الموديل)" 
+            placeholder="ابحث برمز القطعة، الموديل، أو المعرف المخصص..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-black/40 border border-white/10 rounded-xl py-3 pl-12 pr-4 focus:ring-2 focus:ring-indigo-500/50 outline-none text-white font-medium hover:bg-black/60 transition-colors"
+            className="w-full bg-[#0a0a0f]/40 border border-white/10 rounded-xl py-3 pr-12 pl-4 focus:ring-2 focus:ring-cyan-500/50 outline-none text-white font-medium hover:bg-[#0a0a0f]/60 transition-colors"
           />
         </div>
-      </header>
+      </div>
 
       {/* Explorer Split View */}
-      <div className="flex-1 min-h-0 flex flex-col md:flex-row overflow-hidden">
+      <div className="flex-1 min-h-0 flex flex-col md:flex-row overflow-hidden border-t border-white/5">
         
-        {/* Left Pane: Taxonomy Tree */}
-        <div className="w-full md:w-80 shrink-0 border-b md:border-b-0 md:border-r border-white/5 bg-white/[0.01] flex flex-col overflow-y-auto custom-scrollbar max-h-[300px] md:max-h-full">
+        {/* Right Pane: Taxonomy Tree */}
+        <div className="w-full md:w-80 shrink-0 border-b md:border-b-0 md:border-l border-white/5 bg-white/[0.01] flex flex-col overflow-y-auto custom-scrollbar max-h-[300px] md:max-h-full">
           <div className="p-4 border-b border-white/5 flex items-center justify-between">
-            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">Active Tree</h3>
+            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-widest">الشجرة النشطة</h3>
             <span className="text-[10px] bg-white/5 text-slate-400 px-2 py-0.5 rounded-full font-mono">{families.length} Fam</span>
           </div>
           
           {families.length === 0 ? (
             <div className="p-6 text-center text-slate-500 text-xs">
-              No active families in PDR Catalog yet. Click "Link Specification Template" to link your first template.
+              لا توجد عائلات نشطة في الكتالوج حتى الآن.
             </div>
           ) : (
             <div className="p-2 space-y-1">
@@ -265,41 +264,41 @@ export function ComponentCatalogView() {
                         setSelectedFamilyId(family.id);
                         setSelectedTemplateId(null);
                       }}
-                      className={`flex items-center gap-3 p-3 rounded-lg text-left transition-all ${isSelected ? 'bg-indigo-500/10 border border-indigo-500/20' : 'hover:bg-white/5 border border-transparent'}`}
+                      className={`flex items-center gap-3 p-3 rounded-lg text-right transition-all ${isSelected ? 'bg-cyan-500/10 border border-cyan-500/20' : 'hover:bg-white/5 border border-transparent'}`}
                     >
                       <div className={getFamilyColor(family.code).split(' ')[0]}>
                         {getFamilyIcon(family.code)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className={`font-bold truncate ${isSelected ? 'text-indigo-400' : 'text-slate-300'}`}>
+                        <div className={`font-bold truncate ${isSelected ? 'text-cyan-400' : 'text-slate-300'}`}>
                           {family.name}
                         </div>
                         <div className="text-[10px] font-mono text-slate-500">{family.code}</div>
                       </div>
-                      <ChevronRight className={`w-4 h-4 transition-transform ${isSelected ? 'text-indigo-400 rotate-90' : 'text-slate-600'}`} />
+                      <ChevronRight className={`w-4 h-4 transition-transform rtl:rotate-180 ${isSelected ? 'text-cyan-400 rtl:rotate-[270deg] rotate-90' : 'text-slate-600'}`} />
                     </button>
                     
                     {isSelected && (
-                      <div className="pl-11 pr-2 py-2 space-y-1 border-l-2 border-indigo-500/20 ml-5 mt-1 mb-2">
+                      <div className="pr-11 pl-2 py-2 space-y-1 border-r-2 border-cyan-500/20 mr-5 mt-1 mb-2">
                         <button
                           onClick={() => setSelectedTemplateId(null)}
-                          className={`w-full text-left px-3 py-2 rounded-md text-xs font-bold transition-all ${selectedTemplateId === null ? 'bg-white/10 text-white' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}
+                          className={`w-full text-right px-3 py-2 rounded-md text-xs font-bold transition-all ${selectedTemplateId === null ? 'bg-white/10 text-white' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}
                         >
-                          All {family.name}
+                          جميع قوالب {family.name}
                         </button>
                         {familyTemplates.map(temp => (
                           <div
                             key={temp.id}
                             onClick={() => setSelectedTemplateId(temp.id)}
-                            className={`w-full text-left px-3 py-2 rounded-md text-xs transition-all flex justify-between items-center cursor-pointer group/item ${selectedTemplateId === temp.id ? 'bg-indigo-500/20 text-indigo-300 font-bold' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}
+                            className={`w-full text-right px-3 py-2 rounded-md text-xs transition-all flex justify-between items-center cursor-pointer group/item ${selectedTemplateId === temp.id ? 'bg-cyan-500/20 text-cyan-300 font-bold' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}
                           >
-                            <span className="truncate pr-2">{temp.name}</span>
+                            <span className="truncate pl-2">{temp.name}</span>
                             <div className="flex items-center gap-1.5 shrink-0">
                               <span className="text-[9px] font-mono opacity-50 group-hover/item:opacity-80">{temp.code}</span>
                               <button 
                                 onClick={(e) => handleUnlinkTemplate(temp.id, e)}
-                                title="Unlink specification from PDR"
-                                className="opacity-0 group-hover/item:opacity-100 p-1 hover:bg-red-500/20 text-red-400 rounded transition-all"
+                                title="إلغاء ربط القالب بالكتالوج"
+                                className="opacity-0 group-hover/item:opacity-100 p-1 hover:bg-rose-500/20 text-rose-400 rounded transition-all"
                               >
                                 <Unlink className="w-3 h-3" />
                               </button>
@@ -315,8 +314,8 @@ export function ComponentCatalogView() {
           )}
         </div>
 
-        {/* Right Pane: Blueprints Grid */}
-        <div className="flex-1 bg-black/20 overflow-y-auto custom-scrollbar p-8">
+        {/* Left Pane (RTL): Blueprints Grid */}
+        <div className="flex-1 bg-[#0a0a0f]/20 overflow-y-auto custom-scrollbar p-6 md:p-8 relative z-10">
           <div className="flex justify-between items-end mb-6">
             <div>
               <h2 className="text-2xl font-bold text-white mb-1">
@@ -353,9 +352,9 @@ export function ComponentCatalogView() {
               {displayBlueprints.map(bp => {
                 const inStock = inventory.some(i => i.blueprintId === bp.id);
                 return (
-                  <GlassCard 
+                  <div 
                     key={bp.id}
-                    className={`p-5 relative overflow-hidden group border ${inStock ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-white/10 bg-white/[0.02] hover:border-indigo-500/50'}`}
+                    className={`p-5 relative overflow-hidden group border rounded-2xl ${inStock ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-white/10 bg-white/[0.02] hover:border-cyan-500/50'}`}
                   >
                     {inStock && <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-500/20 blur-2xl rounded-full" />}
                     
@@ -401,7 +400,7 @@ export function ComponentCatalogView() {
                         <CheckCircle2 className="w-4 h-4" /> In Factory
                       </div>
                     )}
-                  </GlassCard>
+                  </div>
                 );
               })}
             </div>
@@ -414,7 +413,7 @@ export function ComponentCatalogView() {
         {activatingBlueprintId && (
           <motion.div 
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0a0a0f]/80 backdrop-blur-sm"
             onClick={() => setActivatingBlueprintId(null)}
           >
             <motion.div 
@@ -450,7 +449,7 @@ export function ComponentCatalogView() {
                         required
                         value={initialQuantity}
                         onChange={e => setInitialQuantity(Number(e.target.value))}
-                        className="w-full bg-black/50 border border-white/10 rounded-xl py-3.5 px-4 text-white focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all font-mono text-lg"
+                        className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl py-3.5 px-4 text-white focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all font-mono text-lg"
                       />
                     </div>
                     
@@ -464,7 +463,7 @@ export function ComponentCatalogView() {
                         required
                         value={minThreshold}
                         onChange={e => setMinThreshold(Number(e.target.value))}
-                        className="w-full bg-black/50 border border-white/10 rounded-xl py-3.5 px-4 text-white focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all font-mono text-lg"
+                        className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl py-3.5 px-4 text-white focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all font-mono text-lg"
                       />
                     </div>
                   </div>
@@ -479,7 +478,7 @@ export function ComponentCatalogView() {
                       value={storageLocation}
                       onChange={e => setStorageLocation(e.target.value)}
                       placeholder="e.g. Aisle 3 - Shelf D2"
-                      className="w-full bg-black/50 border border-white/10 rounded-xl py-3.5 px-4 text-white focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all"
+                      className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl py-3.5 px-4 text-white focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all"
                     />
                   </div>
 

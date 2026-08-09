@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Factory, Cpu, Network, Users, Activity, Wrench } from 'lucide-react';
+import { Factory, Cpu, Network, Users, Wrench } from 'lucide-react';
 import { useTabStore } from '@/app/store';
 import { PortalCanvas } from '@/app/layout/PortalCanvas';
 import { PortalSidebar } from '@/app/layout/PortalSidebar';
@@ -12,14 +12,12 @@ import { StaffRegistryView } from '../../organization/views/StaffRegistryView';
 import { MachineRegistryView } from '../../organization/views/MachineRegistryView';
 import { MachineDetailsView } from '../../organization/views/MachineDetailsView';
 import { EngineeringLabView } from '../../organization/views/EngineeringLabView';
-import { IotMachineHealthDashboard } from '../views/IotMachineHealthDashboard';
 
 const FACTORY_COMPONENTS = {
   'sectors': SectorRegistryView,
   'staff': StaffRegistryView,
   'engineering-lab': EngineeringLabView,
   'machine-registry': MachineRegistryView,
-  'iot-health': IotMachineHealthDashboard,
 };
 
 export function FactoryLayout({ user, onLogout }: { user: User | null, onLogout: () => void }) {
@@ -47,6 +45,7 @@ export function FactoryLayout({ user, onLogout }: { user: User | null, onLogout:
       <PortalSidebar 
         portalName="Factory Admin"
         portalIcon={<Factory />}
+        glowColor="indigo"
         colorClass="bg-indigo-500/20"
         borderClass="border-indigo-500/30"
         textClass="text-indigo-400"
@@ -78,13 +77,6 @@ export function FactoryLayout({ user, onLogout }: { user: User | null, onLogout:
           onClick={() => openTab({ id: 'machine-registry', portalId: 'FACTORY', title: 'Machine Registry', component: 'machine-registry' })}
           title="Machine Registry"
           colorClass="text-indigo-400"
-        />
-        <PortalSidebarItem 
-          icon={<Activity />} 
-          isActive={activeTabId === 'iot-health'} 
-          onClick={() => openTab({ id: 'iot-health', portalId: 'FACTORY', title: 'IoT & Machine Health', component: 'iot-health' })}
-          title="IoT & Machine Health"
-          colorClass="text-cyan-400"
         />
       </PortalSidebar>
 
