@@ -12,6 +12,7 @@ import { DataCoreView } from '../views/DataCoreView';
 import { SecurityPoliciesView } from '../views/SecurityPoliciesView';
 import { AuditTrailView } from '../views/AuditTrailView';
 import { SystemSettingsView } from '../views/SystemSettingsView';
+import { SecurityDashboardView } from '../views/SecurityDashboardView';
 import { ArrowRightLeft } from 'lucide-react';
 
 const SETTINGS_COMPONENTS = {
@@ -21,6 +22,7 @@ const SETTINGS_COMPONENTS = {
   'security-policies': SecurityPoliciesView,
   'audit-trail': AuditTrailView,
   'system-dev-tools': SystemSettingsView,
+  'security-dashboard': SecurityDashboardView,
 };
 
 export function SystemSettingsLayout({ user, onLogout }: { user: User | null, onLogout: () => void }) {
@@ -79,6 +81,13 @@ export function SystemSettingsLayout({ user, onLogout }: { user: User | null, on
           onClick={() => openTab({ id: 'audit-trail', portalId: 'SETTINGS', title: 'Audit Trail', component: 'audit-trail' })}
           title="System Audit Trail"
           colorClass="text-slate-400"
+        />
+        <PortalSidebarItem 
+          icon={<Shield />} 
+          isActive={activeTabId === 'security-dashboard'} 
+          onClick={() => openTab({ id: 'security-dashboard', portalId: 'SETTINGS', title: 'Military Security', component: 'security-dashboard' })}
+          title="Military Security Suite"
+          colorClass="text-cyan-400"
         />
         <PortalSidebarItem 
           icon={<DatabaseZap />} 

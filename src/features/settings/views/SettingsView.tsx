@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { GlassCard } from '@/shared/components/GlassCard';
-import { Database, Download, Upload, Trash2, Shield, Bell, Monitor, LogOut, RefreshCw, Loader2, Activity, Cpu, Zap, HardDrive, BookOpen } from 'lucide-react';
+import { Database, Download, Upload, Trash2, Shield, Bell, Monitor, LogOut, RefreshCw, Loader2, Activity, Cpu, Zap, HardDrive, BookOpen, Layers, CheckCircle } from 'lucide-react';
 import { db, User } from '@/core/db';
 import * as Dialog from '@radix-ui/react-dialog';
 import { runDatabaseSeed } from '@/core/db/useDatabaseSeeder';
@@ -9,16 +9,120 @@ import { PerformanceMonitor } from '@/core/monitoring/performanceMonitor';
 import { QueryCache } from '@/core/cache/QueryCacheService';
 import { usePerformanceMonitor } from '@/core/monitoring/usePerformanceMonitor';
 import { DocumentationHubView } from '@/features/docs/views/DocumentationHubView';
+import { eventStore, EventRecord } from '@/core/events/EventStore';
+import { commandBus } from '@/core/cqrs';
+import { AdjustStockCommand } from '@/features/pdr-engine/cqrs/PdrCommands';
+import { toast } from 'sonner';
 
 export function SettingsView({ onLogout, user }: { onLogout?: () => void, user?: User | null }) {
   usePerformanceMonitor('SettingsView');
-  const [activeSection, setActiveSection] = useState<'appearance' | 'data' | 'performance' | 'docs'>('appearance');
+  const [activeSection, setActiveSection] = useState<'appearance' | 'data' | 'performance' | 'docs' | 'cqrs'>('appearance');
   const [isClearing, setIsClearing] = useState(false);
   const [clearSuccess, setClearSuccess] = useState(false);
   const [isSeeding, setIsSeeding] = useState(false);
   const [seedSuccess, setSeedSuccess] = useState(false);
   const [telemetry, setTelemetry] = useState(() => PerformanceMonitor.getTelemetrySummary());
   const [cacheStats, setCacheStats] = useState(() => QueryCache.getStats());
+
+  const [inventories, setInventories] = useState<any[]>([]);
+  const [selectedStockId, setSelectedStockId] = useState<string>('');
+  const [adjustQty, setAdjustQty] = useState<number>(10);
+  const [adjustReason, setAdjustReason] = useState<string>('صيانة دورية عاجلة');
+  const [eventsList, setEventsList] = useState<EventRecord[]>([]);
+  const [reconstructedQty, setReconstructedQty] = useState<number | null>(null);
+  const [isReplaying, setIsReplaying] = useState(false);
+
+  useEffect(() => {
+    if (activeSection === 'cqrs') {
+      loadCqrsData();
+    }
+  }, [activeSection]);
+
+  const loadCqrsData = async () => {
+    try {
+      const items = await db.inventory.toArray();
+      // Join with blueprints
+      const itemsWithBlueprints = await Promise.all(items.map(async (item) => {
+        const bp = await db.pdrBlueprints.get(item.blueprintId);
+        return {
+          ...item,
+          reference: bp?.reference || 'Unknown Ref',
+        };
+      }));
+      setInventories(itemsWithBlueprints);
+      if (itemsWithBlueprints.length > 0 && !selectedStockId) {
+        setSelectedStockId(itemsWithBlueprints[0].id);
+      }
+    } catch (err) {
+      console.error('Failed to load inventories', err);
+    }
+  };
+
+  const loadEventsForSelected = async (stockId: string) => {
+    if (!stockId) return;
+    try {
+      const list = await eventStore.getEvents(stockId);
+      setEventsList(list);
+      setReconstructedQty(null);
+    } catch (err) {
+      console.error('Failed to load events', err);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedStockId) {
+      loadEventsForSelected(selectedStockId);
+    }
+  }, [selectedStockId]);
+
+  const handleAdjustStockCqrs = async () => {
+    if (!selectedStockId) {
+      toast.error('الرجاء اختيار قطعة من المخزن أولاً');
+      return;
+    }
+
+    const cmd = new AdjustStockCommand({
+      stockId: selectedStockId,
+      quantity: adjustQty,
+      reason: adjustReason,
+      performedBy: user?.name || 'STOREKEEPER',
+    });
+
+    const res = await commandBus.execute(cmd, user?.id || 'SYSTEM');
+    if (res.ok) {
+      toast.success('تمت عملية تعديل المخزن بنجاح عبر نظام CQRS ⚡');
+      loadCqrsData();
+      loadEventsForSelected(selectedStockId);
+    } else {
+      toast.error(`فشلت العملية: ${res.error?.message}`);
+    }
+  };
+
+  const handleReplayEvents = async () => {
+    if (!selectedStockId) return;
+    setIsReplaying(true);
+    try {
+      // Replay events using reducer starting at 0 qty
+      const reconstructedValue = await eventStore.replay<number>(
+        selectedStockId,
+        (currentQty, event) => {
+          const qty = event.input?.quantity || 0;
+          return currentQty + qty;
+        },
+        0
+      );
+
+      const stockItem = await db.inventory.get(selectedStockId);
+      const baseQty = stockItem ? stockItem.quantityCurrent - eventsList.reduce((sum, ev) => sum + (ev.data.input?.quantity || 0), 0) : 0;
+
+      setReconstructedQty(baseQty + reconstructedValue);
+      toast.success('تمت إعادة تشغيل الأحداث ومطابقة الرصيد بنجاح! 🌀');
+    } catch (err) {
+      toast.error('فشلت إعادة تشغيل الأحداث');
+    } finally {
+      setIsReplaying(false);
+    }
+  };
 
   const { exportBackup, importBackup, isExporting, isImporting } = useDataVault();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -127,6 +231,13 @@ export function SettingsView({ onLogout, user }: { onLogout?: () => void, user?:
           >
             <BookOpen className={`w-5 h-5 ${activeSection === 'docs' ? 'text-indigo-400' : ''}`} />
             Docs & OpenAPI Specs
+          </button>
+          <button 
+            onClick={() => setActiveSection('cqrs')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium ${activeSection === 'cqrs' ? 'bg-[white/5] border border-white/10 text-white' : 'hover:bg-white/5 border border-transparent text-slate-400 hover:text-white'}`}
+          >
+            <Layers className={`w-5 h-5 ${activeSection === 'cqrs' ? 'text-amber-400' : ''}`} />
+            CQRS & Event Store
           </button>
 
           <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/5 border border-transparent text-slate-400 hover:text-white font-medium transition-colors">
@@ -397,6 +508,131 @@ export function SettingsView({ onLogout, user }: { onLogout?: () => void, user?:
           )}
 
           {activeSection === 'docs' && <DocumentationHubView />}
+
+          {activeSection === 'cqrs' && (
+            <GlassCard className="space-y-6">
+              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                <h2 className="text-[14px] font-semibold uppercase tracking-[0.05em] text-slate-400">
+                  لوحة التحكم في CQRS ونظام التخزين بالأحداث (Event Store & CQRS Platform)
+                </h2>
+                <span className="text-xs font-mono font-bold text-amber-400 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                  Event Sourcing Engine Active
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Write/Execute Section (Command Bus) */}
+                <div className="space-y-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5">
+                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                    <Zap className="w-4 h-4 text-amber-400" /> تنفيذ الأوامر (Command Bus Execution)
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    يمكنك تعديل المخزن باستخدام نمط CQRS. يقوم النظام بالتحقق من المدخلات، تنفيذ الحركة، ثم كتابة حدث دائم في الـ Event Store.
+                  </p>
+
+                  <div className="space-y-3 pt-2">
+                    <div>
+                      <label className="text-xs font-semibold text-slate-400 block mb-1">اختر قطعة الغيار من المخزن</label>
+                      <select
+                        value={selectedStockId}
+                        onChange={(e) => setSelectedStockId(e.target.value)}
+                        className="w-full bg-[#0a0a0f]/60 border border-white/10 rounded-xl px-3 py-2 text-xs text-slate-200 outline-none focus:border-cyan-500/50"
+                      >
+                        {inventories.map((inv) => (
+                          <option key={inv.id} value={inv.id} className="bg-slate-900">
+                            {inv.reference} (الرصيد الحالي: {inv.quantityCurrent})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs font-semibold text-slate-400 block mb-1">الكمية المراد تعديلها (موجب/سالب)</label>
+                        <input
+                          type="number"
+                          value={adjustQty}
+                          onChange={(e) => setAdjustQty(Number(e.target.value))}
+                          className="w-full bg-[#0a0a0f]/60 border border-white/10 rounded-xl px-3 py-2 text-xs text-slate-200 outline-none focus:border-cyan-500/50"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-xs font-semibold text-slate-400 block mb-1">سبب التعديل</label>
+                        <input
+                          type="text"
+                          value={adjustReason}
+                          onChange={(e) => setAdjustReason(e.target.value)}
+                          className="w-full bg-[#0a0a0f]/60 border border-white/10 rounded-xl px-3 py-2 text-xs text-slate-200 outline-none focus:border-cyan-500/50 text-end"
+                        />
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={handleAdjustStockCqrs}
+                      className="w-full mt-2 bg-white hover:bg-slate-200 text-slate-950 font-black rounded-xl py-2.5 text-xs shadow-lg transition-all flex items-center justify-center gap-2"
+                    >
+                      <CheckCircle className="w-4 h-4" /> تنفيذ أمر التعديل (Dispatch AdjustStockCommand)
+                    </button>
+                  </div>
+                </div>
+
+                {/* Read/Replay Section (Event Store Log) */}
+                <div className="space-y-4 p-4 rounded-2xl bg-white/[0.02] border border-white/5 flex flex-col justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                      <Layers className="w-4 h-4 text-cyan-400" /> سجل أحداث القطعة (Event Log)
+                    </h3>
+                    <p className="text-xs text-slate-400">
+                      قائمة الأحداث المسجلة بشكل متسلسل في قاعدة بيانات الأحداث لهذه القطعة.
+                    </p>
+
+                    <div className="mt-3 space-y-1.5 max-h-[160px] overflow-y-auto custom-scrollbar">
+                      {eventsList.length === 0 ? (
+                        <div className="text-slate-500 text-center py-6 text-xs">لا توجد أحداث مسجلة لهذه القطعة بعد...</div>
+                      ) : (
+                        eventsList.map((evt) => (
+                          <div key={evt.id} className="p-2 rounded bg-[#0a0a0f]/40 border border-white/5 font-mono text-[10px] space-y-1">
+                            <div className="flex justify-between text-slate-300">
+                              <span className="text-amber-400 font-bold">V{evt.version} - {evt.eventType}</span>
+                              <span>{new Date(evt.timestamp).toLocaleTimeString()}</span>
+                            </div>
+                            <div className="text-slate-400">
+                              الكمية المعدلة: <span className={evt.data.input?.quantity >= 0 ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}>{evt.data.input?.quantity}</span> | السبب: {evt.data.input?.reason}
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+
+                  {eventsList.length > 0 && (
+                    <div className="pt-3 border-t border-white/5 space-y-3">
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="text-slate-300 font-semibold">توقع الرصيد بإعادة تشغيل الأحداث:</span>
+                        {reconstructedQty !== null ? (
+                          <span className="font-mono text-cyan-400 font-bold text-sm bg-cyan-500/10 px-2.5 py-1 rounded border border-cyan-500/20">
+                            {reconstructedQty} قطعة (رصيد مطابق)
+                          </span>
+                        ) : (
+                          <span className="text-slate-500 italic">بانتظار إعادة التشغيل...</span>
+                        )}
+                      </div>
+
+                      <button
+                        onClick={handleReplayEvents}
+                        disabled={isReplaying}
+                        className="w-full bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 text-cyan-400 font-bold rounded-xl py-2 text-xs transition-all flex items-center justify-center gap-2"
+                      >
+                        <RefreshCw className={`w-4 h-4 ${isReplaying ? 'animate-spin' : ''}`} />
+                        إعادة تشغيل ومطابقة الأحداث (Replay & Reduce Events)
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </GlassCard>
+          )}
 
           {/* Remove activeSection === 'users' logic, as users are managed in System Config / User Management View now */}
         </div>
