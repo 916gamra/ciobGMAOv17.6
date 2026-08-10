@@ -5,6 +5,7 @@ import { AuditService } from '@/core/logging/AuditService';
 import { jsPDF } from 'jspdf';
 import { motion } from 'motion/react';
 import { PageHeader } from '@/shared/components/PageHeader';
+import { HeaderBentoCard } from '@/shared/components/HeaderBentoCard';
 import { GlassCard } from '@/shared/components/GlassCard';
 import { 
   FileText, 
@@ -15,6 +16,10 @@ import {
   Tag, 
   Wrench, 
   SlidersHorizontal,
+  LayoutGrid,
+  Factory,
+  Boxes,
+  FileDigit
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -376,7 +381,7 @@ export function PdfEngineView({ user }: { user?: any }) {
       <PageHeader
         title="محرك التقارير الفنية (PDF Engine)"
         subtitle="توليد بطاقات أوامر العمل الميدانية بالباركود، ملصقات الأرفف، وشهادات السلامة وجاهزية الآلة المعتمدة."
-        icon={<FileText className="w-6 h-6 text-rose-400" />}
+        icon={<FileText className="w-7 h-7 text-rose-400" />}
         badgeText="v17.1 PDF"
         badgeColor="rose"
         actions={
@@ -388,7 +393,38 @@ export function PdfEngineView({ user }: { user?: any }) {
             <span>إصدار بطاقة عمل PDF</span>
           </button>
         }
-      />
+      >
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <HeaderBentoCard
+            title="كتالوج قطع الغيار"
+            subtitle="PDR BLUEPRINTS"
+            value={pdrBlueprints.length}
+            icon={<LayoutGrid className="w-3.5 h-3.5" />}
+            color="blue"
+          />
+          <HeaderBentoCard
+            title="الوحدات المخزنية"
+            subtitle="TOTAL STORAGE UNITS"
+            value={inventoryItems.length}
+            icon={<Boxes className="w-3.5 h-3.5" />}
+            color="emerald"
+          />
+          <HeaderBentoCard
+            title="الآلات المسجلة"
+            subtitle="REGISTERED MACHINERY"
+            value={machines.length}
+            icon={<Factory className="w-3.5 h-3.5" />}
+            color="purple"
+          />
+          <HeaderBentoCard
+            title="معدل جاهزية النظام"
+            subtitle="SYSTEM ENGINE STATUS"
+            value="100%"
+            icon={<FileDigit className="w-3.5 h-3.5" />}
+            color="rose"
+          />
+        </div>
+      </PageHeader>
 
       {/* TEMPLATE NAVIGATION TABS */}
       <div className="flex items-center gap-2 bg-[#0a0a0f]/40 p-1.5 rounded-2xl border border-white/10 overflow-x-auto self-start">

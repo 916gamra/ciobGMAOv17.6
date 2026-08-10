@@ -3,6 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db, Machine, MachineTemplate, MachineBlueprint, PreventiveTask, PreventiveCard, MachineFamily, Technician } from '@/core/db';
 import { GlassCard } from '@/shared/components/GlassCard';
 import { PageHeader } from '@/shared/components/PageHeader';
+import { HeaderBentoCard } from '@/shared/components/HeaderBentoCard';
 import { cn } from '@/shared/utils';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'motion/react';
@@ -363,7 +364,7 @@ export function MachineRegistryView() {
         <PageHeader
           title={t("preventive.plans.title", "سجل الآلات وخطط الصيانة")}
           subtitle={t("preventive.plans.subtitle", "تسيير الأصول ومجموعات الآلات وتوارث الخطط الوقائية وتوطينها بالمصنع")}
-          icon={<Layers className="w-8 h-8 text-emerald-400" />}
+          icon={<Layers className="w-7 h-7 text-emerald-400" />}
           badgeColor="emerald"
           badgeText={t("portals.preventive", "الصيانة الوقائية")}
           actions={
@@ -418,7 +419,38 @@ export function MachineRegistryView() {
               )}
             </div>
           }
-        />
+        >
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <HeaderBentoCard
+              title="قوالب الآلات"
+              subtitle="MACHINE TEMPLATES"
+              value={templates?.length || 0}
+              icon={<Layers className="w-3.5 h-3.5" />}
+              color="emerald"
+            />
+            <HeaderBentoCard
+              title="طرازات الكتالوج"
+              subtitle="BLUEPRINTS"
+              value={blueprints?.length || 0}
+              icon={<Boxes className="w-3.5 h-3.5" />}
+              color="cyan"
+            />
+            <HeaderBentoCard
+              title="الآلات الحية"
+              subtitle="ACTIVE INSTANCES"
+              value={machines?.length || 0}
+              icon={<Factory className="w-3.5 h-3.5" />}
+              color="blue"
+            />
+            <HeaderBentoCard
+              title="مجموعات الصيانة"
+              subtitle="PREVENTIVE GROUPS"
+              value={preventiveCards?.length || 0}
+              icon={<ClipboardList className="w-3.5 h-3.5" />}
+              color="purple"
+            />
+          </div>
+        </PageHeader>
       </div>
 
       {/* Main Content Area */}
@@ -643,7 +675,7 @@ export function MachineRegistryView() {
                         <button
                           onClick={() => setIsDeployModalOpen(true)}
                           disabled={linkedTasksInCard.length === 0 || templateMachines.length === 0}
-                          className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(79,70,229,0.3)] disabled:opacity-40 disabled:cursor-not-allowed"
+                          className="px-4 py-1.5 bg-white hover:bg-slate-200 text-slate-950 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 shadow-lg disabled:opacity-40 disabled:cursor-not-allowed"
                         >
                           <Play className="w-3.5 h-3.5" /> جدولة وتفعيل الخطة
                         </button>
@@ -953,7 +985,7 @@ export function MachineRegistryView() {
 
                 <div className="flex justify-end gap-3 pt-6" dir="ltr">
                   <button type="button" onClick={() => setIsBlueprintModalOpen(false)} className="px-5 py-2 rounded-xl border border-white/10 text-slate-300 font-bold text-xs hover:bg-white/5">إلغاء</button>
-                  <button type="submit" className="px-6 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs">حفظ الطراز</button>
+                  <button type="submit" className="px-6 py-2 rounded-xl bg-white hover:bg-slate-200 text-slate-950 font-extrabold text-xs shadow-lg transition-all">حفظ الطراز</button>
                 </div>
               </form>
             </motion.div>
@@ -1168,7 +1200,7 @@ export function MachineRegistryView() {
                   <button 
                     type="button" 
                     onClick={handleDeployPlan} 
-                    className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-[0_0_20px_rgba(79,70,229,0.3)] flex items-center gap-2"
+                    className="px-6 py-2.5 rounded-xl bg-white hover:bg-slate-200 text-slate-950 font-extrabold text-xs shadow-lg flex items-center gap-2 transition-all"
                   >
                     <Play className="w-4 h-4" /> تأكيد وجدولة خطة العمل
                   </button>

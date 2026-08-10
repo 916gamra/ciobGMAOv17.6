@@ -1,6 +1,6 @@
 # 🏛 Architecture & Engineering Philosophy Notes
 
-This document is dedicated to the core developers maintaining `CIOB GMAO v17.0`. It explains "Why" things are built the way they are, beyond just the "How."
+This document is dedicated to the core developers maintaining `BDR Nexus (GMAO v17.6)`. It explains "Why" things are built the way they are, beyond just the "How."
 
 ## The "Windows OS" Metaphor
 Why does the application look like a desktop OS instead of a standard web dashboard?

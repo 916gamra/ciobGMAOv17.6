@@ -14,6 +14,7 @@ interface PageHeaderProps {
   badgeText?: string;
   badgeColor?: 'cyan' | 'indigo' | 'fuchsia' | 'emerald' | 'amber' | 'rose' | 'orange' | 'purple' | 'blue';
   actions?: React.ReactNode;
+  children?: React.ReactNode;
   className?: string;
 }
 
@@ -24,6 +25,7 @@ export function PageHeader({
   badgeText,
   badgeColor = 'cyan',
   actions,
+  children,
   className
 }: PageHeaderProps) {
   const colorMap = {
@@ -107,7 +109,7 @@ export function PageHeader({
     <motion.header 
       variants={pageItemVariants} 
       className={cn(
-        "relative overflow-hidden flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6 shrink-0 z-10", 
+        "relative overflow-hidden flex flex-col mb-6 shrink-0 z-10", 
         "p-6 md:p-7 backdrop-blur-xl rounded-3xl border shadow-xl transition-all duration-300",
         activeTheme.bg,
         activeTheme.border,
@@ -119,34 +121,42 @@ export function PageHeader({
       <div className={cn("absolute -top-24 -left-24 w-72 h-72 rounded-full blur-3xl pointer-events-none transition-all duration-500", activeTheme.glow)} />
       <div className="absolute -bottom-24 -right-24 w-60 h-60 bg-white/5 rounded-full blur-2xl pointer-events-none" />
 
-      <div className="flex items-start md:items-center gap-3.5 relative z-10 text-start">
-        {icon && (
-          <div className="shrink-0 flex items-center justify-center">
-            {icon}
-          </div>
-        )}
-        <div className="text-start min-w-0">
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-xl md:text-2xl font-black text-white tracking-tight text-start">
-              {title}
-            </h1>
-            {badgeText && (
-              <span className={cn("px-3 py-1 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider border shadow-sm", activeTheme.badge)}>
-                {badgeText}
-              </span>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+        <div className="flex items-start md:items-center gap-3.5 relative z-10 text-start">
+          {icon && (
+            <div className="shrink-0 flex items-center justify-center">
+              {icon}
+            </div>
+          )}
+          <div className="text-start min-w-0">
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-xl md:text-2xl font-black text-white tracking-tight text-start">
+                {title}
+              </h1>
+              {badgeText && (
+                <span className={cn("px-3 py-1 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider border shadow-sm", activeTheme.badge)}>
+                  {badgeText}
+                </span>
+              )}
+            </div>
+            {subtitle && (
+              <p className="text-slate-300/80 text-xs md:text-sm font-medium mt-1.5 max-w-2xl leading-relaxed text-start">
+                {subtitle}
+              </p>
             )}
           </div>
-          {subtitle && (
-            <p className="text-slate-300/80 text-xs md:text-sm font-medium mt-1.5 max-w-2xl leading-relaxed text-start">
-              {subtitle}
-            </p>
-          )}
         </div>
+
+        {actions && (
+          <div className="flex flex-wrap items-center gap-3 shrink-0 relative z-10 mt-2 md:mt-0">
+            {actions}
+          </div>
+        )}
       </div>
 
-      {actions && (
-        <div className="flex flex-wrap items-center gap-3 shrink-0 relative z-10 mt-2 md:mt-0">
-          {actions}
+      {children && (
+        <div className="mt-6 pt-5 border-t border-white/10 relative z-10">
+          {children}
         </div>
       )}
     </motion.header>

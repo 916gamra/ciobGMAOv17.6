@@ -2,6 +2,8 @@
 import { createLogger } from '../logging/Logger';
 import { asyncHandler, Result, AppError } from '../error';
 
+export type { Result };
+
 export abstract class BaseService {
   protected logger = createLogger(this.constructor.name);
 

@@ -1,6 +1,14 @@
-# Changelog: TITANIC OS
+# Changelog: BDR Nexus (GMAO v17.6)
 
 All notable changes to this project will be documented in this file.
+
+## [17.6.0] - 2026-08-09
+### Added
+- Real-time Sync Engine & Offline-first Dexie DB persistence.
+- Advanced Predictive Maintenance engine and Analytics Dashboard.
+- Strict 4-Dimension data architecture (Template, Blueprint, Stock Instance, Machine).
+- 999 Slots Rule with sequential nomenclature and PDR Engine integration.
+- Layered Glass Architecture & Unified Neutral Base UI standards.
 
 ## [1.0.1] - 2026-05-02
 ### Changed

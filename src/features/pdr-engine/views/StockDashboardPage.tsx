@@ -10,6 +10,7 @@ import { useTabStore } from '@/app/store';
 import { useNotifications } from '@/shared/hooks/useNotifications';
 import { GlassCard } from '@/shared/components/GlassCard';
 import { PageHeader } from '@/shared/components/PageHeader';
+import { HeaderBentoCard } from '@/shared/components/HeaderBentoCard';
 import { 
   Box, 
   AlertTriangle, 
@@ -95,6 +96,10 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
   const optimalItemsCount = totalItemsCount - (lowStockItems.length + outOfStockItems.length);
   const healthPercentage = totalItemsCount > 0 ? Math.round((optimalItemsCount / totalItemsCount) * 100) : 100;
 
+  const totalStockItems = inventory.reduce((acc, item) => acc + item.quantityCurrent, 0);
+  const criticalShortages = outOfStockItems.length;
+  const lowStockWarnings = lowStockItems.length;
+
   const handleAutoProcure = async () => {
     const criticalItems = [...outOfStockItems, ...lowStockItems];
     const uniqueItems = Array.from(new Map(criticalItems.map(item => [item.id, item])).values());
@@ -112,12 +117,12 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
 
     try {
       await createPendingOrder('SYSTEM_AUTO_GENERATED', lines);
-      showSuccess('Automatic Procurement Order', `A pending purchase order has been generated for ${lines.length} critical spare parts.`);
+      showSuccess('أمر توريد آلي', `تم توليد أمر شراء معلق لعدد ${lines.length} قطعة حرجة.`);
       setTimeout(() => {
-        openTab({ id: 'procurement', portalId: 'PDR', title: 'Procurement v4', component: 'procurement' });
+        openTab({ id: 'procurement', portalId: 'PDR', title: 'إدارة التوريد', component: 'procurement' });
       }, 1200);
     } catch(err: any) {
-      showError('Sync Error', err.message);
+      showError('خطأ تزامن', err.message);
     }
   };
 
@@ -131,7 +136,7 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
       
       return {
         ...item,
-        partName: template?.name || 'Unknown Component',
+        partName: template?.name || 'مكون مجهول',
         partFamily: template?.familyCode || 'GEN',
         ratio,
         blueprintReference: blueprint?.reference || item.blueprintReference
@@ -177,7 +182,7 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
 
       return {
         ...mov,
-        partName: template?.name || 'Unknown spare part',
+        partName: template?.name || 'قطعة غيار مجهولة',
         reference: blueprint?.reference || 'REF'
       };
     });
@@ -203,83 +208,58 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="w-full space-y-6 pb-12 px-4 relative z-10 lg:px-8 text-left"
+      className="w-full space-y-6 pb-12 px-4 relative z-10 lg:px-8 text-right"
     >
       {/* Upper Subtle HUD Banner */}
       <div className="absolute top-0 right-0 left-0 h-[280px] bg-gradient-to-b from-slate-800/10 via-transparent to-transparent pointer-events-none z-0 rounded-t-[3rem]" />
 
       {/* Premium Header Layout */}
       <PageHeader
-        title={t('pdr.dashboard.title', 'PDR Radar')}
-        subtitle={t('pdr.dashboard.subtitle', 'Real-time spare parts stock & preventive consumption monitoring')}
-        icon={<Box className="w-6 h-6 text-cyan-400" />}
-        badgeText="Telemetry"
+        title={t('pdr.dashboard.title', 'رادار قطع الغيار (PDR)')}
+        subtitle={t('pdr.dashboard.subtitle', 'مراقبة حية للمخزون الفعلي، التحذيرات المبكرة، وحركة الاستهلاك')}
+        icon={<Box className="w-7 h-7 text-cyan-400" />}
+        badgeText="مراقبة حية"
         badgeColor="cyan"
-        actions={
-          <div className="flex items-center gap-4">
-            <div className="relative flex items-center justify-center w-10 h-10 shrink-0">
-              <svg className="w-full h-full transform -rotate-90">
-                <circle
-                  cx="20"
-                  cy="20"
-                  r="16"
-                  className="stroke-slate-800"
-                  strokeWidth="3.5"
-                  fill="transparent"
-                />
-                <circle
-                  cx="20"
-                  cy="20"
-                  r="16"
-                  className={cn(
-                    "transition-all duration-1000 ease-out",
-                    healthPercentage > 75 ? "stroke-emerald-400" :
-                    healthPercentage > 40 ? "stroke-amber-400" : "stroke-rose-500"
-                  )}
-                  strokeWidth="3.5"
-                  fill="transparent"
-                  strokeDasharray={2 * Math.PI * 16}
-                  strokeDashoffset={2 * Math.PI * 16 * (1 - healthPercentage / 100)}
-                  strokeLinecap="round"
-                />
-              </svg>
-              <span className="absolute text-[10px] font-black text-white font-mono">{healthPercentage}%</span>
-            </div>
-            <div className="text-left hidden sm:block">
-              <div className="text-[9px] font-bold text-slate-500 uppercase tracking-wider font-sans">Readiness Index</div>
-              <div className="text-xs font-black text-white mt-0.5 flex items-center gap-1.5 justify-start">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span>{optimalItemsCount} / {totalItemsCount} Safe</span>
-              </div>
-            </div>
-          </div>
-        }
-      />
-
-      {/* Upgraded Cyberpunk KPI display pods */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-3 gap-4 relative z-10">
-        <StatCompactPod 
-          icon={<Database className="w-5 h-5 text-emerald-400" />} 
-          label="NEW Parts" 
-          value={newPartsCount.toString()} 
-          sub="Brand new stocks"
-          color="emerald"
-        />
-        <StatCompactPod 
-          icon={<AlertTriangle className="w-5 h-5 text-amber-400 animate-pulse" />} 
-          label="LOW Stock" 
-          value={lowStockItems.length.toString()} 
-          sub="Below safety threshold"
-          color="warning"
-        />
-        <StatCompactPod 
-          icon={<AlertOctagon className="w-5 h-5 text-rose-500 animate-bounce" />} 
-          label="EMPTY Stock" 
-          value={outOfStockItems.length.toString()} 
-          sub="Requires immediate action"
-          color="danger"
-        />
-      </motion.div>
+      >
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <HeaderBentoCard
+            title="الصحة العامة"
+            subtitle="مؤشر الجاهزية"
+            value={healthPercentage}
+            valueUnit="%"
+            icon={<Activity className="w-3.5 h-3.5" />}
+            color="cyan"
+            isActive={false}
+          />
+          <HeaderBentoCard
+            title="الرصيد الفعلي"
+            subtitle="إجمالي القطع"
+            value={totalStockItems}
+            valueUnit="قطعة"
+            icon={<Box className="w-3.5 h-3.5" />}
+            color="emerald"
+            isActive={false}
+          />
+          <HeaderBentoCard
+            title="تحذيرات النقص"
+            subtitle="نقص حرج"
+            value={criticalShortages}
+            valueUnit="تنبيه"
+            icon={<AlertOctagon className="w-3.5 h-3.5" />}
+            color={criticalShortages > 0 ? "rose" : "emerald"}
+            isActive={false}
+          />
+          <HeaderBentoCard
+            title="تحت حد الأمان"
+            subtitle="مخزون منخفض"
+            value={lowStockWarnings}
+            valueUnit="تنبيه"
+            icon={<AlertTriangle className="w-3.5 h-3.5" />}
+            color={lowStockWarnings > 0 ? "amber" : "slate"}
+            isActive={false}
+          />
+        </div>
+      </PageHeader>
 
       {/* Main Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative z-10">
@@ -295,9 +275,9 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                 <div className="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0">
                   <Sliders className="w-4 h-4 text-cyan-400" />
                 </div>
-                <div className="text-left">
-                  <h2 className="text-sm font-extrabold text-white uppercase tracking-tight font-sans">Asset & Inventory</h2>
-                  <p className="text-[9px] font-bold text-cyan-400/60 uppercase tracking-widest font-mono">Live telemetry monitoring</p>
+                <div className="text-right">
+                  <h2 className="text-sm font-extrabold text-white uppercase tracking-tight font-sans">الأصول والمخزون الفعلي</h2>
+                  <p className="text-[9px] font-bold text-cyan-400/60 uppercase tracking-widest font-mono">تتبع حي للمكونات</p>
                 </div>
               </div>
 
@@ -305,13 +285,13 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
               <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto justify-start">
                 {/* Search Inputs */}
                 <div className="relative w-full sm:w-56 group">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 group-focus-within:text-cyan-400 transition-colors" />
+                  <Search className="absolute rtl:left-auto rtl:right-3 left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 group-focus-within:text-cyan-400 transition-colors" />
                   <input 
                     type="text" 
-                    placeholder={t('pdr.dashboard.searchPlaceholder', 'Search parts or references...')} 
+                    placeholder="بحث في المخزون (الاسم، المرجع)..." 
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-[#0a0b10] border border-white/10 rounded-xl py-2 pl-9 pr-3 text-xs font-medium text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 transition-all shadow-inner"
+                    className="w-full bg-[#0a0b10] border border-white/10 rounded-xl py-2 rtl:pr-9 rtl:pl-3 pl-9 pr-3 text-xs font-medium text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 transition-all shadow-inner"
                   />
                 </div>
                 
@@ -324,9 +304,9 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                       exit={{ opacity: 0, scale: 0.95 }}
                       onClick={handleAutoProcure}
                       className="px-3 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 font-bold text-xs transition-all flex items-center gap-1.5"
-                      title={t('pdr.dashboard.autoProcure', 'Auto-Procure')}
+                      title={t('pdr.dashboard.autoProcure', 'توليد أمر توريد')}
                     >
-                      <Zap className="w-3.5 h-3.5 text-amber-400" /> {t('pdr.dashboard.autoProcure', 'Auto-Procure')}
+                      <Zap className="w-3.5 h-3.5 text-amber-400" /> {t('pdr.dashboard.autoProcure', 'توليد أمر توريد')}
                     </motion.button>
                   )}
                 </AnimatePresence>
@@ -336,7 +316,7 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                   onClick={() => setIsAddModalOpen(true)}
                   className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 font-bold text-xs transition-all flex items-center gap-1.5 font-sans"
                 >
-                  <Plus className="w-3.5 h-3.5 text-cyan-400" /> {t('pdr.dashboard.addInventory', 'New Entry')}
+                  <Plus className="w-3.5 h-3.5 text-cyan-400" /> {t('pdr.dashboard.addInventory', 'إدخال مخزون')}
                 </button>
 
                 {/* Transaction Action */}
@@ -344,7 +324,7 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                   onClick={() => { setPreselectedStockId(undefined); setIsModalOpen(true); }}
                   className="px-3.5 py-2 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-300 font-bold text-xs transition-all flex items-center gap-1.5 shadow-[0_0_12px_rgba(6,182,212,0.15)]"
                 >
-                  <ArrowRightLeft className="w-3.5 h-3.5 text-cyan-400" /> Withdraw / Deposit
+                  <ArrowRightLeft className="w-3.5 h-3.5 text-cyan-400" /> حركة (صرف / إيداع)
                 </button>
               </div>
             </div>
@@ -364,7 +344,7 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                         : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"
                     )}
                   >
-                    All Urgency
+                    الكل
                   </button>
                   <button
                     onClick={() => setUrgencyFilter('LOW')}
@@ -375,7 +355,7 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                         : "text-slate-400 hover:text-amber-400 hover:bg-amber-500/5 border border-transparent"
                     )}
                   >
-                    Below Safety
+                    تحت حد الأمان
                   </button>
                   <button
                     onClick={() => setUrgencyFilter('EMPTY')}
@@ -386,7 +366,7 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                         : "text-slate-400 hover:text-rose-400 hover:bg-rose-500/5 border border-transparent"
                     )}
                   >
-                    Empty
+                    نافذ
                   </button>
                   <button
                     onClick={() => setUrgencyFilter('OPTIMAL')}
@@ -397,7 +377,7 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                         : "text-slate-400 hover:text-emerald-400 hover:bg-emerald-500/5 border border-transparent"
                     )}
                   >
-                    Optimal
+                    آمن ووفير
                   </button>
                 </div>
 
@@ -412,9 +392,9 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                           ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-sm"
                           : "text-slate-400 hover:text-white"
                       )}
-                      title="Table View"
+                      title="عرض القائمة"
                     >
-                      <Table className="w-3.5 h-3.5" /> Table
+                      <Table className="w-3.5 h-3.5" /> قائمة
                     </button>
                     <button
                       onClick={() => setViewMode('grid')}
@@ -424,9 +404,9 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                           ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-sm"
                           : "text-slate-400 hover:text-white"
                       )}
-                      title="Cards View"
+                      title="عرض البطاقات"
                     >
-                      <LayoutGrid className="w-3.5 h-3.5" /> Cards
+                      <LayoutGrid className="w-3.5 h-3.5" /> بطاقات
                     </button>
                   </div>
 
@@ -434,16 +414,16 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                     <button 
                       onClick={resetFilters}
                       className="px-2.5 py-1.5 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/20 transition-all font-bold text-xs flex items-center gap-1"
-                      title="Reset filters"
+                      title="إلغاء التصفية"
                     >
-                      <RotateCcw className="w-3 h-3" /> Clear
+                      <RotateCcw className="w-3 h-3" /> إلغاء
                     </button>
                   )}
                 </div>
               </div>
 
               <div className="text-[10px] font-mono text-slate-500">
-                Matching: <strong className="text-cyan-400">{filteredInventory.length}</strong> of {inventory.length} total
+                النتيجة: <strong className="text-cyan-400">{filteredInventory.length}</strong> من أصل {inventory.length}
               </div>
             </div>
             
@@ -452,12 +432,12 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
               {filteredInventory.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center p-8">
                   <Box className="w-12 h-12 mb-3 text-slate-700 mx-auto opacity-20" />
-                  <p className="text-xs font-medium text-slate-500 font-sans">No parts match your search or filter criteria.</p>
+                  <p className="text-xs font-medium text-slate-500 font-sans">لم يتم العثور على أي قطع تطابق معايير البحث.</p>
                   <button 
                     onClick={resetFilters}
                     className="mt-3 text-cyan-400 hover:text-cyan-300 text-xs font-bold underline font-sans"
                   >
-                    Reset Filters
+                    إلغاء التصفية
                   </button>
                 </div>
               ) : viewMode === 'table' ? (
@@ -577,15 +557,15 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                       if (item.isOutOfStock) {
                         barColor = "bg-rose-500 shadow-[0_0_10px_rgba(239,68,68,0.4)]";
                         glowColor = "group-hover:border-rose-500/30";
-                        statusText = "OUT OF STOCK";
+                        statusText = "نافذ";
                       } else if (item.isLowStock) {
                         barColor = "bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.4)] animate-pulse";
                         glowColor = "group-hover:border-amber-400/30";
-                        statusText = "CRITICAL LOW";
+                        statusText = "منخفض جدا";
                       } else {
                         barColor = "bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.4)]";
                         glowColor = "group-hover:border-emerald-400/30";
-                        statusText = "SAFE";
+                        statusText = "آمن ووفير";
                       }
 
                       return (
@@ -631,11 +611,11 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                                 <div className="flex items-center justify-between text-xs">
                                   <span className="text-slate-500 flex items-center gap-1.5">
                                     <MapPin className="w-3.5 h-3.5 text-cyan-500/60" />
-                                    <span className="truncate max-w-[150px]">{item.locationDetails || 'Main Warehouse (A1)'}</span>
+                                    <span className="truncate max-w-[150px]">{item.locationDetails || 'المخزن الرئيسي (A1)'}</span>
                                   </span>
                                 </div>
                                 <div className="flex items-center justify-between text-[10px] font-mono">
-                                  <span className="text-slate-400">Bal: {item.quantityCurrent} / Min: {item.minThreshold}</span>
+                                  <span className="text-slate-400">الرصيد: {item.quantityCurrent} / الحد الأدنى: {item.minThreshold}</span>
                                   <span className={cn("font-bold", item.isOutOfStock ? "text-rose-400" : item.isLowStock ? "text-amber-400" : "text-emerald-400")}>
                                     {statusText}
                                   </span>
@@ -649,8 +629,8 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                               </div>
                             </div>
                             
-                            <div className="mt-auto grid grid-cols-2 divide-x divide-white/5 border-t border-white/5 bg-white/[0.02] text-[10px] font-bold text-slate-400 uppercase tracking-widest relative z-10">
-                              <div className="p-4 flex items-center gap-2 justify-center" title="Family">
+                            <div className="mt-auto grid grid-cols-2 divide-x divide-x-reverse divide-white/5 border-t border-white/5 bg-white/[0.02] text-[10px] font-bold text-slate-400 uppercase tracking-widest relative z-10">
+                              <div className="p-4 flex items-center gap-2 justify-center" title="العائلة">
                                 <Tag className="w-4 h-4 text-slate-500" />
                                 <span className="truncate">{item.partFamily}</span>
                               </div>
@@ -659,10 +639,10 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                                   e.stopPropagation();
                                   handleQuickAction(item.id);
                                 }}
-                                className="p-4 flex items-center gap-2 justify-center hover:bg-white/[0.05] hover:text-cyan-400 transition-colors cursor-pointer" title="Action"
+                                className="p-4 flex items-center gap-2 justify-center hover:bg-white/[0.05] hover:text-cyan-400 transition-colors cursor-pointer" title="حركة"
                               >
                                 <ArrowRightLeft className="w-4 h-4" />
-                                <span className="truncate">Transact</span>
+                                <span className="truncate">حركة</span>
                               </button>
                             </div>
                           </GlassCard>
@@ -686,10 +666,10 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500" />
                 </span>
-                <h2 className="text-xs font-extrabold text-white uppercase tracking-tight">Real-time Operations Stream</h2>
+                <h2 className="text-xs font-extrabold text-white uppercase tracking-tight">سجل العمليات المباشر</h2>
               </div>
               <span className="text-[8px] font-mono text-cyan-400 border border-cyan-500/25 bg-cyan-500/10 px-2 py-0.5 rounded-md shadow-[0_0_10px_rgba(6,182,212,0.15)] font-black">
-                REALTIME TELEMETRY
+                بث حي
               </span>
             </div>
             
@@ -705,7 +685,7 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                 {enrichedRecentMovements.length === 0 ? (
                   <div className="py-28 text-center opacity-40">
                     <Activity className="w-10 h-10 text-slate-600 mx-auto mb-3 animate-pulse" />
-                    <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">Waiting for new operations...</div>
+                    <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">في انتظار عمليات جديدة...</div>
                   </div>
                 ) : (
                   enrichedRecentMovements.map((movement, idx) => {
@@ -744,7 +724,7 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                               movement.type === 'IN' ? "text-emerald-400" : 
                               movement.type === 'OUT' ? "text-amber-400" : "text-cyan-400"
                             )}>
-                              {movement.type === 'IN' ? 'Deposit' : movement.type === 'OUT' ? 'Withdrawal' : 'Adjustment'}
+                              {movement.type === 'IN' ? 'إيداع' : movement.type === 'OUT' ? 'صرف' : 'تسوية'}
                             </span>
                           </div>
                           
@@ -754,12 +734,12 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                         </div>
                         
                         {/* Component metadata */}
-                        <div className="text-left">
+                        <div className="text-left rtl:text-right">
                           <div className="font-extrabold text-slate-200 text-xs group-hover:text-cyan-400 transition-colors">
                             {movement.partName}
                           </div>
                           <div className="text-[9px] text-slate-500 font-mono mt-0.5">
-                            Ref: <span className="text-slate-400">{movement.reference}</span>
+                            المرجع: <span className="text-slate-400">{movement.reference}</span>
                           </div>
                           {movement.notes && (
                             <div className="text-[9px] text-slate-400/80 bg-[#0a0a0f]/40 p-1.5 rounded border border-white/[0.02] mt-1.5 font-sans leading-relaxed">
@@ -775,10 +755,10 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                             movement.type === 'IN' ? "text-emerald-400" : 
                             movement.type === 'OUT' ? "text-amber-400" : "text-cyan-400"
                           )}>
-                            {movement.quantity} {(movement as any).unit || 'pcs'}
+                            {movement.quantity} {(movement as any).unit || 'وحدة'}
                           </div>
                           <div className="font-mono text-slate-500">
-                            By: <strong className="text-slate-400">{movement.performedBy}</strong>
+                            بواسطة: <strong className="text-slate-400">{movement.performedBy}</strong>
                           </div>
                         </div>
                       </motion.div>

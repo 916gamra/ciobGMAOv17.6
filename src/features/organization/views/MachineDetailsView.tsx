@@ -809,7 +809,7 @@ export function MachineDetailsView({ tabId }: { tabId: string }) {
                              handlePromoteToSharedBlueprint();
                            }
                          }}
-                         className="px-6 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-xl flex items-center gap-2 transition-all shadow-[0_0_20px_rgba(168,85,247,0.2)]"
+                         className="px-6 py-2.5 bg-white hover:bg-slate-200 text-slate-950 font-extrabold text-xs rounded-xl flex items-center gap-2 transition-all shadow-lg"
                        >
                          <RefreshCw className="w-4 h-4 animate-spin-slow" /> تفعيل دمج وتوريث الطراز المشترك ({blueprint?.reference})
                        </button>
@@ -928,7 +928,7 @@ export function MachineDetailsView({ tabId }: { tabId: string }) {
                            handleSpawnNewBlueprint(new Event('submit') as any);
                          }
                        }}
-                       className="px-6 py-2.5 bg-cyan-600 hover:bg-cyan-500 text-black font-bold text-xs rounded-xl flex items-center gap-2 transition-all shadow-[0_0_20px_rgba(6,182,212,0.3)]"
+                       className="px-6 py-2.5 bg-white hover:bg-slate-200 text-slate-950 font-extrabold text-xs rounded-xl flex items-center gap-2 transition-all shadow-lg"
                      >
                        <GitFork className="w-4 h-4" /> تأكيد عزل الآلة وإنشاء الطراز المخصص الجديد
                      </button>

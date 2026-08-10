@@ -73,24 +73,24 @@ export class ErrorBoundary extends Component<Props, State> {
               <AlertTriangle className="w-10 h-10 text-rose-500" />
             </div>
             
-            <h1 className="text-2xl font-bold text-white mb-3">System Malfunction Detected</h1>
+            <h1 className="text-2xl font-bold text-white mb-3">تم اكتشاف خلل في نظام العرض</h1>
             
-            <p className="text-slate-300 mb-8 max-w-lg leading-relaxed">
-              A critical rendering fault occurred within the <strong className="text-white">{this.props.portalId || this.props.componentName || 'Subsystem'}</strong> module. The error signature has been logged for engineering review.
+            <p className="text-slate-300 mb-8 max-w-lg leading-relaxed text-sm">
+              حدث خطأ غير متوقع في استجابة وحدة <strong className="text-white">{this.props.portalId || this.props.componentName || 'النظام الفرعي'}</strong>. تم تسجيل تفاصيل الخطأ تلقائياً لمراجعتها هندسياً.
             </p>
 
-            <div className="w-full bg-[#0a0a0f]/50 rounded-xl p-5 mb-8 border border-rose-500/20 overflow-x-auto text-left backdrop-blur-sm">
+            <div className="w-full bg-[#0a0a0f]/50 rounded-xl p-5 mb-8 border border-rose-500/20 overflow-x-auto text-right backdrop-blur-sm" dir="rtl">
               <div className="flex items-center gap-2 mb-3 text-rose-400 font-semibold border-b border-rose-500/20 pb-2">
                 <FileText className="w-4 h-4" />
-                <span>Error Diagnostics</span>
+                <span>تشخيص العطل</span>
               </div>
-              <code className="text-sm text-rose-300 font-mono whitespace-pre-wrap break-words leading-relaxed">
-                {this.state.error?.message || 'Unknown Exception Sequence'}
+              <code className="text-xs text-rose-300 font-mono whitespace-pre-wrap break-words leading-relaxed dir-ltr text-left block">
+                {this.state.error?.message || 'مصفوفة خطأ غير معروفة'}
               </code>
               {this.state.errorDetails && (
                 <details className="mt-4">
-                  <summary className="text-xs text-slate-500 cursor-pointer hover:text-slate-300 transition-colors">View Stack Trace</summary>
-                  <pre className="mt-2 text-[10px] text-slate-600 font-mono whitespace-pre-wrap">
+                  <summary className="text-xs text-slate-500 cursor-pointer hover:text-slate-300 transition-colors">عرض مسار التتبع (Stack Trace)</summary>
+                  <pre className="mt-2 text-[10px] text-slate-600 font-mono whitespace-pre-wrap dir-ltr text-left">
                     {this.state.errorDetails}
                   </pre>
                 </details>
@@ -99,9 +99,9 @@ export class ErrorBoundary extends Component<Props, State> {
 
             <button
               onClick={() => window.location.reload()}
-              className="titan-button titan-button-primary w-full max-w-xs shadow-lg shadow-blue-500/20"
+              className="px-6 py-3 bg-white hover:bg-slate-200 text-slate-950 font-extrabold text-xs rounded-xl flex items-center justify-center gap-2 shadow-lg transition-all w-full max-w-xs"
             >
-              <RefreshCcw className="w-4 h-4" /> Reboot Subsystem
+              <RefreshCcw className="w-4 h-4" /> إعادة تشغيل النظام الفرعي
             </button>
           </GlassCard>
         </div>

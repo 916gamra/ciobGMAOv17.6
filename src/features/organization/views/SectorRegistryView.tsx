@@ -1,5 +1,5 @@
 import { PageHeader } from "@/shared/components/PageHeader";
-import { StatCompact } from "@/shared/components/StatCompact";
+import { HeaderBentoCard } from "@/shared/components/HeaderBentoCard";
 import React, { useState } from 'react';
 import { motion, AnimatePresence, Variants } from 'motion/react';
 import { Network, Plus, Trash2, Edit3, Save, Search, Activity, Users, Cpu, Layers } from 'lucide-react';
@@ -111,35 +111,43 @@ export function SectorRegistryView() {
       className="w-full h-full flex flex-col gap-6 relative z-10"
     >
       <PageHeader
-        title={t('sectors.title', 'Production Zones')}
-        subtitle={t('sectors.subtitle', 'Macro-Level Facility Organization & Area Management.')}
-        icon={<Network className="w-8 h-8 text-indigo-400" />}
+        title={t('sectors.title', 'مناطق الإنتاج وقطاعات المعمل')}
+        subtitle={t('sectors.subtitle', 'التنظيم الهيكلي الكلي للمصنع وإدارة قطاعات ومناطق التشغيل.')}
+        icon={<Network className="w-7 h-7 text-indigo-400" />}
+        badgeText="الهيكل الكلي"
         badgeColor="indigo"
-        actions={
-          <div className="flex flex-wrap items-center gap-3">
-            <StatCompact 
-              icon={<Network className="w-4 h-4 text-indigo-400" />} 
-              label={t('sectors.activeZones', 'Active Zones')} 
-              value={activeSectors.length.toString()} 
-            />
-            <StatCompact 
-              icon={<Layers className="w-4 h-4 text-amber-400/80" />} 
-              label={t('sectors.dormantSlots', 'Dormant Slots')} 
-              value={availableSlots.length.toString()} 
-            />
-            <StatCompact 
-              icon={<Cpu className="w-4 h-4 text-cyan-400" />} 
-              label={t('sectors.machines', 'Machines')} 
-              value={machines.length.toString()} 
-            />
-            <StatCompact 
-              icon={<Users className="w-4 h-4 text-emerald-400" />} 
-              label={t('sectors.personnel', 'Personnel')} 
-              value={activeTechnicians.length.toString()} 
-            />
-          </div>
-        }
-      />
+      >
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <HeaderBentoCard
+            title="المناطق النشطة"
+            subtitle="القطاعات الحية"
+            value={activeSectors.length}
+            icon={<Network className="w-3.5 h-3.5" />}
+            color="blue"
+          />
+          <HeaderBentoCard
+            title="المقاعد الشاغرة"
+            subtitle="المخطط الهيكلي"
+            value={availableSlots.length}
+            icon={<Layers className="w-3.5 h-3.5" />}
+            color="amber"
+          />
+          <HeaderBentoCard
+            title="الآلات النشطة"
+            subtitle="المعدات الحالية"
+            value={machines.length}
+            icon={<Cpu className="w-3.5 h-3.5" />}
+            color="cyan"
+          />
+          <HeaderBentoCard
+            title="التقنيين والمشغلين"
+            subtitle="الطاقم التشغيلي"
+            value={activeTechnicians.length}
+            icon={<Users className="w-3.5 h-3.5" />}
+            color="emerald"
+          />
+        </div>
+      </PageHeader>
       
       <motion.div variants={itemVariants} className="flex-1 min-h-0 flex flex-col">
         <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl h-full flex flex-col bg-[#0a0a0f]/60 backdrop-blur-xl">

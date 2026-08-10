@@ -237,9 +237,9 @@ export function MachineDetailsModal({
           <div className="p-5 border-t border-white/5 bg-white/[0.01] flex justify-end shrink-0">
             <button
               onClick={onClose}
-              className="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all"
+              className="px-5 py-2.5 bg-white hover:bg-slate-200 text-slate-950 text-xs font-extrabold rounded-xl transition-all shadow-lg"
             >
-              Done / إغلاق
+              إغلاق
             </button>
           </div>
 

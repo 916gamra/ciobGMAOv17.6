@@ -1,23 +1,30 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { cn } from '@/shared/utils';
 import { 
   Package, Zap, Settings2, Sparkles, Search, 
   Cpu, Droplets, Activity, ChevronRight, CheckCircle2, BatteryCharging,
-  Plus, ArrowRight, Database, FolderTree, X, Link2, Unlink, ExternalLink
+  Plus, ArrowRight, Database, FolderTree, X, Link2, Unlink, ExternalLink, Tag, Layers,
+  Table, LayoutGrid
 } from 'lucide-react';
 import { GlassCard } from '@/shared/components/GlassCard';
 import { PageHeader } from '@/shared/components/PageHeader';
+import { HeaderBentoCard } from '@/shared/components/HeaderBentoCard';
 import { useNotifications } from '@/shared/hooks/useNotifications';
 import { useMasterCatalogEngine } from '@/features/organization/hooks/useMasterCatalogEngine';
 import { useStockEngine } from '@/features/pdr-engine/hooks/useStockEngine';
 import { useTabStore } from '@/app/store';
 import { PdrWizardModal } from '../components/PdrWizardModal';
 import { PdrPageSkeleton } from '../components/PdrPageSkeleton';
+import { CrystalTable, CrystalTableColumn } from '@/shared/components/CrystalTable';
 
 export function ComponentCatalogView() {
   const { showSuccess, showError } = useNotifications();
   const { openTab } = useTabStore();
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // View mode switcher: Default to table view for highly-detailed crystal aesthetics
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('table');
   
   // Selection state
   const [selectedFamilyId, setSelectedFamilyId] = useState<string | null>(null);
@@ -152,6 +159,86 @@ export function ComponentCatalogView() {
     return bps;
   }, [blueprints, selectedTemplateId, selectedFamilyId, templates, searchTerm]);
 
+  const blueprintColumns = useMemo<CrystalTableColumn<any>[]>(() => [
+    {
+      key: 'id',
+      header: 'رمز البصمة الموحد',
+      className: 'font-mono text-cyan-400 font-bold text-xs',
+      render: (bp) => bp.id
+    },
+    {
+      key: 'reference',
+      header: 'الرقم المرجعي',
+      className: 'text-white font-extrabold text-sm',
+      render: (bp) => bp.reference
+    },
+    {
+      key: 'model',
+      header: 'الموديل التجاري',
+      className: 'text-slate-300 font-medium text-xs',
+      render: (bp) => bp.model || '-'
+    },
+    {
+      key: 'unit',
+      header: 'الوحدة',
+      className: 'text-slate-300 font-medium text-xs',
+      render: (bp) => bp.unit
+    },
+    {
+      key: 'powerOrForce',
+      header: 'القدرة/القياس',
+      className: 'text-slate-300 font-medium text-xs',
+      render: (bp) => bp.powerOrForce || '-'
+    },
+    {
+      key: 'technicalSpecs',
+      header: 'المواصفات الفنية',
+      className: 'text-slate-400 font-medium text-xs max-w-[200px] truncate',
+      render: (bp) => (
+        <span title={bp.technicalSpecs}>
+          {bp.technicalSpecs || '-'}
+        </span>
+      )
+    },
+    {
+      key: 'status',
+      header: 'الحالة بالمصنع',
+      className: 'text-xs',
+      render: (bp) => {
+        const inStock = inventory.some(i => i.blueprintId === bp.id);
+        return (
+          <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold tracking-wider ${inStock ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-white/5 text-slate-400 border border-white/10'}`}>
+            {inStock ? 'نشط' : 'مجمد'}
+          </span>
+        );
+      }
+    },
+    {
+      key: 'actions',
+      header: 'إجراءات التنشيط',
+      className: 'text-center',
+      render: (bp) => {
+        const inStock = inventory.some(i => i.blueprintId === bp.id);
+        if (inStock) {
+          return (
+            <span className="text-emerald-400 font-bold text-xs flex items-center gap-1 justify-center">
+              <CheckCircle2 className="w-3.5 h-3.5" /> جاهز
+            </span>
+          );
+        }
+        return (
+          <button 
+            type="button"
+            onClick={() => setActivatingBlueprintId(bp.id)}
+            className="px-3 py-1.5 bg-white text-slate-950 hover:bg-slate-200 font-bold text-[11px] rounded-lg transition-all active:scale-95 cursor-pointer"
+          >
+            تفعيل للمخزن
+          </button>
+        );
+      }
+    }
+  ], [inventory]);
+
   if (isLoading) {
     return <PdrPageSkeleton />;
   }
@@ -167,17 +254,17 @@ export function ComponentCatalogView() {
       await addStock({
         blueprintId: blueprint.id,
         quantityCurrent: initialQuantity,
-        locationDetails: storageLocation || 'To Be Assigned',
+        locationDetails: storageLocation || 'غير محدد',
         warehouseId: 'WH-MAIN'
       });
       
-      showSuccess('Instance Activated', `${blueprint.id} is now alive in factory stock.`);
+      showSuccess('تم التفعيل', `القطعة ${blueprint.id} أصبحت متوفرة الآن في المخزون الفعلي.`);
       setActivatingBlueprintId(null);
       setInitialQuantity(0);
       setStorageLocation('');
       setMinThreshold(2);
     } catch(err: any) {
-      showError('Activation Failed', err.message);
+      showError('خطأ في التفعيل', err.message);
     }
   };
 
@@ -206,8 +293,9 @@ export function ComponentCatalogView() {
       <div className="p-6 md:p-8 pb-0">
         <PageHeader
           title="كتالوج قطع الغيار الاستهلاكية (PDR)"
-          subtitle="استعرض وتصفح جميع قطع الغيار الاستهلاكية والمخزنية النشطة ضمن الكتالوج"
-          icon={<FolderTree className="w-8 h-8 text-cyan-400" />}
+          subtitle="استعرض وتصفح جميع قطع الغيار الاستهلاكية والمخزنية النشطة ضمن الكتالوج وفق الـ 999 مقعداً"
+          icon={<FolderTree className="w-7 h-7 text-cyan-400" />}
+          badgeText="الكتالوج التجاري"
           badgeColor="cyan"
           actions={
             <button 
@@ -217,11 +305,46 @@ export function ComponentCatalogView() {
               }}
               className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
             >
-              <Plus className="w-4 h-4" /> 
+              <Plus className="w-4 h-4 text-slate-950" /> 
               <span>تسجيل قطعة غيار</span>
             </button>
           }
-        />
+        >
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <HeaderBentoCard
+              title="البصمات المسجلة"
+              subtitle="BLUEPRINTS"
+              value={blueprints.length}
+              valueUnit="بصمة"
+              icon={<Tag className="w-3.5 h-3.5" />}
+              color="cyan"
+            />
+            <HeaderBentoCard
+              title="قوالب المواصفات"
+              subtitle="TEMPLATES"
+              value={templates.length}
+              valueUnit="قالب"
+              icon={<Layers className="w-3.5 h-3.5" />}
+              color="emerald"
+            />
+            <HeaderBentoCard
+              title="عائلات التصنيف"
+              subtitle="FAMILIES"
+              value={families.length}
+              valueUnit="عائلة"
+              icon={<FolderTree className="w-3.5 h-3.5" />}
+              color="amber"
+            />
+            <HeaderBentoCard
+              title="حالة المنظومة"
+              subtitle="SYSTEM STATUS"
+              value="100%"
+              valueUnit="OK"
+              icon={<CheckCircle2 className="w-3.5 h-3.5" />}
+              color="emerald"
+            />
+          </div>
+        </PageHeader>
       </div>
 
       <div className="px-6 md:px-8 pb-4 mt-6">
@@ -314,38 +437,71 @@ export function ComponentCatalogView() {
           )}
         </div>
 
-        {/* Left Pane (RTL): Blueprints Grid */}
+        {/* Left Pane (RTL): Blueprints Grid / Table */}
         <div className="flex-1 bg-[#0a0a0f]/20 overflow-y-auto custom-scrollbar p-6 md:p-8 relative z-10">
-          <div className="flex justify-between items-end mb-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <div>
               <h2 className="text-2xl font-bold text-white mb-1">
                 {selectedTemplateId 
                   ? templates.find(t => t.id === selectedTemplateId)?.name 
                   : selectedFamilyId 
                     ? families.find(f => f.id === selectedFamilyId)?.name 
-                    : 'All Blueprints'}
+                    : 'جميع البصمات'}
               </h2>
               <p className="text-sm text-slate-400 font-medium">
-                {displayBlueprints.length} Blueprints Registered
+                {displayBlueprints.length} بصمة مسجلة
               </p>
             </div>
             
-            <button 
-              onClick={() => {
-                setWizardPrefill(true);
-                setIsWizardOpen(true);
-              }}
-              className="px-5 py-2.5 bg-cyan-500 hover:bg-cyan-400 text-[#050508] font-extrabold text-xs uppercase tracking-widest rounded-xl flex items-center gap-2 shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all"
-            >
-              <Plus className="w-4 h-4" /> Add Blueprint
-            </button>
+            <div className="flex items-center gap-3 shrink-0 self-stretch sm:self-auto justify-between sm:justify-end">
+              {/* View Switcher */}
+              <div className="flex bg-white/[0.04] p-1 rounded-xl border border-white/10 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setViewMode('table')}
+                  className={`p-2 rounded-lg transition-all cursor-pointer ${viewMode === 'table' ? 'bg-white text-slate-950 font-bold shadow-md' : 'text-slate-400 hover:text-white'}`}
+                  title="عرض الجدول الكريستالي"
+                >
+                  <Table className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('cards')}
+                  className={`p-2 rounded-lg transition-all cursor-pointer ${viewMode === 'cards' ? 'bg-white text-slate-950 font-bold shadow-md' : 'text-slate-400 hover:text-white'}`}
+                  title="عرض البطاقات"
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                </button>
+              </div>
+
+              <button 
+                type="button"
+                onClick={() => {
+                  setWizardPrefill(true);
+                  setIsWizardOpen(true);
+                }}
+                className="px-4 py-2.5 bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-95"
+              >
+                <Plus className="w-4 h-4 text-slate-950" /> 
+                <span>إضافة بصمة</span>
+              </button>
+            </div>
           </div>
           
           {displayBlueprints.length === 0 ? (
             <div className="py-20 flex flex-col items-center justify-center border border-dashed border-white/10 rounded-3xl bg-white/[0.02]">
               <Database className="w-16 h-16 text-slate-600 mb-4" />
-              <p className="text-sm text-slate-400 font-bold uppercase tracking-widest mt-2">No Blueprints Found</p>
-              <p className="text-xs text-slate-500 mt-2 font-medium">Select a different template or link/create new templates above.</p>
+              <p className="text-sm text-slate-400 font-bold uppercase tracking-widest mt-2">لا توجد بصمات</p>
+              <p className="text-xs text-slate-500 mt-2 font-medium">قم باختيار قالب مختلف أو أضف بصمات جديدة.</p>
+            </div>
+          ) : viewMode === 'table' ? (
+            <div className="mb-6">
+              <CrystalTable
+                data={displayBlueprints}
+                columns={blueprintColumns}
+                rowKey={(bp) => bp.id}
+                emptyMessage="لا توجد بصمات تطابق خيارات البحث."
+              />
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -354,50 +510,61 @@ export function ComponentCatalogView() {
                 return (
                   <div 
                     key={bp.id}
-                    className={`p-5 relative overflow-hidden group border rounded-2xl ${inStock ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-white/10 bg-white/[0.02] hover:border-cyan-500/50'}`}
+                    className={cn(
+                      "p-5 relative overflow-hidden group border rounded-2xl transition-all duration-300",
+                      inStock 
+                        ? "border-emerald-500/20 bg-emerald-500/[0.01] hover:border-emerald-500/30" 
+                        : "border-white/10 bg-white/[0.02] hover:border-cyan-500/30"
+                    )}
                   >
-                    {inStock && <div className="absolute top-0 right-0 w-16 h-16 bg-emerald-500/20 blur-2xl rounded-full" />}
+                    {/* Glowing radial background circle */}
+                    {inStock ? (
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
+                    ) : (
+                      <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-full blur-3xl group-hover:bg-cyan-500/10 pointer-events-none transition-all duration-300" />
+                    )}
                     
-                    <div className="flex justify-between items-start mb-4">
-                      <div className="min-w-0 pr-2">
-                        <div className="text-lg font-bold text-white tracking-tight truncate" title={bp.reference}>{bp.reference}</div>
-                        <div className="text-xs font-mono text-slate-400 truncate">{bp.model || 'No Model'}</div>
+                    <div className="flex justify-between items-start mb-4 relative z-10">
+                      <div className="min-w-0 pr-2 text-right">
+                        <div className="text-lg font-bold text-white tracking-tight truncate group-hover:text-cyan-400 transition-colors" title={bp.reference}>{bp.reference}</div>
+                        <div className="text-xs font-mono text-slate-400 truncate">{bp.model || 'بدون موديل'}</div>
                       </div>
                       <span className={`px-2 py-1 rounded text-[9px] font-bold uppercase tracking-widest shrink-0 ${inStock ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white/10 text-slate-400'}`}>
-                        {inStock ? 'Active' : 'Dormant'}
+                        {inStock ? 'نشط' : 'مجمد'}
                       </span>
                     </div>
 
-                    <div className="space-y-2 mb-6">
+                    <div className="space-y-2 mb-6 text-right relative z-10">
                       <div className="flex justify-between text-xs">
-                        <span className="text-slate-500">Unit</span>
+                        <span className="text-slate-500">الوحدة</span>
                         <span className="text-slate-300 font-medium">{bp.unit}</span>
                       </div>
                       <div className="flex justify-between text-xs">
-                        <span className="text-slate-500">Power/Size</span>
+                        <span className="text-slate-500">القدرة/القياس</span>
                         <span className="text-slate-300 font-medium truncate max-w-[120px]">{bp.powerOrForce || '-'}</span>
                       </div>
                       <div className="flex justify-between text-xs">
-                        <span className="text-slate-500">Specs</span>
+                        <span className="text-slate-500">المواصفات</span>
                         <span className="text-slate-300 font-medium truncate max-w-[120px]" title={bp.technicalSpecs}>{bp.technicalSpecs || '-'}</span>
                       </div>
                       <div className="flex justify-between text-xs">
-                        <span className="text-slate-500">ID / الكود</span>
+                        <span className="text-slate-500">الرمز</span>
                         <span className="text-cyan-400 font-mono text-[10px] font-bold">{bp.id}</span>
                       </div>
                     </div>
 
                     {!inStock && (
                       <button 
+                        type="button"
                         onClick={() => setActivatingBlueprintId(bp.id)}
-                        className="w-full py-2 bg-white/5 hover:bg-indigo-500/20 text-indigo-300 border border-white/10 hover:border-indigo-500/50 rounded-lg text-xs font-bold uppercase tracking-widest transition-all"
+                        className="w-full py-2 bg-white/5 hover:bg-[#06b6d4]/20 text-[#22d3ee] border border-white/10 hover:border-[#06b6d4]/50 rounded-lg text-xs font-bold uppercase tracking-widest transition-all cursor-pointer relative z-20"
                       >
-                        Activate to Stock
+                        تفعيل إلى المخزون
                       </button>
                     )}
                     {inStock && (
-                      <div className="w-full py-2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2">
-                        <CheckCircle2 className="w-4 h-4" /> In Factory
+                      <div className="w-full py-2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 relative z-20">
+                        <CheckCircle2 className="w-4 h-4" /> متوفر في المصنع
                       </div>
                     )}
                   </div>
@@ -424,24 +591,24 @@ export function ComponentCatalogView() {
               <div className="h-1 w-full bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-500" />
               
               <div className="p-8">
-                <div className="flex justify-between items-start mb-8">
+                <div className="flex justify-between items-start mb-8 text-right">
                   <div>
                     <h2 className="text-xl font-bold text-white mb-1 font-sans">
                       {blueprints.find(b => b.id === activatingBlueprintId)?.reference}
                     </h2>
-                    <p className="text-xs text-emerald-400 font-mono font-bold tracking-widest uppercase">Activate Instance / Stock</p>
+                    <p className="text-xs text-emerald-400 font-mono font-bold tracking-widest uppercase">تفعيل وتنشيط كمخزون</p>
                   </div>
-                  <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+                  <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl shrink-0">
                     <BatteryCharging className="w-6 h-6 text-emerald-400" />
                   </div>
                 </div>
 
-                <form onSubmit={handleActivateInstance} className="space-y-6">
+                <form onSubmit={handleActivateInstance} className="space-y-6 text-right">
                   
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <label className="text-[10px] uppercase font-bold text-slate-400 tracking-widest ml-1">
-                        Initial Quantity
+                      <label className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mr-1 block">
+                        الكمية الابتدائية
                       </label>
                       <input 
                         type="number"
@@ -449,13 +616,13 @@ export function ComponentCatalogView() {
                         required
                         value={initialQuantity}
                         onChange={e => setInitialQuantity(Number(e.target.value))}
-                        className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl py-3.5 px-4 text-white focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all font-mono text-lg"
+                        className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl py-3.5 px-4 text-white focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all font-mono text-lg text-right"
                       />
                     </div>
                     
                     <div className="space-y-2">
-                      <label className="text-[10px] uppercase font-bold text-slate-400 tracking-widest ml-1">
-                        Minimum Threshold
+                      <label className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mr-1 block">
+                        الحد الأدنى
                       </label>
                       <input 
                         type="number"
@@ -463,22 +630,22 @@ export function ComponentCatalogView() {
                         required
                         value={minThreshold}
                         onChange={e => setMinThreshold(Number(e.target.value))}
-                        className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl py-3.5 px-4 text-white focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all font-mono text-lg"
+                        className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl py-3.5 px-4 text-white focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all font-mono text-lg text-right"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-[10px] uppercase font-bold text-slate-400 tracking-widest ml-1">
-                      Storage Location / Bin
+                    <label className="text-[10px] uppercase font-bold text-slate-400 tracking-widest mr-1 block">
+                      موقع التخزين (الرف / الممر)
                     </label>
                     <input 
                       type="text"
                       required
                       value={storageLocation}
                       onChange={e => setStorageLocation(e.target.value)}
-                      placeholder="e.g. Aisle 3 - Shelf D2"
-                      className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl py-3.5 px-4 text-white focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all"
+                      placeholder="مثال: الممر 3 - الرف D2"
+                      className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl py-3.5 px-4 text-white focus:ring-2 focus:ring-emerald-500/50 outline-none transition-all text-right"
                     />
                   </div>
 
@@ -488,13 +655,13 @@ export function ComponentCatalogView() {
                       onClick={() => setActivatingBlueprintId(null)}
                       className="px-6 py-3 rounded-xl border border-white/10 text-slate-300 font-bold uppercase tracking-widest text-xs hover:bg-white/5 transition-colors"
                     >
-                      Abort
+                      إلغاء
                     </button>
                     <button 
                       type="submit"
                       className="px-8 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold uppercase tracking-widest text-xs flex items-center gap-2 shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all"
                     >
-                       Activate to Live Stock
+                       تفعيل في المخزون
                     </button>
                   </div>
                 </form>

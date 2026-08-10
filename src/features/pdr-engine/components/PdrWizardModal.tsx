@@ -326,24 +326,24 @@ export function PdrWizardModal({
           <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-cyan-500 to-teal-400" />
 
           {/* Header */}
-          <div className="p-6 border-b border-white/5 flex justify-between items-center bg-white/[0.01]">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 bg-indigo-500/10 border border-indigo-500/30 rounded-full text-[10px] font-mono text-indigo-400 font-bold uppercase tracking-wider">
-                  BDR Nexus Wizard
-                </span>
-                <span className="text-slate-500 text-xs font-medium">• Step {step} of 3</span>
-              </div>
-              <h3 className="text-xl font-bold text-white mt-1.5 flex items-center gap-2">
-                {getStepHeader().title} <span className="text-sm text-slate-400 font-medium font-sans">({getStepHeader().arabic})</span>
-              </h3>
-            </div>
+          <div className="p-6 border-b border-white/5 flex justify-between items-center bg-white/[0.01] text-right">
             <button 
               onClick={onClose}
-              className="p-2 rounded-xl hover:bg-white/5 text-slate-400 hover:text-white transition-all"
+              className="p-2 rounded-xl hover:bg-white/5 text-slate-400 hover:text-white transition-all shrink-0"
             >
               <X className="w-5 h-5" />
             </button>
+            <div className="text-right">
+              <div className="flex items-center gap-2 justify-end">
+                <span className="text-slate-500 text-xs font-medium">الخطوة {step} من 3 •</span>
+                <span className="px-2.5 py-0.5 bg-indigo-500/10 border border-indigo-500/30 rounded-full text-[10px] font-mono text-indigo-400 font-bold uppercase tracking-wider">
+                  معالج BDR
+                </span>
+              </div>
+              <h3 className="text-xl font-bold text-white mt-1.5 flex items-center justify-end gap-2">
+                {getStepHeader().arabic}
+              </h3>
+            </div>
           </div>
 
           {/* Progress Indicators */}
@@ -373,17 +373,17 @@ export function PdrWizardModal({
             
             {/* STEP 1: FAMILY SELECTION OR CREATION */}
             {step === 1 && (
-              <div className="space-y-6">
+              <div className="space-y-6 text-right">
                 {!isCreatingFamily ? (
                   <>
                     <div className="space-y-2">
-                      <Label>Choose Spare Part Family (اختر العائلة المناسبة)</Label>
+                      <Label>اختر عائلة القطعة (Family)</Label>
                       <Select
                         value={selectedFamilyId}
                         onChange={e => setSelectedFamilyId(e.target.value)}
-                        className="titan-input appearance-none text-sm font-semibold py-3.5"
+                        className="titan-input appearance-none text-sm font-semibold py-3.5 text-right"
                       >
-                        <option value="" disabled>--- Select classification family ---</option>
+                        <option value="" disabled>--- اختر عائلة التصنيف ---</option>
                         {families.map(fam => (
                           <option key={fam.id} value={fam.id}>
                             {fam.name} ({fam.id.startsWith('fam-') ? fam.id.replace('fam-', '') : fam.name.substring(0, 3).toUpperCase()})
@@ -394,50 +394,50 @@ export function PdrWizardModal({
 
                     <div className="p-5 border border-dashed border-white/10 rounded-2xl bg-white/[0.01] text-center space-y-3">
                       <p className="text-xs text-slate-400">
-                        Can't find the correct spare parts family classification for this spare part?
+                        لا تستطيع إيجاد التصنيف المناسب لقطعة الغيار هذه؟
                       </p>
                       <button
                         type="button"
                         onClick={() => setIsCreatingFamily(true)}
-                        className="px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-400 rounded-xl text-xs font-extrabold uppercase tracking-widest transition-all inline-flex items-center gap-1.5"
+                        className="px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-400 rounded-xl text-xs font-extrabold uppercase tracking-widest transition-all inline-flex items-center justify-center gap-1.5 w-full sm:w-auto"
                       >
-                        <Plus className="w-4 h-4" /> Add New Family (عائلة جديدة)
+                        <Plus className="w-4 h-4" /> إنشاء عائلة جديدة
                       </button>
                     </div>
                   </>
                 ) : (
-                  <form onSubmit={handleCreateFamily} className="space-y-4 border border-indigo-500/20 bg-indigo-500/[0.02] p-5 rounded-2xl">
+                  <form onSubmit={handleCreateFamily} className="space-y-4 border border-indigo-500/20 bg-indigo-500/[0.02] p-5 rounded-2xl text-right">
                     <div className="flex justify-between items-center border-b border-indigo-500/10 pb-3 mb-2">
-                      <span className="text-xs font-bold text-indigo-400 uppercase tracking-widest flex items-center gap-1.5">
-                        <FolderPlus className="w-4 h-4" /> Define New Classification Family
-                      </span>
                       <button 
                         type="button" 
                         onClick={() => setIsCreatingFamily(false)}
                         className="text-[10px] text-slate-400 hover:text-white underline"
                       >
-                        Select Existing
+                        تحديد عائلة موجودة
                       </button>
+                      <span className="text-xs font-bold text-indigo-400 uppercase tracking-widest flex items-center gap-1.5 justify-end">
+                        <FolderPlus className="w-4 h-4" /> تعريف عائلة جديدة
+                      </span>
                     </div>
 
                     <div>
-                      <Label>Family Name (اسم العائلة)</Label>
+                      <Label>اسم العائلة (Family Name)</Label>
                       <Input
                         type="text"
                         required
                         value={newFamilyData.name}
                         onChange={e => setNewFamilyData({ ...newFamilyData, name: e.target.value })}
-                        className="text-xs"
-                        placeholder="e.g., AUTOMATES, CYLINDRES, VANNE"
+                        className="text-xs text-right"
+                        placeholder="مثال: AUTOMATES, CYLINDRES, VANNE"
                       />
                     </div>
 
                     <div>
-                      <Label>System Group (القسم الفني للآلة)</Label>
+                      <Label>القسم الفني للآلة (System Group)</Label>
                       <Select
                         value={newFamilyData.group}
                         onChange={e => setNewFamilyData({ ...newFamilyData, group: e.target.value as any })}
-                        className="titan-input appearance-none text-xs"
+                        className="titan-input appearance-none text-xs text-right"
                       >
                         <option value="mecanique">MÉCANIQUE (ميكانيك)</option>
                         <option value="hydraulique">HYDRAULIQUE (هيدروليك)</option>
@@ -453,8 +453,8 @@ export function PdrWizardModal({
                       <Textarea
                         value={newFamilyData.description}
                         onChange={e => setNewFamilyData({ ...newFamilyData, description: e.target.value })}
-                        className="titan-input text-xs h-16 resize-none"
-                        placeholder="Brief description of classifying components in this spare family..."
+                        className="titan-input text-xs h-16 resize-none text-right"
+                        placeholder="وصف مختصر للمكونات التي تنتمي لهذه العائلة..."
                       />
                     </div>
 
@@ -463,7 +463,7 @@ export function PdrWizardModal({
                       disabled={isSubmitting}
                       className="w-full py-3 bg-indigo-500 hover:bg-indigo-400 text-black font-extrabold text-xs uppercase tracking-widest rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
                     >
-                      <Save className="w-4 h-4" /> {isSubmitting ? 'Saving...' : 'Deploy & Select Family'}
+                      <Save className="w-4 h-4" /> {isSubmitting ? 'جاري الحفظ...' : 'نشر وتحديد العائلة'}
                     </button>
                   </form>
                 )}
@@ -472,29 +472,29 @@ export function PdrWizardModal({
 
             {/* STEP 2: TEMPLATE SELECTION OR CREATION */}
             {step === 2 && (
-              <div className="space-y-6">
-                <div className="flex items-center gap-2.5 p-3.5 bg-indigo-500/5 border border-indigo-500/10 rounded-xl mb-4">
+              <div className="space-y-6 text-right">
+                <div className="flex items-center gap-2.5 p-3.5 bg-indigo-500/5 border border-indigo-500/10 rounded-xl mb-4 justify-end">
+                  <div className="text-right">
+                    <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">التصنيف المحدد</div>
+                    <div className="text-sm font-bold text-indigo-400">
+                      {families.find(f => f.id === selectedFamilyId)?.name || 'عائلة قياسية'}
+                    </div>
+                  </div>
                   <div className="p-2 bg-indigo-500/10 rounded-lg">
                     {getFamilyIcon(families.find(f => f.id === selectedFamilyId)?.name || 'MEC')}
-                  </div>
-                  <div>
-                    <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Selected Classification</div>
-                    <div className="text-sm font-bold text-indigo-400">
-                      {families.find(f => f.id === selectedFamilyId)?.name || 'Standard Family'}
-                    </div>
                   </div>
                 </div>
 
                 {!isCreatingTemplate ? (
                   <>
                     <div className="space-y-2">
-                      <Label>Choose Specification Template (اختر قالب المواصفات)</Label>
+                      <Label>اختر قالب المواصفات (Specification Template)</Label>
                       <Select
                         value={selectedTemplateId}
                         onChange={e => setSelectedTemplateId(e.target.value)}
-                        className="titan-input appearance-none text-sm font-semibold py-3.5"
+                        className="titan-input appearance-none text-sm font-semibold py-3.5 text-right"
                       >
-                        <option value="" disabled>--- Select technical specification template ---</option>
+                        <option value="" disabled>--- اختر القالب التقني للمواصفات ---</option>
                         {templates
                           .filter(t => t.familyId === selectedFamilyId)
                           .map(temp => (
@@ -508,66 +508,66 @@ export function PdrWizardModal({
 
                     <div className="p-5 border border-dashed border-white/10 rounded-2xl bg-white/[0.01] text-center space-y-3">
                       <p className="text-xs text-slate-400">
-                        Need a template with different technical parameters (e.g. different dimension fields or SKU code prefix)?
+                        هل تحتاج قالباً بمواصفات مختلفة (مثل بادئة الرمز أو الأبعاد)؟
                       </p>
                       <button
                         type="button"
                         onClick={() => setIsCreatingTemplate(true)}
-                        className="px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-400 rounded-xl text-xs font-extrabold uppercase tracking-widest transition-all inline-flex items-center gap-1.5"
+                        className="px-4 py-2 bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-400 rounded-xl text-xs font-extrabold uppercase tracking-widest transition-all inline-flex items-center gap-1.5 justify-center w-full sm:w-auto"
                       >
-                        <Plus className="w-4 h-4" /> Add New Template (قالب جديد)
+                        <Plus className="w-4 h-4" /> إنشاء قالب جديد
                       </button>
                     </div>
                   </>
                 ) : (
-                  <form onSubmit={handleCreateTemplate} className="space-y-4 border border-indigo-500/20 bg-indigo-500/[0.02] p-5 rounded-2xl">
+                  <form onSubmit={handleCreateTemplate} className="space-y-4 border border-indigo-500/20 bg-indigo-500/[0.02] p-5 rounded-2xl text-right">
                     <div className="flex justify-between items-center border-b border-indigo-500/10 pb-3 mb-2">
-                      <span className="text-xs font-bold text-indigo-400 uppercase tracking-widest flex items-center gap-1.5">
-                        <Layers className="w-4 h-4" /> Create Specification Template
-                      </span>
                       <button 
                         type="button" 
                         onClick={() => setIsCreatingTemplate(false)}
                         className="text-[10px] text-slate-400 hover:text-white underline"
                       >
-                        Select Existing
+                        تحديد قالب موجود
                       </button>
+                      <span className="text-xs font-bold text-indigo-400 uppercase tracking-widest flex items-center gap-1.5 justify-end">
+                        <Layers className="w-4 h-4" /> إنشاء قالب مواصفات
+                      </span>
                     </div>
 
                     <div>
-                      <Label>Template Name (اسم قالب المواصفات)</Label>
+                      <Label>اسم قالب المواصفات (Template Name)</Label>
                       <Input
                         type="text"
                         required
                         value={newTemplateData.name}
                         onChange={e => setNewTemplateData({ ...newTemplateData, name: e.target.value })}
-                        className="text-xs"
-                        placeholder="e.g. Cylindres Pneumatique Standard D60, Roulement Standard Ball 6xxx"
+                        className="text-xs text-right"
+                        placeholder="مثال: أسطوانات هوائية D60, رولمان بلي 6xxx"
                       />
                     </div>
 
                     <div>
-                      <div className="flex justify-between items-center">
-                        <Label>SKU Base / Code Prefix (البادئة مثل RLM)</Label>
-                        <span className="text-[9px] font-mono text-cyan-400">Rule of 999 slots generates: ROB-001</span>
+                      <div className="flex justify-between items-center flex-row-reverse">
+                        <Label>البادئة (SKU Base / Code Prefix)</Label>
+                        <span className="text-[9px] font-mono text-cyan-400">قاعدة 999 تُولد: ROB-001</span>
                       </div>
                       <Input
                         type="text"
                         required
                         value={newTemplateData.skuBase}
                         onChange={e => setNewTemplateData({ ...newTemplateData, skuBase: e.target.value })}
-                        className="titan-input text-xs font-mono"
-                        placeholder="e.g., RLM, MOT-E, VNV"
+                        className="titan-input text-xs font-mono text-right"
+                        placeholder="مثال: RLM, MOT-E, VNV"
                       />
                     </div>
 
                     <div>
-                      <Label>Description (الوصف)</Label>
+                      <Label>الوصف (Description)</Label>
                       <Textarea
                         value={newTemplateData.description}
                         onChange={e => setNewTemplateData({ ...newTemplateData, description: e.target.value })}
-                        className="titan-input text-xs h-16 resize-none"
-                        placeholder="Define what specific parameters this technical category covers..."
+                        className="titan-input text-xs h-16 resize-none text-right"
+                        placeholder="عرف المعايير التي يُغطيها هذا القالب الفني..."
                       />
                     </div>
 
@@ -576,7 +576,7 @@ export function PdrWizardModal({
                       disabled={isSubmitting}
                       className="w-full py-3 bg-indigo-500 hover:bg-indigo-400 text-black font-extrabold text-xs uppercase tracking-widest rounded-xl transition-all shadow-md flex items-center justify-center gap-2"
                     >
-                      <Save className="w-4 h-4" /> {isSubmitting ? 'Saving...' : 'Deploy & Select Template'}
+                      <Save className="w-4 h-4" /> {isSubmitting ? 'جاري الحفظ...' : 'نشر وتحديد القالب'}
                     </button>
                   </form>
                 )}
@@ -585,110 +585,110 @@ export function PdrWizardModal({
 
             {/* STEP 3: BLUEPRINT SPECIFICATIONS */}
             {step === 3 && (
-              <form onSubmit={handleCreateBlueprint} className="space-y-5">
+              <form onSubmit={handleCreateBlueprint} className="space-y-5 text-right">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-3 bg-white/[0.02] border border-white/5 rounded-xl text-center">
-                    <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">Selected Classification</span>
+                    <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">القالب النشط</span>
                     <div className="text-xs font-bold text-indigo-400 truncate mt-0.5">
-                      {families.find(f => f.id === selectedFamilyId)?.name || 'Standard Family'}
+                      {templates.find(t => t.id === selectedTemplateId)?.name || 'قالب فني'}
                     </div>
                   </div>
                   <div className="p-3 bg-white/[0.02] border border-white/5 rounded-xl text-center">
-                    <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">Active Template</span>
+                    <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">التصنيف المحدد</span>
                     <div className="text-xs font-bold text-indigo-400 truncate mt-0.5">
-                      {templates.find(t => t.id === selectedTemplateId)?.name || 'Technical Template'}
+                      {families.find(f => f.id === selectedFamilyId)?.name || 'عائلة قياسية'}
                     </div>
                   </div>
                 </div>
 
                 {slotDetails.isMax ? (
-                  <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-2xl flex items-start gap-3">
+                  <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-2xl flex items-start gap-3 flex-row-reverse">
                     <ShieldAlert className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-                    <div>
-                      <div className="text-sm font-bold text-red-400">999 Max Capacity Exceeded!</div>
+                    <div className="text-right">
+                      <div className="text-sm font-bold text-red-400">تم تجاوز الحد الأقصى (999 مقعد)!</div>
                       <p className="text-xs text-slate-400 mt-1">
-                        All 999 sequence slot spaces are filled for this category prefix. Please create a new template with a different SKU Base to continue.
+                        تم شغل جميع المقاعد الـ 999 المتاحة لهذه البادئة. يرجى إنشاء قالب جديد ببادئة (SKU) مختلفة للمتابعة.
                       </p>
                     </div>
                   </div>
                 ) : (
                   <>
                     <div className="p-4 bg-indigo-500/[0.02] border border-indigo-500/20 rounded-2xl space-y-2.5">
-                      <div className="flex justify-between items-center">
-                        <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Nomenclature Slot ID Assigned</span>
-                        <span className="text-[9px] font-mono text-slate-500">Slot {slotDetails.num} of 999</span>
+                      <div className="flex justify-between items-center flex-row-reverse">
+                        <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">المقعد المخصص (معرف القطعة)</span>
+                        <span className="text-[9px] font-mono text-slate-500">المقعد {slotDetails.num} من 999</span>
                       </div>
                       <div className="text-2xl font-extrabold font-mono text-cyan-400 text-center tracking-widest py-2 bg-[#0a0a0f]/60 rounded-xl border border-white/5 shadow-inner">
                         {slotDetails.activeId}
                       </div>
                       <p className="text-[10px] text-slate-400 text-center">
-                        Following the **999 slots rule**, this physical ID is deterministically allocated to prevent inventory chaos.
+                        تطبيقا لقانون الـ 999 مقعد، يتم تحديد المعرف بشكل حتمي لمنع الفوضى في المخزن.
                       </p>
                     </div>
 
                     <div className="space-y-4">
                       <div>
-                        <Label>Model Name / Commercial Reference (الموديل)</Label>
+                        <Label>الموديل / المرجع التجاري (Model Name)</Label>
                         <Input
                           type="text"
                           required
                           value={newBlueprintData.model}
                           onChange={e => setNewBlueprintData({ ...newBlueprintData, model: e.target.value })}
-                          className="text-xs"
-                          placeholder="e.g., Heavy Duty X1, 6205-2RS-C3, A-42-RED"
+                          className="text-xs text-right"
+                          placeholder="مثال: Heavy Duty X1, 6205-2RS-C3, A-42-RED"
                         />
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-2 gap-4 flex-row-reverse">
                         <div>
-                          <Label>Power / Force / Size (القدرة/المقاس)</Label>
-                          <Input
-                            type="text"
-                            required
-                            value={newBlueprintData.powerOrForce}
-                            onChange={e => setNewBlueprintData({ ...newBlueprintData, powerOrForce: e.target.value })}
-                            className="text-xs"
-                            placeholder="e.g. 15kW, 400T, 25x52x15mm"
-                          />
-                        </div>
-                        <div>
-                          <Label>Technical Specs (المواصفات التقنية)</Label>
+                          <Label>المواصفات التقنية (Technical Specs)</Label>
                           <Input
                             type="text"
                             required
                             value={newBlueprintData.technicalSpecs}
                             onChange={e => setNewBlueprintData({ ...newBlueprintData, technicalSpecs: e.target.value })}
-                            className="text-xs"
-                            placeholder="e.g. 400V 3Ph, Nitrile Rubber, ISO 9001"
+                            className="text-xs text-right"
+                            placeholder="مثال: 400V 3Ph, Nitrile Rubber, ISO 9001"
+                          />
+                        </div>
+                        <div>
+                          <Label>القدرة / المقاس (Power/Force/Size)</Label>
+                          <Input
+                            type="text"
+                            required
+                            value={newBlueprintData.powerOrForce}
+                            onChange={e => setNewBlueprintData({ ...newBlueprintData, powerOrForce: e.target.value })}
+                            className="text-xs text-right"
+                            placeholder="مثال: 15kW, 400T, 25x52x15mm"
                           />
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-2 gap-4 flex-row-reverse">
                         <div>
-                          <Label>Unit of Measure (وحدة القياس)</Label>
-                          <Select
-                            required
-                            value={newBlueprintData.unit}
-                            onChange={e => setNewBlueprintData({ ...newBlueprintData, unit: e.target.value })}
-                            className="titan-input appearance-none text-xs"
-                          >
-                            <option value="Pcs">Pieces (Pcs)</option>
-                            <option value="Kg">Kilograms (Kg)</option>
-                            <option value="Liters">Liters (Liters)</option>
-                            <option value="Meters">Meters (Meters)</option>
-                          </Select>
-                        </div>
-                        <div>
-                          <Label>Minimum Threshold (الحد الأدنى للطلب)</Label>
+                          <Label>الحد الأدنى للطلب (Minimum Threshold)</Label>
                           <Input
                             type="number"
                             min="0"
                             required
                             value={newBlueprintData.minThreshold}
                             onChange={e => setNewBlueprintData({ ...newBlueprintData, minThreshold: Number(e.target.value) })}
-                            className="titan-input text-xs font-mono"
+                            className="text-xs text-right font-mono"
                           />
+                        </div>
+                        <div>
+                          <Label>وحدة القياس (Unit of Measure)</Label>
+                          <Select
+                            required
+                            value={newBlueprintData.unit}
+                            onChange={e => setNewBlueprintData({ ...newBlueprintData, unit: e.target.value })}
+                            className="titan-input appearance-none text-xs text-right"
+                          >
+                            <option value="Pcs">قطعة (Pcs)</option>
+                            <option value="Kg">كيلوغرام (Kg)</option>
+                            <option value="Liters">لتر (Liters)</option>
+                            <option value="Meters">متر (Meters)</option>
+                          </Select>
                         </div>
                       </div>
                     </div>
@@ -698,7 +698,7 @@ export function PdrWizardModal({
                       disabled={isSubmitting}
                       className="w-full py-4 mt-2 bg-cyan-500 hover:bg-cyan-400 text-black font-extrabold text-xs uppercase tracking-widest rounded-xl shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all flex items-center justify-center gap-2"
                     >
-                      <Plus className="w-4 h-4" /> {isSubmitting ? 'Registering...' : 'Deploy Blueprint to Catalog'}
+                      <Plus className="w-4 h-4" /> {isSubmitting ? 'جاري التسجيل...' : 'تسجيل البصمة في الكتالوج'}
                     </button>
                   </>
                 )}
@@ -708,28 +708,28 @@ export function PdrWizardModal({
           </div>
 
           {/* Footer Controls */}
-          <div className="p-6 border-t border-white/5 flex justify-between items-center bg-white/[0.01]">
+          <div className="p-6 border-t border-white/5 flex justify-between items-center bg-white/[0.01] flex-row-reverse">
             <div>
               {step > 1 ? (
                 <button
                   type="button"
                   onClick={() => setStep((prev) => (prev - 1) as any)}
-                  className="px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold rounded-xl text-xs uppercase tracking-wider flex items-center gap-1.5 transition-all"
+                  className="px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold rounded-xl text-xs uppercase tracking-wider flex items-center gap-1.5 transition-all flex-row-reverse"
                 >
-                  <ArrowLeft className="w-4 h-4" /> Back
+                  <ArrowRight className="w-4 h-4" /> رجوع
                 </button>
               ) : (
                 <div />
               )}
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-row-reverse">
               <button
                 type="button"
                 onClick={onClose}
                 className="px-5 py-2.5 bg-white/5 hover:bg-white/10 border border-white/5 text-slate-400 hover:text-white rounded-xl text-xs font-bold uppercase tracking-wider transition-all"
               >
-                Abort
+                إلغاء
               </button>
 
               {step === 1 && !isCreatingFamily && (
@@ -737,9 +737,9 @@ export function PdrWizardModal({
                   type="button"
                   disabled={!selectedFamilyId}
                   onClick={() => setStep(2)}
-                  className="px-6 py-2.5 bg-indigo-500 hover:bg-indigo-400 text-black font-extrabold rounded-xl text-xs uppercase tracking-widest flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-[0_0_15px_rgba(99,102,241,0.2)]"
+                  className="px-6 py-2.5 bg-indigo-500 hover:bg-indigo-400 text-black font-extrabold rounded-xl text-xs uppercase tracking-widest flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-[0_0_15px_rgba(99,102,241,0.2)] flex-row-reverse"
                 >
-                  Next Step <ArrowRight className="w-4 h-4" />
+                  التالي <ArrowLeft className="w-4 h-4" />
                 </button>
               )}
 
@@ -752,9 +752,9 @@ export function PdrWizardModal({
                     onLinkTemplate(selectedTemplateId);
                     setStep(3);
                   }}
-                  className="px-6 py-2.5 bg-indigo-500 hover:bg-indigo-400 text-black font-extrabold rounded-xl text-xs uppercase tracking-widest flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-[0_0_15px_rgba(99,102,241,0.2)]"
+                  className="px-6 py-2.5 bg-indigo-500 hover:bg-indigo-400 text-black font-extrabold rounded-xl text-xs uppercase tracking-widest flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-[0_0_15px_rgba(99,102,241,0.2)] flex-row-reverse"
                 >
-                  Next Step <ArrowRight className="w-4 h-4" />
+                  التالي <ArrowLeft className="w-4 h-4" />
                 </button>
               )}
             </div>

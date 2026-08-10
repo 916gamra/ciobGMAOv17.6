@@ -3,6 +3,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db, PreventiveTask } from '@/core/db';
 import { GlassCard } from '@/shared/components/GlassCard';
 import { PageHeader } from '@/shared/components/PageHeader';
+import { HeaderBentoCard } from '@/shared/components/HeaderBentoCard';
 import { useTranslation } from 'react-i18next';
 import { Plus, Search, Settings2, Wrench, Zap, Droplet, Wind, Cpu, Trash2, Box, Activity } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -149,7 +150,7 @@ export function TaskCatalogView() {
       <PageHeader
         title={t("preventive.catalog.title", "كتالوج المهام القياسية")}
         subtitle={t("preventive.catalog.subtitle", "مكتبة المهام الهندسية والإجراءات الفنية المنظمة لأعمال الصيانة الوقائية للأجزاء والمكونات")}
-        icon={<Settings2 className="w-8 h-8 text-emerald-400" />}
+        icon={<Settings2 className="w-7 h-7 text-emerald-400" />}
         badgeColor="emerald"
         badgeText={t("portals.preventive", "الصيانة الوقائية")}
         actions={
@@ -168,7 +169,38 @@ export function TaskCatalogView() {
             </button>
           </div>
         }
-      />
+      >
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <HeaderBentoCard
+            title="المهام القياسية"
+            subtitle="GENERIC TASKS"
+            value={tasks?.length || 0}
+            icon={<Settings2 className="w-3.5 h-3.5" />}
+            color="emerald"
+          />
+          <HeaderBentoCard
+            title="الإجراءات والأفعال"
+            subtitle="ACTION VERBS"
+            value={standardActions?.length || 0}
+            icon={<Activity className="w-3.5 h-3.5" />}
+            color="purple"
+          />
+          <HeaderBentoCard
+            title="التخصصات الفنية"
+            subtitle="TECHNICAL DISCIPLINES"
+            value={pdrFamilies?.length || 0}
+            icon={<Wrench className="w-3.5 h-3.5" />}
+            color="amber"
+          />
+          <HeaderBentoCard
+            title="المكونات الهندسية"
+            subtitle="PDR MODULES"
+            value={pdrTemplates?.length || 0}
+            icon={<Box className="w-3.5 h-3.5" />}
+            color="cyan"
+          />
+        </div>
+      </PageHeader>
       
       {activeTab === 'tasks' && (
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">

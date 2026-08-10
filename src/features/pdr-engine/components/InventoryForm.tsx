@@ -55,8 +55,8 @@ export function InventoryForm({ userId }: { userId: string }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 p-6 bg-gray-900 rounded-lg">
-      <h2 className="text-2xl font-bold text-cyan-400 mb-6">إضافة مخزون جديد</h2>
+    <form onSubmit={handleSubmit} className="space-y-4 p-6 bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl">
+      <h2 className="text-xl font-bold text-white mb-6">إضافة مخزون جديد</h2>
 
       {/* Error Messages */}
       {(error || formError) && (
@@ -160,7 +160,7 @@ export function InventoryForm({ userId }: { userId: string }) {
       <button
         type="submit"
         disabled={loading}
-        className="w-full px-6 py-3 bg-cyan-600 text-white font-semibold rounded-lg hover:bg-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="w-full px-6 py-3 bg-white text-slate-950 font-extrabold rounded-xl hover:bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg text-xs"
       >
         {loading ? 'جاري الإضافة...' : 'إضافة المخزون'}
       </button>

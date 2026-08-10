@@ -6,6 +6,7 @@ import { db } from '@/core/db';
 import { PdrPageSkeleton } from '../components/PdrPageSkeleton';
 import { GlassCard } from '@/shared/components/GlassCard';
 import { PageHeader } from '@/shared/components/PageHeader';
+import { HeaderBentoCard } from '@/shared/components/HeaderBentoCard';
 import { 
   History, 
   ArrowDownRight, 
@@ -348,18 +349,47 @@ export function StockHistoryView() {
     >
       {/* Visual Header */}
       <PageHeader
-        title="Organic Consumption Analysis & Smart Spare Part Mapping"
-        subtitle="Intelligent system to monitor actual machine consumption and suggest official linking to the Bill of Materials (B.O.M) with installation quantities."
-        icon={<History className="w-6 h-6 text-cyan-500" />}
-        actions={
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 shrink-0">
-            <StatCompact icon={<ArrowDownRight className="w-4 h-4 text-emerald-400" />} label="Total Deposits" value={`${statistics.totalIn.toFixed(0)} Pcs`} />
-            <StatCompact icon={<ArrowUpRight className="w-4 h-4 text-amber-400" />} label="Total Withdrawals" value={`${statistics.totalOut.toFixed(0)} Pcs`} />
-            <StatCompact icon={<Cpu className="w-4 h-4 text-cyan-400" />} label="Calibrated Machines" value={`${statistics.machinesWithOfficialParts} Machines`} />
-            <StatCompact icon={<Link2 className="w-4 h-4 text-purple-400" />} label="Mapped Components" value={`${statistics.totalMappedComponentsCount} Items`} />
-          </div>
-        }
-      />
+        title={t('pdr.history.title', 'سجل الحركة والتحليل العضوي للاستهلاك')}
+        subtitle={t('pdr.history.subtitle', 'نظام ذكي لمراقبة استهلاك الآلات الفعلي واقتراح ربط المكونات بشجرة المنتجات والكميات المثبتة.')}
+        icon={<History className="w-7 h-7 text-cyan-400" />}
+        badgeText="التحليل العضوي"
+        badgeColor="cyan"
+      >
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <HeaderBentoCard
+            title="إجمالي الإيداعات"
+            subtitle="TOTAL DEPOSITS"
+            value={statistics.totalIn}
+            valueUnit="قطعة"
+            icon={<ArrowDownRight className="w-3.5 h-3.5" />}
+            color="emerald"
+          />
+          <HeaderBentoCard
+            title="إجمالي السحوبات"
+            subtitle="TOTAL WITHDRAWALS"
+            value={statistics.totalOut}
+            valueUnit="قطعة"
+            icon={<ArrowUpRight className="w-3.5 h-3.5" />}
+            color="amber"
+          />
+          <HeaderBentoCard
+            title="الآلات المعايرة"
+            subtitle="CALIBRATED MACHINES"
+            value={statistics.machinesWithOfficialParts}
+            valueUnit="آلة"
+            icon={<Cpu className="w-3.5 h-3.5" />}
+            color="blue"
+          />
+          <HeaderBentoCard
+            title="المكونات المربوطة"
+            subtitle="MAPPED COMPONENTS"
+            value={statistics.totalMappedComponentsCount}
+            valueUnit="عنصر"
+            icon={<Link2 className="w-3.5 h-3.5" />}
+            color="purple"
+          />
+        </div>
+      </PageHeader>
 
       {/* Tabs Menu */}
       <motion.div variants={itemVariants} className="flex items-center gap-1 bg-[#090d16] p-1 rounded-2xl border border-white/5 self-start max-w-md">

@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { GlassCard } from '@/shared/components/GlassCard';
 import { PageHeader } from '@/shared/components/PageHeader';
+import { HeaderBentoCard } from '@/shared/components/HeaderBentoCard';
 import { KpiCard } from '@/shared/components/KpiCard';
 import { BadgePill } from '@/shared/components/BadgePill';
 import { Button } from '@/shared/components/Button';
@@ -250,50 +251,47 @@ export function StockReconciliationView({ user }: { user: any }) {
     <div className="w-full h-full flex flex-col gap-6 relative z-10 lg:px-8 pb-24 pt-2 font-sans" dir="rtl">
       {/* HEADER COCKPIT */}
       <PageHeader
-        title="مطابقة سحوبات البونات (Reconciliation Radar)"
+        title="مطابقة سحوبات البونات"
         subtitle="واجهة سيادية لمسؤول المخزن لمراجعة ومطابقة القطع الجديدة المسجلة في التدخلات العلاجية برقم البون."
-        icon={<ClipboardCheck className="w-8 h-8 text-cyan-400" />}
+        icon={<ClipboardCheck className="w-7 h-7 text-cyan-400" />}
+        badgeText="رادار المطابقة"
         badgeColor="cyan"
-      />
-
-      {/* DASHBOARD KPIS */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <KpiCard
-          label="إجمالي طلبات السحب"
-          value={stats.total}
-          unit="سحب"
-          icon={<Box className="w-6 h-6" />}
-          color="cyan"
-          subText="سحوبات الفنيين في البونات"
-        />
-
-        <KpiCard
-          label="في انتظار المطابقة"
-          value={stats.pending}
-          unit="طلب"
-          icon={<Clock className="w-6 h-6" />}
-          color="amber"
-          subText="تتطلب مراجعة أمين المخزن"
-        />
-
-        <KpiCard
-          label="مطابقة وموثقة"
-          value={stats.reconciled}
-          unit="بون"
-          icon={<CheckCircle2 className="w-6 h-6" />}
-          color="emerald"
-          subText="سُحبت وسُجلت مسبقاً"
-        />
-
-        <KpiCard
-          label="معتمدة ومخصومة الآن"
-          value={stats.deducted}
-          unit="عملية"
-          icon={<PackageCheck className="w-6 h-6" />}
-          color="indigo"
-          subText="تم خصم رصيدها فورياً"
-        />
-      </div>
+      >
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <HeaderBentoCard
+            title="إجمالي طلبات السحب"
+            subtitle="TOTAL CLAIMS"
+            value={stats.total}
+            valueUnit="سحب"
+            icon={<Box className="w-3.5 h-3.5" />}
+            color="cyan"
+          />
+          <HeaderBentoCard
+            title="في انتظار المطابقة"
+            subtitle="PENDING AUDIT"
+            value={stats.pending}
+            valueUnit="طلب"
+            icon={<Clock className="w-3.5 h-3.5" />}
+            color="amber"
+          />
+          <HeaderBentoCard
+            title="مطابقة وموثقة"
+            subtitle="RECONCILED"
+            value={stats.reconciled}
+            valueUnit="بون"
+            icon={<CheckCircle2 className="w-3.5 h-3.5" />}
+            color="emerald"
+          />
+          <HeaderBentoCard
+            title="معتمدة ومخصومة"
+            subtitle="DEDUCTED STOCK"
+            value={stats.deducted}
+            valueUnit="عملية"
+            icon={<PackageCheck className="w-3.5 h-3.5" />}
+            color="blue"
+          />
+        </div>
+      </PageHeader>
 
       {/* FILTER & CONTROL BAR */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-[#0a0a0f]/60 border border-slate-800 backdrop-blur-md">

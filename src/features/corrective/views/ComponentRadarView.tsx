@@ -5,7 +5,7 @@ import { db, Machine, MachineBlueprint, StandardComponent } from '@/core/db';
 import { GlassCard } from '@/shared/components/GlassCard';
 import { PageContainer, pageItemVariants, pageContainerVariants } from '@/shared/components/PageContainer';
 import { PageHeader } from '@/shared/components/PageHeader';
-import { StatCompact } from '@/shared/components/StatCompact';
+import { HeaderBentoCard } from '@/shared/components/HeaderBentoCard';
 import { KpiCard } from '@/shared/components/KpiCard';
 import { BadgePill } from '@/shared/components/BadgePill';
 import { FilterBar } from '@/shared/components/FilterBar';
@@ -269,46 +269,57 @@ export function ComponentRadarView() {
       <PageHeader
         title={t('corrective.componentRadar.title', 'رادار اكتشاف الشجرة الهيكلية')}
         subtitle={t('corrective.componentRadar.subtitle', 'التقاط المكونات والأجزاء المستهلكة أثناء التدخلات العلاجية وتأكيدها داخل الشجرة الفنية للآلة.')}
-        icon={<Radar className="w-8 h-8 text-orange-400" />}
+        icon={<Radar className="w-7 h-7 text-orange-400" />}
+        badgeText="رادار الهيكلية"
         badgeColor="orange"
         actions={
-          <div className="flex flex-wrap items-center gap-3">
-            <StatCompact 
-              icon={<Activity className="w-4 h-4 text-purple-400" />} 
-              label={t('corrective.componentRadar.totalDiscovered', 'المكونات المكتشفة')} 
-              value={stats.totalPairs.toString()} 
-            />
-            <StatCompact 
-              icon={<AlertTriangle className="w-4 h-4 text-amber-400" />} 
-              label={t('corrective.componentRadar.unlinkedGaps', 'فجوات غير مرابطة')} 
-              value={stats.unlinkedCount.toString()} 
-            />
-            <StatCompact 
-              icon={<CheckCircle2 className="w-4 h-4 text-emerald-400" />} 
-              label={t('corrective.componentRadar.confirmedComponents', 'مكونات مؤكدة')} 
-              value={stats.linkedCount.toString()} 
-            />
-            <StatCompact 
-              icon={<ShieldCheck className="w-4 h-4 text-cyan-400" />} 
-              label={t('corrective.componentRadar.maturity', 'نضج الشجرة')} 
-              value={`${stats.maturityRate}%`} 
-            />
-            <button
-              onClick={handleBulkBindAll}
-              disabled={stats.unlinkedCount === 0}
-              className={cn(
-                "font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95",
-                stats.unlinkedCount > 0
-                  ? "bg-white text-slate-950 hover:bg-slate-200"
-                  : "bg-white/10 text-slate-500 cursor-not-allowed opacity-50 border border-white/10"
-              )}
-            >
-              <Sparkles className="w-4 h-4" />
-              <span>{t('corrective.componentRadar.confirmGaps', 'تأكيد الفجوات')} ({stats.unlinkedCount})</span>
-            </button>
-          </div>
+          <button
+            onClick={handleBulkBindAll}
+            disabled={stats.unlinkedCount === 0}
+            className={cn(
+              "font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95",
+              stats.unlinkedCount > 0
+                ? "bg-white text-slate-950 hover:bg-slate-200"
+                : "bg-white/10 text-slate-500 cursor-not-allowed opacity-50 border border-white/10"
+            )}
+          >
+            <Sparkles className="w-4 h-4" />
+            <span>{t('corrective.componentRadar.confirmGaps', 'تأكيد الفجوات')} ({stats.unlinkedCount})</span>
+          </button>
         }
-      />
+      >
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <HeaderBentoCard
+            title="المكونات المكتشفة"
+            subtitle="DISCOVERED PARTS"
+            value={stats.totalPairs}
+            icon={<Activity className="w-3.5 h-3.5" />}
+            color="purple"
+          />
+          <HeaderBentoCard
+            title="فجوات غير مرابطة"
+            subtitle="UNLINKED GAPS"
+            value={stats.unlinkedCount}
+            icon={<AlertTriangle className="w-3.5 h-3.5" />}
+            color="amber"
+          />
+          <HeaderBentoCard
+            title="مكونات مؤكدة"
+            subtitle="CONFIRMED B.O.M"
+            value={stats.linkedCount}
+            icon={<CheckCircle2 className="w-3.5 h-3.5" />}
+            color="emerald"
+          />
+          <HeaderBentoCard
+            title="نضج الشجرة"
+            subtitle="TREE MATURITY"
+            value={stats.maturityRate}
+            valueUnit="%"
+            icon={<ShieldCheck className="w-3.5 h-3.5" />}
+            color="cyan"
+          />
+        </div>
+      </PageHeader>
 
       {/* CORE TABLE CONTAINER (FACTORY ADMIN CRYSTAL HIGH-CONTRAST DESIGN) */}
       <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl flex-1 flex flex-col bg-[#0a0a0f]/60 backdrop-blur-xl">

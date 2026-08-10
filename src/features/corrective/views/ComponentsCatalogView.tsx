@@ -16,11 +16,15 @@ import {
   X,
   Layers,
   Sparkles,
-  AlertTriangle
+  AlertTriangle,
+  CheckCircle2,
+  Tag,
+  Link2
 } from 'lucide-react';
 import { db, ComponentTemplate, ComponentBlueprint, PdrTemplate } from '@/core/db';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { PageHeader } from '@/shared/components/PageHeader';
+import { HeaderBentoCard } from '@/shared/components/HeaderBentoCard';
 import { GlassCard } from '@/shared/components/GlassCard';
 import { FilterBar } from '@/shared/components/FilterBar';
 import { BadgePill } from '@/shared/components/BadgePill';
@@ -221,21 +225,66 @@ export function ComponentsCatalogView() {
         <PageHeader
           title={t('corrective.componentsCatalog.title', 'كتالوج المكونات والأجزاء')}
           subtitle={t('corrective.componentsCatalog.subtitle', 'دليل المكونات الفنية وتجميعات الأجزاء المرتبطة بآلات ومعدات المعمل.')}
-          icon={<Cpu className="w-8 h-8 text-orange-400" />}
+          icon={<Cpu className="w-7 h-7 text-orange-400" />}
+          badgeText="المكونات والتجميعات"
           badgeColor="orange"
-        />
+          actions={
+            <button 
+              onClick={openNewTemplate}
+              className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+            >
+              <Plus className="w-4 h-4 text-slate-950" /> 
+              <span>إضافة مكون جديد</span>
+            </button>
+          }
+        >
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <HeaderBentoCard
+              title="إجمالي القوالب"
+              subtitle="TEMPLATES"
+              value={templates.length}
+              valueUnit="قالب"
+              icon={<Layers className="w-3.5 h-3.5" />}
+              color="orange"
+            />
+            <HeaderBentoCard
+              title="البصمات المكونة"
+              subtitle="BLUEPRINTS"
+              value={blueprints.length}
+              valueUnit="بصمة"
+              icon={<Tag className="w-3.5 h-3.5" />}
+              color="cyan"
+            />
+            <HeaderBentoCard
+              title="قوالب PDR المرتبطة"
+              subtitle="PDR LINKED"
+              value={pdrTemplates.length}
+              valueUnit="قالب"
+              icon={<Link2 className="w-3.5 h-3.5" />}
+              color="emerald"
+            />
+            <HeaderBentoCard
+              title="حالة الربط الهندسي"
+              subtitle="LINK STATUS"
+              value="100%"
+              valueUnit="نشط"
+              icon={<CheckCircle2 className="w-3.5 h-3.5" />}
+              color="emerald"
+            />
+          </div>
+        </PageHeader>
       </div>
 
       {/* CORE TABLE CONTAINER (FACTORY ADMIN CRYSTAL HIGH-CONTRAST DESIGN) */}
       <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl flex-1 flex flex-col bg-[#0a0a0f]/60 backdrop-blur-xl mx-6 md:mx-8 mb-6 mt-6">
         {/* Table Registry Header + FilterBar */}
         <div className="p-6 md:p-8 border-b border-white/10 bg-white/[0.02] flex flex-col gap-6 shrink-0 relative z-10">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 flex-row-reverse">
+            <div className="flex items-center justify-end gap-4 flex-row-reverse">
               <div className="w-12 h-12 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shrink-0">
                 <Cpu className="w-6 h-6 text-orange-400" />
               </div>
-              <div>
+              <div className="text-right">
                 <h2 className="text-lg font-bold text-white uppercase tracking-tight font-sans">
                   كتالوج المكونات الفنية وتجميعات الآلات
                 </h2>
@@ -245,14 +294,14 @@ export function ComponentsCatalogView() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-end gap-2 flex-row-reverse">
               <BadgePill color="orange">
                 {filteredTemplates.length} مكون مسجل
               </BadgePill>
               <button
                 type="button"
                 onClick={openNewTemplate}
-                className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 flex-row-reverse"
               >
                 <Plus className="w-4 h-4 text-slate-950" />
                 <span>إضافة مكون جديد</span>
@@ -266,11 +315,12 @@ export function ComponentsCatalogView() {
             onSearchChange={setSearchTerm}
             searchPlaceholder="بحث باسم المكون، القالب، أو العائلة..."
             extraControls={
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-row-reverse">
                 <select
                   value={filterFamily}
                   onChange={(e) => setFilterFamily(e.target.value)}
-                  className="py-1.5 px-3 bg-[#0a0a0f]/50 border border-white/10 rounded-xl text-xs text-slate-300 font-mono cursor-pointer focus:outline-none focus:border-orange-500/50"
+                  className="py-1.5 px-3 bg-[#0a0a0f]/50 border border-white/10 rounded-xl text-xs text-slate-300 font-mono cursor-pointer focus:outline-none focus:border-orange-500/50 appearance-none pr-8 pl-3 rtl:pr-3 rtl:pl-8 text-right"
+                  dir="rtl"
                 >
                   <option value="">جميع العائلات الفنية</option>
                   <option value="MEC">ميكانيك (MEC)</option>
@@ -281,7 +331,7 @@ export function ComponentsCatalogView() {
                 </select>
 
                 {/* VIEW SWITCHER */}
-                <div className="flex items-center bg-[#0a0a0f]/90 border border-white/10 rounded-xl p-0.5 gap-0.5">
+                <div className="flex items-center bg-[#0a0a0f]/90 border border-white/10 rounded-xl p-0.5 gap-0.5 flex-row-reverse">
                   <button
                     type="button"
                     onClick={() => setViewMode('table')}
@@ -438,19 +488,19 @@ export function ComponentsCatalogView() {
                         {/* EXPANDABLE BLUEPRINTS & PDR PANEL */}
                         {isExpanded && (
                           <tr className="bg-[#0a0a0f]/80 border-b border-white/10">
-                            <td colSpan={6} className="p-4 md:p-6">
+                            <td colSpan={6} className="p-4 md:p-6 text-right">
                               <div className="space-y-4 pr-6 border-r-2 border-orange-500/40">
                                 {/* Blueprints sub-section */}
                                 <div className="space-y-3">
-                                  <div className="flex items-center justify-between">
-                                    <h4 className="text-xs font-bold text-orange-300 uppercase font-mono flex items-center gap-2">
+                                  <div className="flex items-center justify-between flex-row-reverse">
+                                    <h4 className="text-xs font-bold text-orange-300 uppercase font-mono flex items-center justify-end gap-2 flex-row-reverse">
                                       <Box className="w-4 h-4 text-orange-400" />
                                       <span>البصمات والموديلات التجارية لهذا المكون (Commercial Blueprints)</span>
                                     </h4>
                                     <button
                                       type="button"
                                       onClick={() => openNewBlueprint(tItem)}
-                                      className="text-xs bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 px-3 py-1 rounded-lg font-bold transition-colors flex items-center gap-1 border border-orange-500/30 cursor-pointer"
+                                      className="text-xs bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 px-3 py-1 rounded-lg font-bold transition-colors flex items-center gap-1 border border-orange-500/30 cursor-pointer flex-row-reverse"
                                     >
                                       <Plus className="w-3.5 h-3.5" />
                                       إضافة بصمة تجارية
@@ -458,21 +508,21 @@ export function ComponentsCatalogView() {
                                   </div>
 
                                   {tmplBlueprints.length === 0 ? (
-                                    <div className="text-xs text-slate-500 italic p-3 bg-white/[0.02] rounded-xl border border-white/5">
+                                    <div className="text-xs text-slate-500 italic p-3 bg-white/[0.02] rounded-xl border border-white/5 text-right">
                                       لا توجد بصمات تجارية مفعّلة لهذا القالب بعد.
                                     </div>
                                   ) : (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                       {tmplBlueprints.map(bp => (
-                                        <div key={bp.id} className="p-3 bg-[#0a0a0f] border border-white/10 rounded-xl flex items-start justify-between gap-3">
-                                          <div>
+                                        <div key={bp.id} className="p-3 bg-[#0a0a0f] border border-white/10 rounded-xl flex items-start justify-between gap-3 flex-row-reverse">
+                                          <div className="text-right">
                                             <span className="text-xs font-mono font-black text-cyan-400 block mb-0.5">{bp.id}</span>
                                             <span className="text-xs font-bold text-white block">{bp.reference}</span>
                                             {bp.brand && (
                                               <span className="text-[10px] text-slate-400 font-mono block mt-0.5">المصنع: {bp.brand}</span>
                                             )}
                                             {bp.specs && (
-                                              <p className="text-[10px] text-slate-300 mt-1 bg-[#0a0a0f]/40 p-1.5 rounded border border-white/5">
+                                              <p className="text-[10px] text-slate-300 mt-1 bg-[#0a0a0f]/40 p-1.5 rounded border border-white/5 text-right">
                                                 {bp.specs}
                                               </p>
                                             )}
@@ -492,17 +542,17 @@ export function ComponentsCatalogView() {
                                 </div>
 
                                 {/* Linked PDRs sub-section */}
-                                <div className="pt-3 border-t border-white/5">
-                                  <h4 className="text-xs font-bold text-slate-300 font-mono mb-2 flex items-center gap-1.5">
+                                <div className="pt-3 border-t border-white/5 text-right">
+                                  <h4 className="text-xs font-bold text-slate-300 font-mono mb-2 flex items-center justify-end gap-1.5 flex-row-reverse">
                                     <LinkIcon className="w-3.5 h-3.5 text-cyan-400" />
                                     <span>قطع الغيار المرتبطة الهيكلية (Linked Spare Parts)</span>
                                   </h4>
-                                  <div className="flex flex-wrap gap-2">
+                                  <div className="flex flex-wrap gap-2 justify-end flex-row-reverse">
                                     {tItem.linkedPartTemplateIds && tItem.linkedPartTemplateIds.length > 0 ? (
                                       tItem.linkedPartTemplateIds.map(pid => {
                                         const pdrTmpl = pdrTemplates.find(p => p.id === pid);
                                         return (
-                                          <div key={pid} className="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-lg px-2.5 py-1">
+                                          <div key={pid} className="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-lg px-2.5 py-1 flex-row-reverse">
                                             <Box className="w-3.5 h-3.5 text-orange-400" />
                                             <span className="text-xs text-slate-200 font-bold">{pdrTmpl?.name || pid}</span>
                                             {pdrTmpl?.skuBase && (
@@ -547,25 +597,18 @@ export function ComponentsCatalogView() {
                     className="p-5 bg-[#0a0a0f]/60 hover:bg-[#0a0a0f]/90 border border-white/10 hover:border-orange-500/30 rounded-2xl flex flex-col justify-between gap-4 transition-all shadow-xl backdrop-blur-xl"
                   >
                     <div>
-                      <div className="flex items-start justify-between border-b border-white/5 pb-3 mb-3">
-                        <div className="flex items-center gap-3">
+                      <div className="flex items-start justify-between border-b border-white/5 pb-3 mb-3 flex-row-reverse">
+                        <div className="flex items-center justify-end gap-3 flex-row-reverse">
                           <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-400 font-bold font-mono">
                             {tItem.family}
                           </div>
-                          <div>
+                          <div className="text-right">
                             <h3 className="text-sm font-bold text-white">{tItem.name}</h3>
-                            <div className="mt-1">{getCriticalityBadge(tItem.criticality)}</div>
+                            <div className="mt-1 flex justify-end">{getCriticalityBadge(tItem.criticality)}</div>
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={() => openEditTemplate(tItem)}
-                            className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 transition-colors"
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </button>
+                        <div className="flex items-center gap-1 flex-row-reverse">
                           <button
                             type="button"
                             onClick={() => handleDeleteTemplate(tItem)}
@@ -573,26 +616,33 @@ export function ComponentsCatalogView() {
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
+                          <button
+                            type="button"
+                            onClick={() => openEditTemplate(tItem)}
+                            className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-300 transition-colors"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
                         </div>
                       </div>
 
                       {tItem.description && (
-                        <p className="text-xs text-slate-400 mb-3 line-clamp-2">
+                        <p className="text-xs text-slate-400 mb-3 line-clamp-2 text-right">
                           {tItem.description}
                         </p>
                       )}
 
-                      <div className="flex items-center justify-between text-xs bg-[#0a0a0f]/40 p-3 rounded-xl border border-white/5">
-                        <span className="text-slate-400 font-mono">البصمات المفعّلة:</span>
-                        <span className="font-mono font-bold text-cyan-400">{tmplBlueprints.length} بصمات تجارية</span>
+                      <div className="flex items-center justify-between text-xs bg-[#0a0a0f]/40 p-3 rounded-xl border border-white/5 flex-row-reverse">
+                        <span className="text-slate-400 font-mono text-right">البصمات المفعّلة:</span>
+                        <span className="font-mono font-bold text-cyan-400 text-left">{tmplBlueprints.length} بصمات تجارية</span>
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between pt-3 border-t border-white/5">
+                    <div className="flex items-center justify-between pt-3 border-t border-white/5 flex-row-reverse">
                       <button
                         type="button"
                         onClick={() => openNewBlueprint(tItem)}
-                        className="px-3 py-1.5 rounded-xl bg-orange-500/10 text-orange-400 hover:bg-orange-500/20 font-bold text-xs flex items-center gap-1 border border-orange-500/20 transition-all cursor-pointer"
+                        className="px-3 py-1.5 rounded-xl bg-orange-500/10 text-orange-400 hover:bg-orange-500/20 font-bold text-xs flex items-center justify-center gap-1 border border-orange-500/20 transition-all cursor-pointer flex-row-reverse"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         إضافة بصمة
@@ -601,7 +651,7 @@ export function ComponentsCatalogView() {
                       <button
                         type="button"
                         onClick={() => toggleTemplate(tItem.id)}
-                        className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 font-bold text-xs flex items-center gap-1 border border-white/10 transition-all cursor-pointer"
+                        className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 font-bold text-xs flex items-center justify-center gap-1 border border-white/10 transition-all cursor-pointer flex-row-reverse"
                       >
                         <span>{isExpanded ? 'إخفاء التفاصيل' : 'عرض البصمات'}</span>
                         {isExpanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -612,13 +662,13 @@ export function ComponentsCatalogView() {
                     {isExpanded && (
                       <div className="pt-3 border-t border-white/10 space-y-2 font-mono text-xs">
                         {tmplBlueprints.length === 0 ? (
-                          <p className="text-slate-500 italic text-[11px]">لا توجد بصمات مفعّلة.</p>
+                          <p className="text-slate-500 italic text-[11px] text-right">لا توجد بصمات مفعّلة.</p>
                         ) : (
                           tmplBlueprints.map(bp => (
-                            <div key={bp.id} className="p-2 bg-[#0a0a0f] rounded-lg border border-white/5 flex items-center justify-between">
-                              <div>
+                            <div key={bp.id} className="p-2 bg-[#0a0a0f] rounded-lg border border-white/5 flex items-center justify-between flex-row-reverse">
+                              <div className="text-right">
                                 <span className="text-cyan-400 font-bold block">{bp.id}</span>
-                                <span className="text-white text-[11px]">{bp.reference}</span>
+                                <span className="text-white text-[11px] block">{bp.reference}</span>
                               </div>
                               <button onClick={() => handleDeleteBlueprint(bp)} className="text-slate-500 hover:text-rose-400">
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -646,8 +696,8 @@ export function ComponentsCatalogView() {
               exit={{ opacity: 0, scale: 0.95 }}
               className="bg-[#0a0a0f] border border-white/10 rounded-3xl p-6 md:p-8 w-full max-w-xl shadow-2xl text-right font-sans"
             >
-              <div className="flex justify-between items-center pb-4 border-b border-white/10 mb-6">
-                <h3 className="text-lg font-black text-white">
+              <div className="flex justify-between items-center pb-4 border-b border-white/10 mb-6 flex-row-reverse">
+                <h3 className="text-lg font-black text-white text-right">
                   {editingTemplate ? 'تعديل قالب المكون' : 'إضافة قالب مكون جديد'}
                 </h3>
                 <button onClick={() => setIsTemplateModalOpen(false)} className="text-slate-400 hover:text-white">
@@ -657,24 +707,38 @@ export function ComponentsCatalogView() {
 
               <form onSubmit={handleSaveTemplate} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-1">اسم المكون / القالب *</label>
+                  <label className="block text-xs font-semibold text-slate-400 mb-1 text-right">اسم المكون / القالب *</label>
                   <input
                     type="text"
                     required
                     value={tmplName}
                     onChange={e => setTmplName(e.target.value)}
-                    className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-orange-500"
+                    className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-orange-500 text-right"
                     placeholder="مثال: محرك كهربائي ثلاثي الأطوار"
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-4 flex-row-reverse">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-400 mb-1">العائلة الفنية *</label>
+                    <label className="block text-xs font-semibold text-slate-400 mb-1 text-right">مستوى الأهمية *</label>
+                    <select
+                      value={tmplCriticality}
+                      onChange={e => setTmplCriticality(e.target.value)}
+                      className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-orange-500 font-mono text-right appearance-none"
+                    >
+                      <option value="Low">منخفضة (Low)</option>
+                      <option value="Medium">متوسطة (Medium)</option>
+                      <option value="High">عالية (High)</option>
+                      <option value="Critical">حرجة جداً (Critical)</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-400 mb-1 text-right">العائلة الفنية *</label>
                     <select
                       value={tmplFamily}
                       onChange={e => setTmplFamily(e.target.value)}
-                      className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-orange-500 font-mono"
+                      className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-orange-500 font-mono text-right appearance-none"
                     >
                       <option value="MEC">ميكانيك (MEC)</option>
                       <option value="ELE">كهرباء (ELE)</option>
@@ -683,38 +747,25 @@ export function ComponentsCatalogView() {
                       <option value="ELN">إلكترونيك (ELN)</option>
                     </select>
                   </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-400 mb-1">مستوى الأهمية *</label>
-                    <select
-                      value={tmplCriticality}
-                      onChange={e => setTmplCriticality(e.target.value)}
-                      className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-orange-500 font-mono"
-                    >
-                      <option value="Low">منخفضة (Low)</option>
-                      <option value="Medium">متوسطة (Medium)</option>
-                      <option value="High">عالية (High)</option>
-                      <option value="Critical">حرجة جداً (Critical)</option>
-                    </select>
-                  </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-1">وصف المكون ووظائفه</label>
+                  <label className="block text-xs font-semibold text-slate-400 mb-1 text-right">وصف المكون ووظائفه</label>
                   <textarea
                     rows={2}
                     value={tmplDesc}
                     onChange={e => setTmplDesc(e.target.value)}
-                    className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-orange-500"
+                    className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-orange-500 text-right"
                     placeholder="وصف اختياري..."
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-1">قطع الغيار المرتبطة (PDR Templates)</label>
+                  <label className="block text-xs font-semibold text-slate-400 mb-1 text-right">قطع الغيار المرتبطة (PDR Templates)</label>
                   <div className="h-32 overflow-y-auto bg-[#0a0a0f]/30 border border-white/10 rounded-xl p-2 custom-scrollbar space-y-1">
                     {pdrTemplates.map(pt => (
-                      <label key={pt.id} className="flex items-center gap-2 p-2 hover:bg-white/5 rounded cursor-pointer">
+                      <label key={pt.id} className="flex items-center gap-2 p-2 hover:bg-white/5 rounded cursor-pointer flex-row-reverse justify-end">
+                        <span className="text-sm text-slate-300 font-bold">{pt.name} <span className="text-slate-500 text-xs font-mono">({pt.skuBase})</span></span>
                         <input
                           type="checkbox"
                           checked={tmplLinkedPdrs.includes(pt.id)}
@@ -722,17 +773,16 @@ export function ComponentsCatalogView() {
                             if (e.target.checked) setTmplLinkedPdrs(prev => [...prev, pt.id]);
                             else setTmplLinkedPdrs(prev => prev.filter(id => id !== pt.id));
                           }}
-                          className="rounded bg-[#0a0a0f] border-white/20 text-orange-500 focus:ring-0"
+                          className="rounded bg-[#0a0a0f] border-white/20 text-orange-500 focus:ring-0 ml-2"
                         />
-                        <span className="text-sm text-slate-300 font-bold">{pt.name} <span className="text-slate-500 text-xs font-mono">({pt.skuBase})</span></span>
                       </label>
                     ))}
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
-                  <button type="button" onClick={() => setIsTemplateModalOpen(false)} className="px-4 py-2 text-slate-400 hover:text-white">إلغاء</button>
+                <div className="flex gap-3 pt-4 border-t border-white/10 flex-row-reverse">
                   <button type="submit" className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-5 py-2 text-xs shadow-lg transition-all cursor-pointer">حفظ القالب</button>
+                  <button type="button" onClick={() => setIsTemplateModalOpen(false)} className="px-4 py-2 text-slate-400 hover:text-white">إلغاء</button>
                 </div>
               </form>
             </motion.div>
@@ -750,8 +800,8 @@ export function ComponentsCatalogView() {
               exit={{ opacity: 0, scale: 0.95 }}
               className="bg-[#0a0a0f] border border-white/10 rounded-3xl p-6 md:p-8 w-full max-w-md shadow-2xl text-right font-sans"
             >
-              <div className="flex justify-between items-center pb-2 border-b border-white/10 mb-4">
-                <div>
+              <div className="flex justify-between items-center pb-2 border-b border-white/10 mb-4 flex-row-reverse">
+                <div className="text-right">
                   <h3 className="text-lg font-black text-white">إضافة بصمة تجارية جديدة</h3>
                   <p className="text-xs text-orange-400 font-mono mt-0.5">القالب: {selectedTemplateForBlueprint?.name}</p>
                 </div>
@@ -762,40 +812,40 @@ export function ComponentsCatalogView() {
               
               <form onSubmit={handleSaveBlueprint} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-1">الموديل / المرجع التجاري *</label>
+                  <label className="block text-xs font-semibold text-slate-400 mb-1 text-right">الموديل / المرجع التجاري *</label>
                   <input
                     type="text"
                     required
                     value={bpReference}
                     onChange={e => setBpReference(e.target.value)}
-                    className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-orange-500"
+                    className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-orange-500 text-right"
                     placeholder="مثال: Siemens 5.5kW 400V 1450RPM"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-1">الشركة المصنعة (Brand)</label>
+                  <label className="block text-xs font-semibold text-slate-400 mb-1 text-right">الشركة المصنعة (Brand)</label>
                   <input
                     type="text"
                     value={bpBrand}
                     onChange={e => setBpBrand(e.target.value)}
-                    className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-orange-500"
+                    className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-orange-500 text-right"
                     placeholder="مثال: Siemens, Schneider, ABB..."
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-1">المواصفات الفنية والهندسية</label>
+                  <label className="block text-xs font-semibold text-slate-400 mb-1 text-right">المواصفات الفنية والهندسية</label>
                   <textarea
                     rows={2}
                     value={bpSpecs}
                     onChange={e => setBpSpecs(e.target.value)}
-                    className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-orange-500"
+                    className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-orange-500 text-right"
                     placeholder="بيانات الـ Datasheet..."
                   />
                 </div>
 
-                <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
-                  <button type="button" onClick={() => setIsBlueprintModalOpen(false)} className="px-4 py-2 text-slate-400 hover:text-white">إلغاء</button>
+                <div className="flex gap-3 pt-4 border-t border-white/10 flex-row-reverse">
                   <button type="submit" className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-5 py-2 text-xs shadow-lg transition-all cursor-pointer">تفعيل البصمة (Activate)</button>
+                  <button type="button" onClick={() => setIsBlueprintModalOpen(false)} className="px-4 py-2 text-slate-400 hover:text-white">إلغاء</button>
                 </div>
               </form>
             </motion.div>

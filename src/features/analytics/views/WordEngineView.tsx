@@ -17,6 +17,7 @@ import {
 import { saveAs } from 'file-saver';
 import { motion } from 'motion/react';
 import { PageHeader } from '@/shared/components/PageHeader';
+import { HeaderBentoCard } from '@/shared/components/HeaderBentoCard';
 import { GlassCard } from '@/shared/components/GlassCard';
 import { 
   FileCode, 
@@ -24,7 +25,11 @@ import {
   HelpCircle, 
   GitCommit, 
   Building, 
-  ShieldAlert
+  ShieldAlert,
+  CheckSquare,
+  ListTodo,
+  ClipboardList,
+  Settings
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -274,19 +279,50 @@ export function WordEngineView({ user }: { user?: any }) {
       <PageHeader
         title="محرك مستندات وورد (Word Engine DOCX)"
         subtitle="توليد تقارير التحقيق في الأعطال الكبرى (RCA)، المخطط السببي إيشيكاوا، وعقود الصيانة والخدمات الخارجية."
-        icon={<FileCode className="w-6 h-6 text-blue-400" />}
+        icon={<FileCode className="w-7 h-7 text-blue-400" />}
         badgeText="v17.1 DOCX"
         badgeColor="blue"
         actions={
           <button
             onClick={activeTemplate === 'rca' ? exportRcaToWordDocx : exportContractToWordDocx}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-950/40 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-200 text-slate-950 font-extrabold text-xs shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
             <Download className="w-4 h-4" />
             <span>تصدير مستند Word (.docx)</span>
           </button>
         }
-      />
+      >
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <HeaderBentoCard
+            title="مراحل التحليل الخماسي"
+            subtitle="5-WHYS PHASES"
+            value={`${fiveWhys.length} خطوات`}
+            icon={<ListTodo className="w-3.5 h-3.5 text-blue-400" />}
+            color="blue"
+          />
+          <HeaderBentoCard
+            title="أبعاد مخطط إيشيكاوا"
+            subtitle="ISHIKAWA PARAMETERS"
+            value="6 تصنيفات"
+            icon={<ClipboardList className="w-3.5 h-3.5 text-blue-400" />}
+            color="blue"
+          />
+          <HeaderBentoCard
+            title="ساعات التوقف (RCA)"
+            subtitle="DOWNTIME TRACKED"
+            value={`${downtimeHours} ساعة`}
+            icon={<ShieldAlert className="w-3.5 h-3.5 text-rose-400" />}
+            color="rose"
+          />
+          <HeaderBentoCard
+            title="اتفاقيات الخدمة الخارجية"
+            subtitle="ACTIVE EXTERNAL SLA"
+            value={slaHours}
+            icon={<Building className="w-3.5 h-3.5 text-emerald-400" />}
+            color="emerald"
+          />
+        </div>
+      </PageHeader>
 
       {/* TEMPLATE NAVIGATION TABS */}
       <div className="flex items-center gap-2 bg-[#0a0a0f]/40 p-1.5 rounded-2xl border border-white/10 overflow-x-auto self-start">
@@ -368,7 +404,7 @@ export function WordEngineView({ user }: { user?: any }) {
 
             <button
               onClick={exportRcaToWordDocx}
-              className="mt-2 w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-lg shadow-blue-950 flex items-center justify-center gap-2"
+              className="mt-2 w-full py-2.5 rounded-xl bg-white hover:bg-slate-200 text-slate-950 font-extrabold text-xs shadow-lg flex items-center justify-center gap-2 transition-all"
             >
               <Download className="w-4 h-4" />
               <span>تصدير تقرير RCA صيغة Word (.docx)</span>
@@ -441,7 +477,7 @@ export function WordEngineView({ user }: { user?: any }) {
 
             <button
               onClick={exportContractToWordDocx}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white hover:bg-slate-200 text-slate-950 font-extrabold text-xs shadow-md transition-all"
             >
               <Download className="w-4 h-4" />
               <span>توليد عقد Word (.docx)</span>

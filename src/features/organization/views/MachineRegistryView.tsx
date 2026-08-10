@@ -16,7 +16,7 @@ import { MachineWizardModal } from '../components/MachineWizardModal';
 import { MachineDetailsModal } from '../components/MachineDetailsModal';
 import { MachinePdrLinkModal } from '../components/MachinePdrLinkModal';
 import { PageHeader } from '@/shared/components/PageHeader';
-import { StatCompact } from '@/shared/components/StatCompact';
+import { HeaderBentoCard } from '@/shared/components/HeaderBentoCard';
 import { cn } from '@/shared/utils';
 import { useTranslation } from 'react-i18next';
 
@@ -152,17 +152,43 @@ export function MachineRegistryView() {
       className="w-full h-full flex flex-col gap-6 relative z-10"
     >
       <PageHeader
-        title={t('machines.title', 'Machine Registry')}
-        subtitle={t('machines.subtitle', 'Comprehensive Machinery & Asset Directory.')}
-        icon={<Factory className="w-8 h-8 text-indigo-500" />}
+        title={t('machines.title', 'سجل الآلات والتوأم الرقمي')}
+        subtitle={t('machines.subtitle', 'قاعدة بيانات شاملة لجميع الآلات والمعدات المادية ومؤشرات الجاهزية.')}
+        icon={<Factory className="w-7 h-7 text-indigo-400" />}
+        badgeText="التوأم الرقمي"
         badgeColor="indigo"
-        actions={
-          <div className="flex flex-wrap items-center gap-3">
-            <StatCompact icon={<Factory className="w-4 h-4 text-indigo-400" />} label={t('machines.total', 'Total Machines')} value={machines.length.toString()} />
-            <StatCompact icon={<Cpu className="w-4 h-4 text-emerald-400" />} label={t('machines.running', 'Running')} value={machines.length.toString()} />
-          </div>
-        }
-      />
+      >
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <HeaderBentoCard
+            title="إجمالي الآلات"
+            subtitle="TOTAL MACHINES"
+            value={machines.length}
+            icon={<Factory className="w-3.5 h-3.5" />}
+            color="blue"
+          />
+          <HeaderBentoCard
+            title="قطاعات المعمل"
+            subtitle="SECTORS"
+            value={sectors.length}
+            icon={<Cpu className="w-3.5 h-3.5" />}
+            color="blue"
+          />
+          <HeaderBentoCard
+            title="الفريق الموجه"
+            subtitle="TECHNICIANS SQUAD"
+            value={technicians.length}
+            icon={<Activity className="w-3.5 h-3.5" />}
+            color="emerald"
+          />
+          <HeaderBentoCard
+            title="جاهزية العمليات"
+            subtitle="OPERATIONAL HEALTH"
+            value="100%"
+            icon={<Box className="w-3.5 h-3.5" />}
+            color="cyan"
+          />
+        </div>
+      </PageHeader>
 
       <motion.div variants={itemVariants} className="flex-1 min-h-0 flex flex-col">
         <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl h-full flex flex-col bg-[#0a0a0f]/60 backdrop-blur-xl">

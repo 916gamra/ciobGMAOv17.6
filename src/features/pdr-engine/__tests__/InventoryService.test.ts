@@ -2,20 +2,20 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { InventoryService } from '../services/InventoryService';
 
 // Mock dependencies
-const mockGetById = vi.fn();
-const mockUpdate = vi.fn();
+const mockDbGet = vi.fn();
+const mockDbUpdate = vi.fn();
+const mockDbAdd = vi.fn();
 
-vi.mock('@/core/repositories/GenericRepository', () => {
-  return {
-    GenericRepository: class {
-      getById = mockGetById;
-      update = mockUpdate;
-    }
-  };
-});
 vi.mock('@/core/db', () => ({
   db: {
-    inventory: {}
+    inventory: {
+      get: (...args: any[]) => mockDbGet(...args),
+      update: (...args: any[]) => mockDbUpdate(...args),
+      add: (...args: any[]) => mockDbAdd(...args)
+    },
+    transactions: {
+      add: vi.fn()
+    }
   }
 }));
 
@@ -32,11 +32,11 @@ describe('InventoryService', () => {
   describe('submitRequisition', () => {
     it('should deduct stock correctly', async () => {
       // Arrange
-      mockGetById.mockResolvedValue(success({
+      mockDbGet.mockResolvedValue({
         id: 'inv-1',
         quantityCurrent: 100
-      }));
-      mockUpdate.mockResolvedValue(success(undefined));
+      });
+      mockDbUpdate.mockResolvedValue(1);
 
       // Act
       const result = await service.submitRequisition({
@@ -47,17 +47,18 @@ describe('InventoryService', () => {
 
       // Assert
       expect(result.ok).toBe(true);
-      expect(mockUpdate).toHaveBeenCalledWith('inv-1', {
-        quantityCurrent: 90
-      });
+      expect(mockDbUpdate).toHaveBeenCalledWith('inv-1', expect.objectContaining({
+        quantityCurrent: 90,
+        quantity: 90
+      }));
     });
 
     it('should prevent over-deduction', async () => {
       // Arrange
-      mockGetById.mockResolvedValue(success({
+      mockDbGet.mockResolvedValue({
         id: 'inv-1',
         quantityCurrent: 5
-      }));
+      });
 
       // Act
       const result = await service.submitRequisition({
@@ -71,7 +72,7 @@ describe('InventoryService', () => {
       if (!result.ok) {
         expect(result.error.message).toBe('Insufficient stock available');
       }
-      expect(mockUpdate).not.toHaveBeenCalled();
+      expect(mockDbUpdate).not.toHaveBeenCalled();
     });
 
     it('should reject invalid quantities', async () => {
@@ -87,7 +88,7 @@ describe('InventoryService', () => {
       if (!result.ok) {
         expect(result.error.message).toBe('Quantity must be greater than zero');
       }
-      expect(mockGetById).not.toHaveBeenCalled();
+      expect(mockDbGet).not.toHaveBeenCalled();
     });
   });
 });

@@ -1,5 +1,5 @@
 import { PageHeader } from "@/shared/components/PageHeader";
-import { StatCompact } from "@/shared/components/StatCompact";
+import { HeaderBentoCard } from "@/shared/components/HeaderBentoCard";
 import React, { useState } from 'react';
 import { motion, AnimatePresence, Variants } from 'motion/react';
 import { Users, Search, UserCircle2, Pocket, Fingerprint, Lock, Edit3, X, Save, Activity } from 'lucide-react';
@@ -76,17 +76,43 @@ export function StaffRegistryView() {
       className="w-full h-full flex flex-col gap-6 relative z-10"
     >
       <PageHeader
-        title={t('staff.title', 'Operational Staff')}
-        subtitle={t('staff.subtitle', 'Active Maintenance Personnel Directory.')}
-        icon={<Users className="w-6 h-6 text-indigo-500" />}
+        title={t('staff.title', 'طاقم العمل والتقنيين')}
+        subtitle={t('staff.subtitle', 'سجل طواقم الصيانة والتشغيل النشطة ومراقبة الكفاءة والتوزيع.')}
+        icon={<Users className="w-7 h-7 text-indigo-400" />}
+        badgeText="سجل الطواقم"
         badgeColor="indigo"
-        actions={
-          <div className="flex flex-wrap items-center gap-3">
-            <StatCompact icon={<Users className="w-4 h-4 text-indigo-400" />} label={t('staff.totalSlots', 'Total Slots')} value={staffSlots.length.toString()} />
-            <StatCompact icon={<UserCircle2 className="w-4 h-4 text-emerald-400" />} label={t('staff.activePersonnel', 'Active Personnel')} value={activeStaff.length.toString()} />
-          </div>
-        }
-      />
+      >
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <HeaderBentoCard
+            title="إجمالي المقاعد"
+            subtitle="TOTAL SLOTS"
+            value={staffSlots.length}
+            icon={<Users className="w-3.5 h-3.5" />}
+            color="blue"
+          />
+          <HeaderBentoCard
+            title="الكوادر النشطة"
+            subtitle="ACTIVE PERSONNEL"
+            value={activeStaff.length}
+            icon={<UserCircle2 className="w-3.5 h-3.5" />}
+            color="emerald"
+          />
+          <HeaderBentoCard
+            title="المقاعد الاحتياطية"
+            subtitle="SPARE SLOTS"
+            value={staffSlots.length - activeStaff.length}
+            icon={<Pocket className="w-3.5 h-3.5" />}
+            color="amber"
+          />
+          <HeaderBentoCard
+            title="حالة المصفوفة"
+            subtitle="MATRIX LOCK"
+            value="مؤمنة"
+            icon={<Lock className="w-3.5 h-3.5" />}
+            color="cyan"
+          />
+        </div>
+      </PageHeader>
 
       <motion.div variants={itemVariants} className="flex-1 min-h-0 flex flex-col">
         <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl h-full flex flex-col bg-[#0a0a0f]/60 backdrop-blur-xl">

@@ -1,15 +1,17 @@
-# State of the Project: TITANIC OS (GMAO / PDR Engine)
-**Date:** May 02, 2026
-**Target Audience:** Engineering & Security Teams
+# State of the Project: BDR Nexus (GMAO v17.6)
+**Date:** August 10, 2026
+**Target Audience:** Engineering, Maintenance & Operations Teams
 
-This document provides a comprehensive technical analysis of TITANIC OS as of May 02, 2026. 
+This document provides a comprehensive technical analysis of BDR Nexus (GMAO v17.6) as of August 2026. 
 
-## 💡 Recent Updates (April 2026 - May 2026)
-* **OS-Level Navigation Refinement:**
-  - Unified the persistent Tab Bar, moving it to the system top-bar to allow better window management and multi-portal workflow.
-  - Implemented System-Fixed Sidebar for all Portals to ensure consistent navigation access without clutter.
-  - Improved the GlobalDock hover handling to prevent menu ghosting and ensure smooth transitions.
-  - Corrected sidebar/tab bar visual layering conflicts.
+## 💡 Recent Updates (August 2026 - Phase 1 Industrial Kernel Release)
+* **Phase 1 Domain Kernel Execution (ISO 14224 / ISO 55001 / IEC 60300-3-10 Compliant):**
+  - **Asset Hierarchy & Digital Twin:** Implemented Plant, Functional Location (`FL-HYD-01`), and full Asset Lifecycle States (`DESIGN`, `PROCURED`, `INSTALLED`, `COMMISSIONED`, `OPERATING`, `STANDBY`, `MAINTENANCE`, `DECOMMISSIONED`, `DISPOSED`). Added Installed Component assemblies with health index tracking.
+  - **Condition Monitoring & Meter Engine:** Built Meter and MeterReading entities supporting `RUNNING_HOURS`, `CYCLES`, `PRESSURE`, `TEMPERATURE`, `VIBRATION`, and `CUSTOM` types with automatic machine running hours sync.
+  - **Precision Downtime & True MTTR Engine:** Separated Work Orders and Downtime Events to measure exact response, diagnostic, pure repair time (True MTTR), and total downtime.
+  - **ISO 14224 Failure Taxonomy:** Integrated structured failure recording (`Symptom` → `FailureMode` → `FailureMechanism` → `CauseCategory` → `ConsequenceCategory` → `ActionTaken` → `VerificationResult`).
+  - **Material Reservations & Transaction Ledger:** Added atomic Stock Reservations for active Work Orders and a single-source-of-truth `StockTransactionLedger` (`RECEIPT`, `ISSUE`, `RETURN`, `TRANSFER`, `ADJUSTMENT`, `RESERVATION`, `UNRESERVATION`, `SCRAP`, `CONSUMPTION`).
+  - **Validation & Persistence:** Upgraded Dexie Database to Schema Version 27 and added Zod schemas in `src/core/schemas.ts` and domain services (`AssetDomainService`, `WorkOrderKernelService`).
 ---
 
 ## 1. Tech Stack & Environmental Matrix

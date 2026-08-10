@@ -48,24 +48,10 @@ export function applyEncryptionHooks(db: Dexie) {
 
         // --- UPDATE HOOK ---
         table.hook('updating', function(modifications, primKey, obj, trans) {
-            // obj is the old object, raw from DB (contains _e)
+            // obj is the old object, already decrypted by the reading hook
             
-            // 1. Decrypt old object to memory
-            const plainObj = { ...obj };
-            if (plainObj._e) {
-                try {
-                    const decrypted = EncryptionService.decrypt(plainObj._e);
-                    if (decrypted) {
-                        Object.assign(plainObj, decrypted);
-                    }
-                } catch (e) {
-                    console.error(`Failed to decrypt for update in ${table.name}`);
-                }
-                delete plainObj._e;
-            }
-
-            // 2. Apply modifications to memory object
-            const updatedObj = { ...plainObj };
+            // 1. Build the updated object combining old decrypted obj and modifications
+            const updatedObj = { ...obj };
             Object.keys(modifications).forEach(key => {
                 if (modifications[key] === undefined) {
                      delete updatedObj[key];
@@ -74,7 +60,7 @@ export function applyEncryptionHooks(db: Dexie) {
                 }
             });
 
-            // 3. Separate into indexed and non-indexed
+            // 2. Separate into indexed and non-indexed
             const indexedKeys = new Set([
                 table.schema.primKey.keyPath,
                 ...table.schema.indexes.map(idx => idx.keyPath)
@@ -86,31 +72,21 @@ export function applyEncryptionHooks(db: Dexie) {
             Object.keys(updatedObj).forEach(key => {
                 if (!indexedKeys.has(key) && key !== '_e') {
                     payload[key] = updatedObj[key];
+                    // Instruct Dexie to clear plaintext non-indexed properties
+                    finalModifications[key] = undefined;
                 } else if (indexedKeys.has(key)) {
-                    // Check if this indexed key was actually modified
                     if (key in modifications) {
                          finalModifications[key] = modifications[key];
                     }
                 }
             });
 
-            // 4. Encrypt non-indexed payload
+            // 3. Encrypt non-indexed payload
             if (Object.keys(payload).length > 0) {
                 finalModifications._e = EncryptionService.encrypt(payload);
             } else {
                 finalModifications._e = undefined;
             }
-            
-            // Note: For properties that were removed in modifications and were part of the payload,
-            // they are naturally omitted from `payload` because they were deleted from `updatedObj`.
-            
-            // If any modifications are attempting to directly update non-indexed fields, we must
-            // delete them from finalModifications to avoid saving them in plaintext.
-            Object.keys(modifications).forEach(key => {
-                if (!indexedKeys.has(key)) {
-                     finalModifications[key] = undefined; // Instruct Dexie to delete it from plaintext
-                }
-            });
 
             return finalModifications;
         });

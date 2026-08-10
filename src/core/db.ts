@@ -136,6 +136,19 @@ export interface MachineBlueprint {
   createdAt: string;
 }
 
+export type AssetLifecycleState = 
+  | 'DESIGN' 
+  | 'PROCURED' 
+  | 'INSTALLED' 
+  | 'COMMISSIONED' 
+  | 'OPERATING' 
+  | 'STANDBY' 
+  | 'MAINTENANCE' 
+  | 'DECOMMISSIONED' 
+  | 'DISPOSED';
+
+export type AssetCriticality = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+
 export interface Machine {
   id: string; // UUID
   blueprintId?: string; // Foreign Key to MachineBlueprint (Optional in Lite mode)
@@ -146,6 +159,270 @@ export interface Machine {
   sectorId: string; // Foreign Key to Sector
   technicianId?: string; // Foreign Key to Technician for monthly sweep
   status: 'Active' | 'Standby' | 'Maintenance';
+  
+  // Industrial Kernel Phase 1 - Asset Hierarchy & Digital Twin
+  functionalLocationId?: string; // Foreign Key to FunctionalLocation
+  lifecycleState?: AssetLifecycleState;
+  criticality?: AssetCriticality;
+  runningHours?: number;
+  healthIndex?: number; // 0-100%
+  installDate?: string;
+}
+
+// --- Industrial Kernel Phase 1 Domain Interfaces ---
+
+export interface Plant {
+  id: string; // e.g. 'PLANT-01'
+  code: string;
+  name: string;
+  description?: string;
+  location?: string;
+  createdAt: string;
+}
+
+export interface FunctionalLocation {
+  id: string; // e.g. 'FL-HYD-01'
+  plantId: string;
+  sectorId: string;
+  code: string;
+  name: string;
+  parentLocationId?: string;
+  criticality: AssetCriticality;
+  createdAt: string;
+}
+
+export interface InstalledComponent {
+  id: string; // UUID
+  machineId: string; // Foreign Key to Machine
+  componentBlueprintId?: string; // Component Blueprint reference
+  parentComponentId?: string; // Nested assembly support
+  serialNumber?: string;
+  name: string;
+  family: 'MEC' | 'ELE' | 'HYD' | 'PNU' | 'ELN';
+  installedAt: string;
+  healthIndex: number; // 0-100%
+  condition: 'EXCELLENT' | 'WATCHFUL' | 'CRITICAL';
+}
+
+export type MeterType = 'RUNNING_HOURS' | 'CYCLES' | 'PRESSURE' | 'TEMPERATURE' | 'VIBRATION' | 'CUSTOM';
+
+export interface Meter {
+  id: string; // UUID
+  assetId: string; // Foreign Key to Machine
+  name: string;
+  meterType: MeterType;
+  unit: string; // e.g. 'Hours', 'Cycles', 'Bar', '°C'
+  currentReading: number;
+  lastReadingAt: string;
+  warningThresholdHigh?: number;
+  criticalThresholdHigh?: number;
+  warningThresholdLow?: number;
+  criticalThresholdLow?: number;
+  resetPolicy?: 'MANUAL' | 'ROLLOVER';
+  rolloverValue?: number;
+  createdAt: string;
+}
+
+export interface MeterReading {
+  id: string; // UUID
+  meterId: string; // Foreign Key to Meter
+  assetId: string; // Foreign Key to Machine
+  readingValue: number;
+  recordedAt: string;
+  recordedBy: string;
+  source: 'MANUAL' | 'IOT' | 'WORK_ORDER';
+  notes?: string;
+}
+
+export interface FailureTaxonomyRecord {
+  id: string; // UUID
+  workOrderId?: string;
+  assetId: string; // Foreign Key to Machine
+  symptom: string;            // Operator initial symptom
+  failureMode: string;        // Standard failure mode (ISO 14224)
+  failureMechanism: string;   // Physical/chemical mechanism
+  causeCategory: string;      // Root cause category (Wear, Fatigue, Design, etc.)
+  consequenceCategory: string;// Production Loss, Safety, Environmental, Quality
+  actionTaken: string;        // Corrective action
+  verificationResult: 'PASSED' | 'FAILED' | 'PENDING';
+  recordedAt: string;
+}
+
+export type WorkOrderType = 'PREVENTIVE' | 'CORRECTIVE' | 'PREDICTIVE' | 'INSPECTION' | 'EMERGENCY';
+export type WorkOrderPriority = 'EMERGENCY' | 'HIGH' | 'MEDIUM' | 'LOW';
+export type WorkOrderKernelStatus = 'DRAFT' | 'APPROVED' | 'SCHEDULED' | 'IN_PROGRESS' | 'ON_HOLD' | 'COMPLETED' | 'CANCELLED';
+
+export interface WorkRequest {
+  id: string; // UUID
+  requestCode: string; // e.g. WR-2026-001
+  assetId: string; // Foreign Key to Machine
+  sectorId: string;
+  symptom: string;
+  requestedBy: string;
+  priority: WorkOrderPriority;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  createdAt: string;
+}
+
+export interface WorkOrder {
+  id: string; // UUID
+  code: string; // e.g. WO-2026-001 or bonId
+  workRequestId?: string;
+  type: WorkOrderType;
+  priority: WorkOrderPriority;
+  status: WorkOrderKernelStatus;
+  assetId: string;
+  functionalLocationId?: string;
+  sectorId: string;
+  assignedTechnicianId?: string;
+  scheduledStart?: string;
+  scheduledEnd?: string;
+  actualStart?: string;
+  actualEnd?: string;
+  totalLaborHours?: number;
+  totalCost?: number;
+  notes?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DowntimeEvent {
+  id: string; // UUID
+  workOrderId?: string;
+  assetId: string;
+  detectedAt: string;            // Failure occurred / detected
+  acknowledgedAt?: string;       // WO created / acknowledged
+  dispatchedAt?: string;         // Technician dispatched
+  interventionStartedAt?: string;// Physical repair started
+  repairCompletedAt?: string;    // Physical repair completed (True Repair Time)
+  returnedToServiceAt?: string;  // Asset returned to service (Total Downtime)
+  
+  // Computed metrics (minutes) for precise MTTR / MTTA / MTTD / MTBF calculations:
+  responseMinutes?: number;      // acknowledgedAt - detectedAt
+  diagnosticMinutes?: number;    // interventionStartedAt - dispatchedAt
+  trueRepairMinutes?: number;    // repairCompletedAt - interventionStartedAt (Pure MTTR)
+  totalDowntimeMinutes?: number; // returnedToServiceAt - detectedAt
+  reason?: string;
+}
+
+export interface WorkOrderOperation {
+  id: string; // UUID
+  workOrderId: string;
+  sequenceNumber: number; // 10, 20, 30...
+  title: string;
+  description?: string;
+  assignedTo?: string;
+  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'SKIPPED';
+  estimatedMinutes?: number;
+  actualMinutes?: number;
+}
+
+export type LedgerTransactionType = 
+  | 'RECEIPT' 
+  | 'ISSUE' 
+  | 'RETURN' 
+  | 'TRANSFER' 
+  | 'ADJUSTMENT' 
+  | 'RESERVATION' 
+  | 'UNRESERVATION' 
+  | 'SCRAP' 
+  | 'CONSUMPTION';
+
+export interface StockReservation {
+  id: string; // UUID
+  stockItemId: string;
+  blueprintId: string;
+  workOrderId: string;
+  quantityReserved: number;
+  reservedBy: string;
+  status: 'ACTIVE' | 'FULFILLED' | 'CANCELLED';
+  reservedAt: string;
+}
+
+export interface StockTransactionLedger {
+  id: string; // UUID
+  transactionType: LedgerTransactionType;
+  stockItemId: string;
+  blueprintId: string;
+  sourceWarehouseId?: string;
+  destWarehouseId?: string;
+  workOrderId?: string;
+  assetId?: string;
+  quantity: number;
+  unitCost?: number;
+  totalValue?: number;
+  performedBy: string;
+  reason?: string;
+  timestamp: string;
+}
+
+// --- Industrial Kernel Phase 2 Interfaces (Preventive Maintenance Engine) ---
+
+export interface PmChecklistItem {
+  taskIndex: number;
+  description: string;
+  criticality: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+  estimatedMinutes: number;
+}
+
+export interface PmPlanPartRequirement {
+  blueprintId: string;
+  quantity: number;
+}
+
+export interface PmPlan {
+  id: string; // e.g. 'PMP-001'
+  code: string;
+  title: string;
+  assetId?: string;
+  functionalLocationId?: string;
+  machineTemplateId?: string;
+  strategyType: 'CALENDAR_BASED' | 'USAGE_BASED' | 'METER_BASED' | 'HYBRID';
+  frequencyDays?: number;
+  frequencyHours?: number;
+  meterId?: string;
+  thresholdValue?: number;
+  priority: 'EMERGENCY' | 'HIGH' | 'MEDIUM' | 'LOW';
+  estimatedDurationMinutes: number;
+  assignedTechnicianId?: string;
+  checklist: PmChecklistItem[];
+  partsRequired: PmPlanPartRequirement[];
+  isActive: boolean;
+  lastGeneratedAt?: string;
+  nextDueAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// --- Industrial Kernel Phase 4 Interfaces (RAMS Analytics, RCM & Cost Ledger) ---
+
+export interface MaintenanceCostLedger {
+  id: string;
+  workOrderId?: string;
+  assetId: string;
+  sectorId: string;
+  laborCost: number;
+  materialCost: number;
+  externalServiceCost: number;
+  downtimeLossCost: number;
+  totalCost: number;
+  currency: string;
+  recordedAt: string;
+}
+
+export interface RcmAnalysis {
+  id: string;
+  assetId: string;
+  functionDescription: string;
+  functionalFailure: string;
+  failureMode: string;
+  failureEffect: string;
+  severityScore: number;
+  occurrenceScore: number;
+  detectionScore: number;
+  rpn: number;
+  mitigationStrategy: 'PREVENTIVE' | 'PREDICTIVE' | 'RUN_TO_FAILURE' | 'REDESIGN';
+  createdAt: string;
 }
 
 export interface MachinePartMapping {
@@ -419,6 +696,25 @@ export class GmaoDatabase extends Dexie {
   transactions!: Table<any, string>;
   logs!: Table<any, string>;
 
+  // Industrial Kernel Phase 1 Tables
+  plants!: Table<Plant, string>;
+  functionalLocations!: Table<FunctionalLocation, string>;
+  installedComponents!: Table<InstalledComponent, string>;
+  meters!: Table<Meter, string>;
+  meterReadings!: Table<MeterReading, string>;
+  failureTaxonomyRecords!: Table<FailureTaxonomyRecord, string>;
+  workRequests!: Table<WorkRequest, string>;
+  workOrders!: Table<WorkOrder, string>;
+  downtimeEvents!: Table<DowntimeEvent, string>;
+  workOrderOperations!: Table<WorkOrderOperation, string>;
+  stockReservations!: Table<StockReservation, string>;
+  stockTransactionLedgers!: Table<StockTransactionLedger, string>;
+
+  // Industrial Kernel Phase 2 & Phase 4 Tables
+  pmPlans!: Table<PmPlan, string>;
+  maintenanceCostLedgers!: Table<MaintenanceCostLedger, string>;
+  rcmAnalyses!: Table<RcmAnalysis, string>;
+
   constructor(name: string = 'CIOB_GMAO_DB') {
     super(name);
     
@@ -648,6 +944,115 @@ export class GmaoDatabase extends Dexie {
       parts: 'id, code, category',
       transactions: 'id, inventoryId, type, timestamp',
       logs: '++id, timestamp, level, context'
+    });
+
+    // Schema Version 27 (Industrial Kernel Phase 1 - Asset Hierarchy, Digital Twin, Meters, WO Engine & Stock Ledger)
+    this.version(27).stores({
+      pdrFamilies: 'id, name',
+      pdrTemplates: 'id, familyId, name, skuBase',
+      pdrBlueprints: 'id, templateId, reference',
+      machineFamilies: 'id, name',
+      machineTemplates: 'id, familyId, name, skuBase',
+      machineBlueprints: 'id, templateId, reference',
+      inventory: 'id, blueprintId, warehouseId, partId, location',
+      movements: 'id, stockId, type, timestamp',
+      purchaseOrders: 'id, supplierName, status, orderDate',
+      purchaseOrderLines: 'id, orderId, blueprintId',
+      sectors: 'id, name',
+      technicians: 'id, name, sectorId',
+      machines: 'id, blueprintId, templateId, sectorId, technicianId, functionalLocationId, lifecycleState, criticality',
+      machinePartMappings: 'id, machineId, blueprintId',
+      partRequisitions: 'id, technicianId, machineId, status, requestDate',
+      partRequisitionLines: 'id, requisitionId, blueprintId',
+      preventiveTasks: 'id, pdrFamilyId, pdrTemplateId, actionId',
+      blueprintTasks: 'id, machineBlueprintId, taskId',
+      machineTasks: 'id, machineId, taskId',
+      taskExecutions: 'id, machineId, taskId, status, scheduledDate, componentId, actionId, serviceType, bonId, reconciliationStatus',
+      componentTemplates: 'id, family, name',
+      componentBlueprints: 'id, templateId, reference',
+      standardComponents: 'id, name, family, criticality',
+      standardActions: 'id, code, name, type',
+      userOverrides: 'id, isActive, realBadgeId',
+      auditLogs: 'id, userId, action, entityType, timestamp, severity',
+      excelTemplates: 'id, portalId, name',
+      excelBackups: 'id, portalId, timestamp',
+      preventiveCards: 'id, templateId, name',
+      failureCategories: 'id, name',
+      failureTemplates: 'id, categoryId, name',
+      parts: 'id, code, category',
+      transactions: 'id, inventoryId, type, timestamp',
+      logs: '++id, timestamp, level, context',
+
+      // Industrial Kernel Phase 1 New Stores:
+      plants: 'id, code, name',
+      functionalLocations: 'id, plantId, sectorId, code, parentLocationId',
+      installedComponents: 'id, machineId, componentBlueprintId, parentComponentId, family',
+      meters: 'id, assetId, meterType',
+      meterReadings: 'id, meterId, assetId, recordedAt',
+      failureTaxonomyRecords: 'id, workOrderId, assetId, failureMode, causeCategory',
+      workRequests: 'id, requestCode, assetId, sectorId, priority, status',
+      workOrders: 'id, code, workRequestId, type, priority, status, assetId, functionalLocationId, assignedTechnicianId',
+      downtimeEvents: 'id, workOrderId, assetId, detectedAt, repairCompletedAt',
+      workOrderOperations: 'id, workOrderId, sequenceNumber, status',
+      stockReservations: 'id, stockItemId, blueprintId, workOrderId, status',
+      stockTransactionLedgers: 'id, transactionType, stockItemId, blueprintId, workOrderId, assetId, timestamp'
+    });
+
+    // Schema Version 28 (Industrial Kernel Phase 2 & Phase 4 - PM Engine, Dynamic Scheduler, RAMS Analytics, RCM & Cost Ledger)
+    this.version(28).stores({
+      pdrFamilies: 'id, name',
+      pdrTemplates: 'id, familyId, name, skuBase',
+      pdrBlueprints: 'id, templateId, reference',
+      machineFamilies: 'id, name',
+      machineTemplates: 'id, familyId, name, skuBase',
+      machineBlueprints: 'id, templateId, reference',
+      inventory: 'id, blueprintId, warehouseId, partId, location',
+      movements: 'id, stockId, type, timestamp',
+      purchaseOrders: 'id, supplierName, status, orderDate',
+      purchaseOrderLines: 'id, orderId, blueprintId',
+      sectors: 'id, name',
+      technicians: 'id, name, sectorId',
+      machines: 'id, blueprintId, templateId, sectorId, technicianId, functionalLocationId, lifecycleState, criticality',
+      machinePartMappings: 'id, machineId, blueprintId',
+      partRequisitions: 'id, technicianId, machineId, status, requestDate',
+      partRequisitionLines: 'id, requisitionId, blueprintId',
+      preventiveTasks: 'id, pdrFamilyId, pdrTemplateId, actionId',
+      blueprintTasks: 'id, machineBlueprintId, taskId',
+      machineTasks: 'id, machineId, taskId',
+      taskExecutions: 'id, machineId, taskId, status, scheduledDate, componentId, actionId, serviceType, bonId, reconciliationStatus',
+      componentTemplates: 'id, family, name',
+      componentBlueprints: 'id, templateId, reference',
+      standardComponents: 'id, name, family, criticality',
+      standardActions: 'id, code, name, type',
+      userOverrides: 'id, isActive, realBadgeId',
+      auditLogs: 'id, userId, action, entityType, timestamp, severity',
+      excelTemplates: 'id, portalId, name',
+      excelBackups: 'id, portalId, timestamp',
+      preventiveCards: 'id, templateId, name',
+      failureCategories: 'id, name',
+      failureTemplates: 'id, categoryId, name',
+      parts: 'id, code, category',
+      transactions: 'id, inventoryId, type, timestamp',
+      logs: '++id, timestamp, level, context',
+
+      // Industrial Kernel Stores
+      plants: 'id, code, name',
+      functionalLocations: 'id, plantId, sectorId, code, parentLocationId',
+      installedComponents: 'id, machineId, componentBlueprintId, parentComponentId, family',
+      meters: 'id, assetId, meterType',
+      meterReadings: 'id, meterId, assetId, recordedAt',
+      failureTaxonomyRecords: 'id, workOrderId, assetId, failureMode, causeCategory',
+      workRequests: 'id, requestCode, assetId, sectorId, priority, status',
+      workOrders: 'id, code, workRequestId, type, priority, status, assetId, functionalLocationId, assignedTechnicianId',
+      downtimeEvents: 'id, workOrderId, assetId, detectedAt, repairCompletedAt',
+      workOrderOperations: 'id, workOrderId, sequenceNumber, status',
+      stockReservations: 'id, stockItemId, blueprintId, workOrderId, status',
+      stockTransactionLedgers: 'id, transactionType, stockItemId, blueprintId, workOrderId, assetId, timestamp',
+
+      // Phase 2 & 4 Stores
+      pmPlans: 'id, code, assetId, strategyType, priority, isActive, nextDueAt',
+      maintenanceCostLedgers: 'id, workOrderId, assetId, sectorId, recordedAt',
+      rcmAnalyses: 'id, assetId, failureMode, rpn'
     });
   }
 }

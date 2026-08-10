@@ -128,8 +128,8 @@ export function MachineBomModal({ machineId, machineName, onClose }: MachineBomM
         </div>
 
         <div className="p-6 bg-white/[0.01] border-t border-white/5 flex justify-end">
-          <button onClick={onClose} className="px-8 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[10px] uppercase tracking-widest shadow-[0_10px_30px_rgba(99,102,241,0.3)] transition-all">
-            Finish Sync
+          <button onClick={onClose} className="px-6 py-2.5 rounded-xl bg-white hover:bg-slate-200 text-slate-950 font-extrabold text-xs shadow-lg transition-all">
+            إنهاء المزامنة
           </button>
         </div>
       </motion.div>

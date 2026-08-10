@@ -41,7 +41,7 @@ import {
 } from 'lucide-react';
 import { GlassCard } from '@/shared/components/GlassCard';
 import { PageHeader } from '@/shared/components/PageHeader';
-import { StatCompact } from '@/shared/components/StatCompact';
+import { HeaderBentoCard } from '@/shared/components/HeaderBentoCard';
 import { KpiCard } from '@/shared/components/KpiCard';
 import { BadgePill } from '@/shared/components/BadgePill';
 import { FilterBar } from '@/shared/components/FilterBar';
@@ -340,37 +340,46 @@ export function BreakdownLogView({ user }: { user: any }) {
     >
       
       {/* HEADER COCKPIT WITH INTEGRATED COMPACT STATS */}
-      <div className="p-6 md:p-8 pb-0">
+      <div className="mx-6 md:mx-8 mt-6">
         <PageHeader
           title={t('corrective.breakdownLog.title', 'سجل التدخلات والأعطال الطارئة')}
           subtitle={t('corrective.breakdownLog.subtitle', 'التوثيق اللحظي للتدخلات العلاجية ومتابعة حالة إصلاح الأصول والقطع المستهلكة')}
-          icon={<Wrench className="w-8 h-8 text-orange-400" />}
+          icon={<Wrench className="w-7 h-7 text-orange-400" />}
+          badgeText="العمليات العلاجية"
           badgeColor="orange"
-          actions={
-            <div className="flex flex-wrap items-center gap-3">
-              <StatCompact 
-                icon={<Wrench className="w-4 h-4 text-orange-400" />} 
-                label={t('corrective.breakdownLog.totalIncidents', 'إجمالي التدخلات')} 
-                value={stats.totalRepairs.toString()} 
-              />
-              <StatCompact 
-                icon={<Clock className="w-4 h-4 text-amber-400" />} 
-                label={t('corrective.breakdownLog.avgMttr', 'ساعات التوقف')} 
-                value={`${Math.round(stats.totalDowntime / 60)} س`} 
-              />
-              <StatCompact 
-                icon={<AlertTriangle className="w-4 h-4 text-rose-400" />} 
-                label={t('general.status', 'أعطال حرجة')} 
-                value={stats.criticalIncidents.toString()} 
-              />
-              <StatCompact 
-                icon={<Package className="w-4 h-4 text-cyan-400" />} 
-                label={t('pdr.reconciliation', 'في انتظار المطابقة')} 
-                value={stats.pendingReconciliations.toString()} 
-              />
-            </div>
-          }
-        />
+        >
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <HeaderBentoCard
+              title="إجمالي التدخلات"
+              subtitle="TOTAL REPAIRS"
+              value={stats.totalRepairs}
+              icon={<Wrench className="w-3.5 h-3.5" />}
+              color="orange"
+            />
+            <HeaderBentoCard
+              title="ساعات التوقف"
+              subtitle="DOWNTIME METRIC"
+              value={Math.round(stats.totalDowntime / 60)}
+              valueUnit="ساعة"
+              icon={<Clock className="w-3.5 h-3.5" />}
+              color="amber"
+            />
+            <HeaderBentoCard
+              title="أعطال حرجة"
+              subtitle="CRITICAL INCIDENTS"
+              value={stats.criticalIncidents}
+              icon={<AlertTriangle className="w-3.5 h-3.5" />}
+              color="rose"
+            />
+            <HeaderBentoCard
+              title="في انتظار المطابقة"
+              subtitle="PENDING RECONCILE"
+              value={stats.pendingReconciliations}
+              icon={<Package className="w-3.5 h-3.5" />}
+              color="cyan"
+            />
+          </div>
+        </PageHeader>
       </div>
 
       {/* CORE TABLE CONTAINER (FACTORY ADMIN CRYSTAL HIGH-CONTRAST DESIGN) */}

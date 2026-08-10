@@ -5,6 +5,7 @@ import { AuditService } from '@/core/logging/AuditService';
 import * as XLSX from 'xlsx';
 import { motion, AnimatePresence } from 'motion/react';
 import { PageHeader } from '@/shared/components/PageHeader';
+import { HeaderBentoCard } from '@/shared/components/HeaderBentoCard';
 import { GlassCard } from '@/shared/components/GlassCard';
 import { 
   FileSpreadsheet, 
@@ -18,7 +19,8 @@ import {
   DollarSign,
   Boxes,
   Sparkles,
-  FileCheck
+  FileCheck,
+  Factory
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -360,19 +362,50 @@ export function ExcelEngineView({ user }: { user?: any }) {
       <PageHeader
         title="محرك إكسيل التقني (Excel Engine)"
         subtitle="تصدير واستيراد تقارير الجرد، جداول الصيانة الوقائية الإجمالية، والاستيراد الذكي المعالج لقانون الـ 999 مقعد."
-        icon={<FileSpreadsheet className="w-6 h-6 text-emerald-400" />}
+        icon={<FileSpreadsheet className="w-7 h-7 text-emerald-400" />}
         badgeText="v17.1 XLSX"
         badgeColor="emerald"
         actions={
           <button
             onClick={exportReorderMatrixToExcel}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg shadow-emerald-950/40 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-200 text-slate-950 font-extrabold text-xs shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
             <Download className="w-4 h-4" />
             <span>تصدير تقرير Excel سريعة</span>
           </button>
         }
-      />
+      >
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <HeaderBentoCard
+            title="إجمالي قطع المخزن"
+            subtitle="TOTAL INVENTORY BLUEPRINTS"
+            value={reorderData.length}
+            icon={<Boxes className="w-3.5 h-3.5" />}
+            color="blue"
+          />
+          <HeaderBentoCard
+            title="تحت الحد الأدنى (نواقص)"
+            subtitle="LOW STOCK DEFICIENCIES"
+            value={lowStockItems.length}
+            icon={<AlertTriangle className="w-3.5 h-3.5 text-rose-400" />}
+            color="rose"
+          />
+          <HeaderBentoCard
+            title="ميزانية إعادة التوريد"
+            subtitle="ESTIMATED REORDER BUDGET"
+            value={`${totalReorderCost.toLocaleString()} DZD`}
+            icon={<DollarSign className="w-3.5 h-3.5 text-emerald-400" />}
+            color="emerald"
+          />
+          <HeaderBentoCard
+            title="مجموع الآلات المسجلة"
+            subtitle="TOTAL ACTIVE MACHINES"
+            value={machines.length}
+            icon={<Factory className="w-3.5 h-3.5" />}
+            color="purple"
+          />
+        </div>
+      </PageHeader>
 
       {/* ENGINE NAVIGATION TABS */}
       <div className="flex items-center gap-2 bg-[#0a0a0f]/40 p-1.5 rounded-2xl border border-white/10 overflow-x-auto self-start">
@@ -421,51 +454,6 @@ export function ExcelEngineView({ user }: { user?: any }) {
       {/* TAB 1: REORDER MATRIX */}
       {activeTab === 'reorder' && (
         <div className="flex flex-col gap-6">
-          {/* STATS STRIP */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <GlassCard className="p-5 flex items-center justify-between">
-              <div>
-                <p className="text-xs text-slate-400 font-bold">إجمالي قطع المخزن</p>
-                <p className="text-2xl font-black text-white mt-1">{reorderData.length}</p>
-              </div>
-              <div className="p-3 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                <Boxes className="w-6 h-6" />
-              </div>
-            </GlassCard>
-
-            <GlassCard className="p-5 flex items-center justify-between">
-              <div>
-                <p className="text-xs text-slate-400 font-bold">تحت الحد الأدنى (نواقص)</p>
-                <p className="text-2xl font-black text-rose-400 mt-1">{lowStockItems.length}</p>
-              </div>
-              <div className="p-3 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20">
-                <AlertTriangle className="w-6 h-6" />
-              </div>
-            </GlassCard>
-
-            <GlassCard className="p-5 flex items-center justify-between">
-              <div>
-                <p className="text-xs text-slate-400 font-bold">التكلفة التقديرية لإعادة التوريد</p>
-                <p className="text-xl font-black text-emerald-400 mt-1">{totalReorderCost.toLocaleString()} DZD</p>
-              </div>
-              <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                <DollarSign className="w-6 h-6" />
-              </div>
-            </GlassCard>
-
-            <GlassCard className="p-5 flex items-center justify-between">
-              <div>
-                <p className="text-xs text-slate-400 font-bold">حالة الربط البرمجي</p>
-                <p className="text-xs font-bold text-emerald-400 mt-1 flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4" />
-                  XLSX Formulas Ready
-                </p>
-              </div>
-              <div className="p-3 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                <FileSpreadsheet className="w-6 h-6" />
-              </div>
-            </GlassCard>
-          </div>
 
           {/* ACTION BAR */}
           <GlassCard className="p-4 flex flex-col md:flex-row items-center justify-between gap-4">
@@ -491,7 +479,7 @@ export function ExcelEngineView({ user }: { user?: any }) {
 
               <button
                 onClick={exportReorderMatrixToExcel}
-                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition-all"
+                className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-white hover:bg-slate-200 text-slate-950 font-extrabold text-xs shadow-md transition-all"
               >
                 <Download className="w-4 h-4" />
                 <span>تصدير Excel XLSX</span>
@@ -569,7 +557,7 @@ export function ExcelEngineView({ user }: { user?: any }) {
             </div>
             <button
               onClick={exportPreventiveScheduleToExcel}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white hover:bg-slate-200 text-slate-950 font-extrabold text-xs shadow-md transition-all"
             >
               <Download className="w-4 h-4" />
               <span>تصدير الجدول إلى Excel</span>
@@ -579,11 +567,11 @@ export function ExcelEngineView({ user }: { user?: any }) {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <GlassCard className="p-5">
               <span className="text-xs text-slate-400 font-bold">إجمالي مهام الصيانة</span>
-              <p className="text-2xl font-black text-emerald-400 mt-1">{machineTasks.length || 12}</p>
+              <p className="text-2xl font-black text-white mt-1">{machineTasks.length || 12}</p>
             </GlassCard>
             <GlassCard className="p-5">
               <span className="text-xs text-slate-400 font-bold">الساعات التقديرية الأسبوعية</span>
-              <p className="text-2xl font-black text-amber-400 mt-1">48.5 ساعة</p>
+              <p className="text-2xl font-black text-white mt-1">48.5 ساعة</p>
             </GlassCard>
             <GlassCard className="p-5">
               <span className="text-xs text-slate-400 font-bold">التخصصات المطلوبة</span>
@@ -638,7 +626,7 @@ export function ExcelEngineView({ user }: { user?: any }) {
                 <button
                   onClick={commitValidImportRows}
                   disabled={importValidation.validCount === 0}
-                  className="px-6 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-xs shadow-lg shadow-emerald-950"
+                  className="px-6 py-2 rounded-xl bg-white hover:bg-slate-200 disabled:opacity-50 text-slate-950 font-extrabold text-xs shadow-lg transition-all"
                 >
                   استيراد الصفوف الصالحة ({importValidation.validCount})
                 </button>

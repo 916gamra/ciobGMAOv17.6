@@ -1,4 +1,5 @@
 import { PageHeader } from "@/shared/components/PageHeader";
+import { HeaderBentoCard } from "@/shared/components/HeaderBentoCard";
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence, Variants } from 'motion/react';
 import * as Tabs from '@radix-ui/react-tabs';
@@ -52,6 +53,7 @@ interface GroupMeta {
   id: FamilyGroup;
   nameEn: string;
   nameFr: string;
+  nameAr: string;
   colorClass: string;
   borderClass: string;
   textClass: string;
@@ -64,6 +66,7 @@ const GROUP_CONFIG: Record<FamilyGroup, GroupMeta> = {
     id: 'mecanique',
     nameEn: 'Mechanical',
     nameFr: 'MÉCANIQUE',
+    nameAr: 'ميكانيك',
     colorClass: 'bg-amber-500/10',
     borderClass: 'border-amber-500/20 hover:border-amber-500/40',
     textClass: 'text-amber-400',
@@ -74,6 +77,7 @@ const GROUP_CONFIG: Record<FamilyGroup, GroupMeta> = {
     id: 'hydraulique',
     nameEn: 'Hydraulic',
     nameFr: 'HYDRAULIQUE',
+    nameAr: 'هيدروليك',
     colorClass: 'bg-blue-500/10',
     borderClass: 'border-blue-500/20 hover:border-blue-500/40',
     textClass: 'text-blue-400',
@@ -84,6 +88,7 @@ const GROUP_CONFIG: Record<FamilyGroup, GroupMeta> = {
     id: 'electrique',
     nameEn: 'Electrical',
     nameFr: 'ÉLECTRIQUE',
+    nameAr: 'كهرباء',
     colorClass: 'bg-yellow-500/10',
     borderClass: 'border-yellow-500/20 hover:border-yellow-500/40',
     textClass: 'text-yellow-400',
@@ -94,6 +99,7 @@ const GROUP_CONFIG: Record<FamilyGroup, GroupMeta> = {
     id: 'electronique',
     nameEn: 'Electronic',
     nameFr: 'ÉLECTRONIQUE',
+    nameAr: 'إلكترونيات',
     colorClass: 'bg-emerald-500/10',
     borderClass: 'border-emerald-500/20 hover:border-emerald-500/40',
     textClass: 'text-emerald-400',
@@ -104,6 +110,7 @@ const GROUP_CONFIG: Record<FamilyGroup, GroupMeta> = {
     id: 'pneumatique',
     nameEn: 'Pneumatic',
     nameFr: 'PNEUMATIQUE',
+    nameAr: 'بنوماتيك',
     colorClass: 'bg-cyan-500/10',
     borderClass: 'border-cyan-500/20 hover:border-cyan-500/40',
     textClass: 'text-cyan-400',
@@ -114,6 +121,7 @@ const GROUP_CONFIG: Record<FamilyGroup, GroupMeta> = {
     id: 'autre',
     nameEn: 'Other',
     nameFr: 'AUTRES & DIVERS',
+    nameAr: 'متنوع وعام',
     colorClass: 'bg-slate-500/10',
     borderClass: 'border-slate-500/20 hover:border-slate-500/40',
     textClass: 'text-slate-400',
@@ -305,7 +313,7 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
     return (
       <div className="p-12 text-slate-400 flex flex-col items-center justify-center h-full min-h-[400px]">
         <Cpu className="w-12 h-12 text-amber-500 animate-pulse mb-4" />
-        <p className="font-mono text-sm uppercase tracking-widest text-slate-500">Querying Master Catalogue Matrix...</p>
+        <p className="font-mono text-sm uppercase tracking-widest text-slate-500">جاري استعلام مصفوفة الكتالوج الرئيسي...</p>
       </div>
     );
   }
@@ -317,51 +325,45 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
       animate="visible"
       className="w-full h-full flex flex-col gap-6 relative z-10 px-4 lg:px-8"
     >
-      {/* HEADER SECTION */}
+      {/* HEADER SECTION WITH EMBEDDED BENTO CLASSIFICATION CARDS */}
       <PageHeader
         title={t('partsCatalogLab.title', 'مختبر عائلات وقوالب قطع الغيار')}
         subtitle={t('partsCatalogLab.subtitle', 'المساحة المركزية لتصميم عائلات التصنيف والقوالب القياسية لقطع الغيار والمكونات تحت قاعدة الـ 999 مقعداً.')}
-        icon={<FolderTree className="w-6 h-6 text-amber-500" />}
+        icon={<FolderTree className="w-7 h-7 text-amber-400" />}
         badgeText={t('partsCatalogLab.badgeText', 'مختبر الكتالوج')}
         badgeColor="amber"
-      />
+      >
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          {(Object.keys(GROUP_CONFIG) as FamilyGroup[]).map((grpKey) => {
+            const cfg = GROUP_CONFIG[grpKey];
+            const Icon = cfg.icon;
+            const count = groupStats[grpKey];
+            const isFilterActive = selectedGroupFilter === grpKey;
+            const bentoColorMap: Record<FamilyGroup, 'amber' | 'blue' | 'yellow' | 'emerald' | 'cyan' | 'slate'> = {
+              mecanique: 'amber',
+              hydraulique: 'blue',
+              electrique: 'yellow',
+              electronique: 'emerald',
+              pneumatique: 'cyan',
+              autre: 'slate',
+            };
 
-      {/* CLASSIFICATION BENTO CARDS */}
-      <motion.div variants={itemVariants} className="grid grid-cols-2 md:grid-cols-5 gap-4 shrink-0">
-        {(Object.keys(GROUP_CONFIG) as FamilyGroup[]).map((grpKey) => {
-          const cfg = GROUP_CONFIG[grpKey];
-          const Icon = cfg.icon;
-          const count = groupStats[grpKey];
-          const isFilterActive = selectedGroupFilter === grpKey;
-
-          return (
-            <div
-              key={grpKey}
-              onClick={() => setSelectedGroupFilter(isFilterActive ? 'all' : grpKey)}
-              className={cn(
-                "p-4 rounded-2xl border transition-all duration-300 cursor-pointer relative group overflow-hidden select-none",
-                isFilterActive 
-                  ? "bg-[#0a0a0f]/90 border-amber-500/40 shadow-[0_5px_15px_rgba(245,158,11,0.1)] scale-[1.02]" 
-                  : "bg-[#0a0a0f]/30 border-white/5 hover:bg-white/[0.02]"
-              )}
-            >
-              <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-white/[0.02] to-transparent pointer-events-none" />
-              <div className="flex items-center justify-between mb-3">
-                <div className={cn("w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border border-white/5", cfg.colorClass)}>
-                  <Icon className={cn("w-4 h-4", cfg.textClass)} />
-                </div>
-                <span className="text-xs font-mono font-bold text-slate-500 tracking-wider group-hover:text-white transition-colors">
-                  {count} {count === 1 ? 'Fam' : 'Fams'}
-                </span>
-              </div>
-              <div className="flex flex-col">
-                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">{cfg.nameEn}</span>
-                <span className="text-sm font-bold text-white mt-1 leading-none">{cfg.nameFr}</span>
-              </div>
-            </div>
-          );
-        })}
-      </motion.div>
+            return (
+              <HeaderBentoCard
+                key={grpKey}
+                title={cfg.nameAr}
+                subtitle={cfg.nameFr}
+                value={count}
+                valueUnit="عائلة"
+                icon={<Icon className="w-3.5 h-3.5" />}
+                color={bentoColorMap[grpKey]}
+                isActive={isFilterActive}
+                onClick={() => setSelectedGroupFilter(isFilterActive ? 'all' : grpKey)}
+              />
+            );
+          })}
+        </div>
+      </PageHeader>
 
       {/* WORKSPACE AREA */}
       <motion.div variants={itemVariants} className="flex-1 flex flex-col min-h-0 min-w-0">
@@ -379,12 +381,12 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
           
           {/* Action and Filter Controller */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-4 shrink-0 relative z-10">
-            <Tabs.List className="flex bg-[#070913]/60 p-1.5 rounded-2xl border border-white/5 gap-1">
+            <Tabs.List className="flex bg-[#121318] p-1.5 rounded-2xl border border-white/10 gap-1">
               <Tabs.Trigger 
                 value="families" 
                 className={cn(
                   "px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2",
-                  activeTab === 'families' ? "bg-amber-500 text-black font-extrabold shadow-[0_5px_15px_rgba(245,158,11,0.2)]" : "text-slate-400 hover:text-white hover:bg-white/[0.02]"
+                  activeTab === 'families' ? "bg-white text-slate-950 font-extrabold shadow-md" : "text-slate-400 hover:text-white hover:bg-white/[0.02]"
                 )}
               >
                 <FolderTree className="w-3.5 h-3.5" /> {t('partsCatalogLab.familiesTab', 'عائلات التصنيف')} ({families.length})
@@ -393,7 +395,7 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                 value="templates" 
                 className={cn(
                   "px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2",
-                  activeTab === 'templates' ? "bg-emerald-500 text-black font-extrabold shadow-[0_5px_15px_rgba(16,185,129,0.2)]" : "text-slate-400 hover:text-white hover:bg-white/[0.02]"
+                  activeTab === 'templates' ? "bg-white text-slate-950 font-extrabold shadow-md" : "text-slate-400 hover:text-white hover:bg-white/[0.02]"
                 )}
               >
                 <Component className="w-3.5 h-3.5" /> {t('partsCatalogLab.templatesTab', 'قوالب المواصفات')} ({templates.length})
@@ -436,17 +438,17 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
               {activeTab === 'families' && (
                 <button 
                   onClick={() => setIsAddingFamily(true)}
-                  className="titan-button titan-button-primary bg-amber-500 hover:bg-amber-400 text-black shadow-amber-500/10 shrink-0 !py-2.5 !px-5 font-bold"
+                  className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0 active:scale-95"
                 >
-                  <Plus className="w-4 h-4" /> {t('partsCatalogLab.addFamily', 'إضافة عائلة جديدة')}
+                  <Plus className="w-4 h-4 text-slate-950" /> {t('partsCatalogLab.addFamily', 'إضافة عائلة جديدة')}
                 </button>
               )}
               {activeTab === 'templates' && (
                 <button 
                   onClick={() => setIsAddingTemplate(true)}
-                  className="titan-button titan-button-primary bg-emerald-500 hover:bg-emerald-400 text-black shadow-emerald-500/10 shrink-0 !py-2.5 !px-5 font-bold"
+                  className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0 active:scale-95"
                 >
-                  <Plus className="w-4 h-4" /> {t('partsCatalogLab.addTemplate', 'إضافة قالب مواصفات')}
+                  <Plus className="w-4 h-4 text-slate-950" /> {t('partsCatalogLab.addTemplate', 'إضافة قالب مواصفات')}
                 </button>
               )}
             </div>
@@ -454,7 +456,7 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
 
           {/* TAB CONTENT GRID SCROLLER */}
           <div className="flex-1 overflow-y-auto custom-scrollbar mt-5">
-            
+
             {/* ==================================== TAB: FAMILIES ==================================== */}
             <Tabs.Content value="families" className="outline-none h-full flex flex-col gap-6">
               
@@ -482,7 +484,7 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                             >
                               {(Object.keys(GROUP_CONFIG) as FamilyGroup[]).map(gk => (
                                 <option key={gk} value={gk} className="bg-[#141624]">
-                                  {GROUP_CONFIG[gk].nameFr}
+                                  {GROUP_CONFIG[gk].nameFr} - {GROUP_CONFIG[gk].nameAr}
                                 </option>
                               ))}
                             </select>
@@ -511,13 +513,13 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                           <button 
                             type="button" 
                             onClick={() => setIsAddingFamily(false)}
-                            className="titan-button titan-button-outline !py-2.5 !px-6"
+                            className="bg-white/[0.04] text-slate-300 hover:bg-white/[0.08] hover:text-white border border-white/10 font-bold rounded-xl px-5 py-2.5 text-xs transition-all flex items-center gap-2 cursor-pointer"
                           >
                             {t('common.cancel', 'إلغاء')}
                           </button>
                           <button 
                             type="submit" 
-                            className="titan-button titan-button-primary bg-amber-500 hover:bg-amber-400 text-black shadow-amber-500/20 !py-2.5 !px-8 font-bold"
+                            className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-6 py-2.5 text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
                           >
                             {t('partsCatalogLab.submitFamily', 'تفعيل وتجسيد العائلة')}
                           </button>
@@ -531,8 +533,8 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
               {filteredFamilies.length === 0 ? (
                 <div className="py-20 flex flex-col items-center justify-center border border-dashed border-white/10 rounded-3xl bg-white/[0.01]">
                   <FolderTree className="w-16 h-16 text-slate-600 mb-4 animate-pulse" />
-                  <p className="text-sm text-slate-400 font-bold uppercase tracking-widest">No Classification Families Match Filter</p>
-                  <p className="text-xs text-slate-500 mt-2">Try switching classification groups or clear filters to view active catalog nodes.</p>
+                  <p className="text-sm text-slate-400 font-bold uppercase tracking-widest">لا توجد عائلات تصنيف تطابق التصفية</p>
+                  <p className="text-xs text-slate-500 mt-2">جرّب تغيير مجموعة التصنيف أو إلغاء التصفية لعرض العائلات النشطة.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 pb-12">
@@ -549,13 +551,14 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                           setSelectedFamilyFilterId(fam.id);
                           setActiveTab('templates');
                         }}
-                        className="p-6 bg-[#070913]/40 border border-white/5 rounded-2xl flex flex-col justify-between hover:bg-white/[0.01] hover:border-amber-500/30 transition-all duration-300 relative group overflow-hidden cursor-pointer active:scale-[0.99]"
+                        className="p-6 bg-white/[0.02] border border-white/10 rounded-2xl flex flex-col justify-between hover:border-white/20 transition-all duration-300 relative group overflow-hidden cursor-pointer active:scale-[0.99] shadow-lg"
                       >
-                        <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-white/[0.01] to-transparent pointer-events-none" />
+                        {/* Elegant Glowing Backdrop Circle */}
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-3xl group-hover:bg-amber-500/10 pointer-events-none transition-all duration-300" />
                         
                         <div>
-                          <div className="flex justify-between items-start mb-4">
-                            <span className={cn("px-2.5 py-1 rounded-lg text-[9px] font-mono font-bold tracking-widest uppercase flex items-center gap-1", meta.colorClass, meta.textClass)}>
+                          <div className="flex justify-between items-start mb-4 relative z-10">
+                            <span className="px-2.5 py-1 rounded-lg text-[9px] font-mono font-bold tracking-widest uppercase flex items-center gap-1 bg-white/5 text-slate-300 border border-white/10">
                               <GroupIcon className="w-3 h-3" />
                               {meta.nameFr}
                             </span>
@@ -565,28 +568,28 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                                 e.stopPropagation();
                                 handleDeleteItem('family', fam.id);
                               }}
-                              className="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/15 transition-all opacity-0 group-hover:opacity-100"
-                              title="Delete Family"
+                              className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/15 transition-all opacity-0 group-hover:opacity-100 relative z-20"
+                              title="حذف العائلة"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
                           </div>
 
-                          <h3 className="text-lg font-bold text-slate-100 group-hover:text-amber-400 transition-colors mb-2 uppercase">
+                          <h3 className="text-lg font-bold text-slate-100 group-hover:text-amber-400 transition-colors mb-2 uppercase relative z-10">
                             {fam.name}
                           </h3>
-                          <p className="text-xs text-slate-400 leading-relaxed font-sans min-h-[40px] italic">
-                            "{fam.description || 'No specific technical scope defined for this structural family.'}"
+                          <p className="text-xs text-slate-400 leading-relaxed font-sans min-h-[40px] italic relative z-10">
+                            "{fam.description || 'لم يتم تحديد نطاق فني لهذه العائلة الهيكلية.'}"
                           </p>
                         </div>
 
-                        <div className="flex items-center justify-between border-t border-white/5 pt-4 mt-6">
+                        <div className="flex items-center justify-between border-t border-white/5 pt-4 mt-6 relative z-10">
                           <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest font-bold">
-                            SYS-ID: {fam.id.replace('fam-', '')}
+                            معرف النظام: {fam.id.replace('fam-', '')}
                           </span>
                           <div className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-slate-300 text-xs font-bold flex items-center gap-1.5 hover:bg-amber-500/10 transition-colors">
-                            <Layers className="w-3.5 h-3.5 text-amber-500" />
-                            {tCount} Abstract {tCount === 1 ? 'Template' : 'Templates'}
+                            <Layers className="w-3.5 h-3.5 text-amber-400" />
+                            {tCount} {tCount === 1 ? 'قالب مواصفات' : 'قوالب مواصفات'}
                           </div>
                         </div>
                       </div>
@@ -610,17 +613,17 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                   >
                     <GlassCard className="!p-6 border-emerald-500/20 bg-emerald-500/[0.01]">
                       <h3 className="text-sm font-bold text-white uppercase tracking-widest mb-4 flex items-center gap-2">
-                        <Component className="w-4 h-4 text-emerald-400" /> Initialize Technical Template Specification (Abstract Specification)
+                        <Component className="w-4 h-4 text-emerald-400" /> إضافة قالب مواصفات جديد (Abstract Specification)
                       </h3>
                       <form onSubmit={handleCreateTemplate} className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                           <div className="space-y-2">
-                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Parent Classification Family</label>
+                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">عائلة التصنيف الهيكلية</label>
                             <select 
                               required value={selectedFamilyId} onChange={e => setSelectedFamilyId(e.target.value)} 
                               className="titan-input py-2.5 bg-[#0b0c15] text-slate-100"
                             >
-                              <option value="" disabled className="bg-[#141624]">--- SELECT FAMILY ---</option>
+                              <option value="" disabled className="bg-[#141624]">--- اختر العائلة ---</option>
                               {families.map(f => {
                                 const meta = GROUP_CONFIG[(f.group || 'mecanique') as FamilyGroup];
                                 return (
@@ -633,29 +636,29 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                           </div>
 
                           <div className="space-y-2">
-                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Template Spec Name</label>
+                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">اسم قالب المواصفات</label>
                             <input 
                               required value={newTemplateName} onChange={e => setNewTemplateName(e.target.value)} 
-                              placeholder="e.g. Ball Bearing 62xx, Courroie Type A, Electrovanne 24V..." 
+                              placeholder="مثال: محمل كروي، سير ناقل V-Belt..." 
                               className="titan-input py-2.5 text-slate-100 font-bold"
                             />
                           </div>
 
                           <div className="space-y-2">
-                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">SKU Base Prefix / Nomenclature Code</label>
+                            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">الرمز المرجعي العائلي (SKU Prefix)</label>
                             <input 
                               required value={newTemplateSku} onChange={e => setNewTemplateSku(e.target.value)} 
-                              placeholder="e.g. RO-B, CO-A, PNU-VAL, DIS-MAG" 
+                              placeholder="مثال: ROB, COU, VAL, MAG" 
                               className="titan-input uppercase py-2.5 text-emerald-400 font-mono font-bold"
                             />
                           </div>
                         </div>
 
                         <div className="space-y-2">
-                          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">Generic Specifications & Engineering Constants</label>
+                          <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest">ملاحظات هندسية (اختياري)</label>
                           <input 
                             value={newTemplateDesc} onChange={e => setNewTemplateDesc(e.target.value)} 
-                            placeholder="Define sizing parameters, metric standard constraints, safety constants..." 
+                            placeholder="الخصائص التقنية العريضة لهذا القالب..." 
                             className="titan-input py-2.5 text-slate-200"
                           />
                         </div>
@@ -664,15 +667,15 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                           <button 
                             type="button" 
                             onClick={() => setIsAddingTemplate(false)}
-                            className="titan-button titan-button-outline !py-2.5 !px-6"
+                            className="bg-white/[0.04] text-slate-300 hover:bg-white/[0.08] hover:text-white border border-white/10 font-bold rounded-xl px-5 py-2.5 text-xs transition-all flex items-center gap-2 cursor-pointer"
                           >
-                            Cancel
+                            إلغاء
                           </button>
                           <button 
                             type="submit" 
-                            className="titan-button titan-button-primary bg-emerald-500 hover:bg-emerald-400 text-black shadow-emerald-500/20 !py-2.5 !px-8 font-bold"
+                            className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-6 py-2.5 text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
                           >
-                            Instantiate Specification Template
+                            تفعيل القالب الهندسي
                           </button>
                         </div>
                       </form>
@@ -684,8 +687,8 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
               {filteredTemplates.length === 0 ? (
                 <div className="py-20 flex flex-col items-center justify-center border border-dashed border-white/10 rounded-3xl bg-white/[0.01]">
                   <Component className="w-16 h-16 text-slate-600 mb-4 animate-pulse" />
-                  <p className="text-sm text-slate-400 font-bold uppercase tracking-widest">No Technical Templates Found</p>
-                  <p className="text-xs text-slate-500 mt-2">Ensure families exist in selected classification groups before creating templates.</p>
+                  <p className="text-sm text-slate-400 font-bold uppercase tracking-widest">لا توجد قوالب مواصفات فنية</p>
+                  <p className="text-xs text-slate-500 mt-2">تأكد من توفر عائلات التصنيف في المجموعات المختارة قبل إنشاء القوالب.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 pb-12">
@@ -701,42 +704,45 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                         key={tmpl.id} 
                         onClick={() => setSelectedTemplateForSlots(selectedTemplateForSlots === tmpl.id ? null : tmpl.id)}
                         className={cn(
-                          "p-5 bg-[#070913]/40 border rounded-2xl flex flex-col justify-between hover:bg-white/[0.01] hover:border-emerald-500/30 transition-all group duration-300 relative cursor-pointer",
-                          selectedTemplateForSlots === tmpl.id ? "border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.15)] ring-1 ring-emerald-500/50" : "border-white/5"
+                          "p-5 bg-white/[0.02] border rounded-2xl flex flex-col justify-between hover:border-white/20 transition-all group duration-300 relative cursor-pointer shadow-lg overflow-hidden",
+                          selectedTemplateForSlots === tmpl.id ? "border-cyan-500/40 shadow-cyan-500/5 ring-1 ring-cyan-500/10 bg-cyan-500/[0.01]" : "border-white/10"
                         )}
                       >
-                        <div>
-                          <div className="flex justify-between items-start mb-3">
-                            <span className="px-2 py-0.5 bg-emerald-500/10 border border-emerald-500/20 rounded text-[9px] font-mono text-emerald-400 font-bold uppercase tracking-wider">
-                              PREFIX: {tmpl.skuBase}
+                        {/* Glowing radial background circle */}
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-full blur-3xl group-hover:bg-cyan-500/10 pointer-events-none transition-all duration-300" />
+
+                        <div className="relative z-10">
+                          <div className="flex justify-between items-start mb-3 relative z-10">
+                            <span className="px-2 py-0.5 bg-white/5 border border-white/10 rounded text-[9px] font-mono text-slate-300 font-bold uppercase tracking-wider">
+                              الرمز: {tmpl.skuBase}
                             </span>
                             <button 
                               onClick={(e) => { e.stopPropagation(); handleDeleteItem('template', tmpl.id); }}
-                              className="p-1 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/15 transition-all opacity-0 group-hover:opacity-100"
-                              title="Delete Template"
+                              className="p-1 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/15 transition-all opacity-0 group-hover:opacity-100 relative z-20"
+                              title="حذف القالب"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
                           </div>
                           
-                          <span className={cn("text-[10px] uppercase font-bold tracking-wider flex items-center gap-1 mb-1.5", meta.textClass)}>
-                            <GroupIcon className="w-3.5 h-3.5" />
-                            {parentFamily?.name || 'GENERIC'}
+                          <span className="text-[10px] uppercase font-bold tracking-wider flex items-center gap-1 mb-1.5 text-slate-400 relative z-10">
+                            <GroupIcon className="w-3.5 h-3.5 text-slate-500" />
+                            {parentFamily?.name || 'عام'}
                           </span>
-                          <h3 className="text-base font-bold text-white group-hover:text-emerald-400 transition-colors mb-2 leading-tight uppercase">
+                          <h3 className="text-base font-bold text-white group-hover:text-cyan-400 transition-colors mb-2 leading-tight uppercase relative z-10">
                             {tmpl.name}
                           </h3>
-                          <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed mb-4">
-                            {tmpl.description || 'No technical specification rules designated.'}
+                          <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed mb-4 relative z-10">
+                            {tmpl.description || 'لا توجد قواعد مواصفات تقنية محددة.'}
                           </p>
                         </div>
 
                         <div className="border-t border-white/5 pt-4 flex items-center justify-between">
-                          <span className="text-[10px] font-mono text-slate-500 font-bold flex items-center gap-1 hover:text-emerald-400 transition-colors">
-                            <Grid className="w-3 h-3" /> View 999 slots rule
+                          <span className="text-[10px] font-mono text-slate-500 font-bold flex items-center gap-1 hover:text-white transition-colors">
+                            <Grid className="w-3 h-3" /> عرض مقاعد 999
                           </span>
-                          <div className="px-2.5 py-1 rounded-lg bg-[#0c1c14] border border-emerald-500/20 text-emerald-400 text-xs font-mono font-bold flex items-center gap-1 shadow-sm">
-                            <Package className="w-3 h-3" /> {bCount} Mapped
+                          <div className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-slate-300 text-xs font-mono font-bold flex items-center gap-1 shadow-sm">
+                            <Package className="w-3 h-3 text-slate-400" /> {bCount} مرتبطة
                           </div>
                         </div>
 
@@ -750,9 +756,9 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                           >
                             <div className="flex items-center justify-between mb-2">
                               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
-                                <Info className="w-3 h-3 text-cyan-400" /> Dormant Slots Mapping
+                                <Info className="w-3 h-3 text-cyan-400" /> خريطة المقاعد المجمدة (999 Slots)
                               </span>
-                              <span className="text-[10px] font-bold text-emerald-400 font-mono">{999 - bCount} Dormant / {bCount} Active</span>
+                              <span className="text-[10px] font-bold text-emerald-400 font-mono">{999 - bCount} مجمد / {bCount} نشط</span>
                             </div>
                             
                             <div className="grid grid-cols-10 gap-1 p-1.5 bg-[#0a0a0f]/40 rounded-xl border border-white/5">
@@ -769,14 +775,14 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                                         ? "bg-emerald-500/20 border-emerald-500/40 text-emerald-400 font-bold" 
                                         : "bg-[#0a0a0f]/30 border-white/5 hover:border-white/20 text-slate-600"
                                     )}
-                                    title={isFilled ? `Active Slot: ${slotId}` : `Dormant Slot ${slotNum}: ${slotId}`}
+                                    title={isFilled ? `مقعد نشط: ${slotId}` : `مقعد مجمد ${slotNum}: ${slotId}`}
                                   >
                                     {slotNum}
                                   </div>
                                 );
                               })}
                               <div className="col-span-10 text-center py-1.5 text-[8px] font-mono text-slate-500 uppercase tracking-widest mt-1 border-t border-white/5">
-                                + 959 remaining dormant slots
+                                + 959 مقعد مجمد متبقي
                               </div>
                             </div>
                           </motion.div>

@@ -33,6 +33,7 @@ import {
   Radar
 } from "lucide-react";
 import { PageHeader } from "@/shared/components/PageHeader";
+import { HeaderBentoCard } from "@/shared/components/HeaderBentoCard";
 import { useTranslation } from "react-i18next";
 import {
   format,
@@ -295,6 +296,15 @@ export function PreventiveRadarView() {
     blueprints,
     preventiveTasks,
   ]);
+
+  const stats = useMemo(() => {
+    const totalMachines = enrichedMachines.length;
+    const criticalMachines = enrichedMachines.filter(m => m.awarenessLevel === "RED").length;
+    const pendingCount = executions.filter(ex => ex.status === "PENDING" && ex.serviceType === "PREV").length;
+    const completedCount = executions.filter(ex => ex.status === "COMPLETED" && ex.serviceType === "PREV").length;
+    
+    return { totalMachines, criticalMachines, pendingCount, completedCount };
+  }, [enrichedMachines, executions]);
 
   // Calendar Day Click
   const handleDayClick = (day: Date) => {
@@ -583,10 +593,41 @@ export function PreventiveRadarView() {
       <PageHeader
         title={t("preventive.radar.title", "رادار الصيانة الوقائية")}
         subtitle={t("preventive.radar.subtitle", "البث اللحظي لصحة أصول ومعدات المصنع وتتبع تنفيذ خطط الصيانة وجدولتها")}
-        icon={<Radar className="w-8 h-8 text-emerald-400" />}
+        icon={<Radar className="w-7 h-7 text-emerald-400" />}
         badgeColor="emerald"
         badgeText={t("portals.preventive", "الصيانة الوقائية")}
-      />
+      >
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <HeaderBentoCard
+            title="إجمالي الآلات"
+            subtitle="TOTAL EQUIPMENT"
+            value={stats.totalMachines}
+            icon={<Radar className="w-3.5 h-3.5" />}
+            color="emerald"
+          />
+          <HeaderBentoCard
+            title="آلات في خطر"
+            subtitle="CRITICAL ALERTS"
+            value={stats.criticalMachines}
+            icon={<AlertTriangle className="w-3.5 h-3.5" />}
+            color="rose"
+          />
+          <HeaderBentoCard
+            title="مهام وقائية معلقة"
+            subtitle="PENDING TASKS"
+            value={stats.pendingCount}
+            icon={<Clock className="w-3.5 h-3.5" />}
+            color="amber"
+          />
+          <HeaderBentoCard
+            title="مهام منجزة"
+            subtitle="COMPLETED PREV"
+            value={stats.completedCount}
+            icon={<ClipboardCheck className="w-3.5 h-3.5" />}
+            color="cyan"
+          />
+        </div>
+      </PageHeader>
 
       {/* Control Cockpit Card */}
       <div className="mb-6 bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-4" dir="rtl">
