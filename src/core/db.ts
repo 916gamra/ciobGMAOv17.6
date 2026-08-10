@@ -414,6 +414,11 @@ export class GmaoDatabase extends Dexie {
   excelTemplates!: Table<ExcelTemplate, string>;
   excelBackups!: Table<ExcelBackup, string>;
 
+  // User Ready-to-Use compatibility tables
+  parts!: Table<any, string>;
+  transactions!: Table<any, string>;
+  logs!: Table<any, string>;
+
   constructor(name: string = 'CIOB_GMAO_DB') {
     super(name);
     
@@ -604,6 +609,45 @@ export class GmaoDatabase extends Dexie {
       preventiveCards: 'id, templateId, name',
       failureCategories: 'id, name',
       failureTemplates: 'id, categoryId, name'
+    });
+
+    // Schema Version 26 (User Ready-to-Use compatibility integration)
+    this.version(26).stores({
+      pdrFamilies: 'id, name',
+      pdrTemplates: 'id, familyId, name, skuBase',
+      pdrBlueprints: 'id, templateId, reference',
+      machineFamilies: 'id, name',
+      machineTemplates: 'id, familyId, name, skuBase',
+      machineBlueprints: 'id, templateId, reference',
+      inventory: 'id, blueprintId, warehouseId, partId, location',
+      movements: 'id, stockId, type, timestamp',
+      purchaseOrders: 'id, supplierName, status, orderDate',
+      purchaseOrderLines: 'id, orderId, blueprintId',
+      sectors: 'id, name',
+      technicians: 'id, name, sectorId',
+      machines: 'id, blueprintId, templateId, sectorId, technicianId',
+      machinePartMappings: 'id, machineId, blueprintId',
+      partRequisitions: 'id, technicianId, machineId, status, requestDate',
+      partRequisitionLines: 'id, requisitionId, blueprintId',
+      preventiveTasks: 'id, pdrFamilyId, pdrTemplateId, actionId',
+      blueprintTasks: 'id, machineBlueprintId, taskId',
+      machineTasks: 'id, machineId, taskId',
+      taskExecutions: 'id, machineId, taskId, status, scheduledDate, componentId, actionId, serviceType, bonId, reconciliationStatus',
+      componentTemplates: 'id, family, name',
+      componentBlueprints: 'id, templateId, reference',
+      standardComponents: 'id, name, family, criticality',
+      standardActions: 'id, code, name, type',
+      userOverrides: 'id, isActive, realBadgeId',
+      auditLogs: 'id, userId, action, entityType, timestamp, severity',
+      excelTemplates: 'id, portalId, name',
+      excelBackups: 'id, portalId, timestamp',
+      preventiveCards: 'id, templateId, name',
+      failureCategories: 'id, name',
+      failureTemplates: 'id, categoryId, name',
+      // Ready-to-Use Tables:
+      parts: 'id, code, category',
+      transactions: 'id, inventoryId, type, timestamp',
+      logs: '++id, timestamp, level, context'
     });
   }
 }

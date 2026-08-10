@@ -6,7 +6,7 @@ import { GlassCard } from './GlassCard';
 
 interface Props {
   children: ReactNode;
-  fallback?: ReactNode;
+  fallback?: ReactNode | ((error: Error, reset: () => void) => ReactNode);
   componentName?: string;
   portalId?: string;
 }
@@ -30,6 +30,14 @@ export class ErrorBoundary extends Component<Props, State> {
     return { hasError: true, error, errorDetails: null };
   }
 
+  public handleReset = () => {
+    this.setState({
+      hasError: false,
+      error: null,
+      errorDetails: null
+    });
+  };
+
   public override componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     const contextName = this.props.portalId || this.props.componentName || 'UnknownComponent';
     
@@ -50,6 +58,9 @@ export class ErrorBoundary extends Component<Props, State> {
   public override render() {
     if (this.state.hasError) {
       if (this.props.fallback) {
+        if (typeof this.props.fallback === 'function') {
+          return <>{this.props.fallback(this.state.error || new Error('Unknown Error'), this.handleReset)}</>;
+        }
         return <>{this.props.fallback}</>;
       }
 

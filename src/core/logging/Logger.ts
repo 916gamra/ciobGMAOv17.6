@@ -1,10 +1,12 @@
-/// <reference types="vite/client" />
+// src/core/logging/Logger.ts
+import { db } from '@/core/db';
+
 export enum LogLevel {
   DEBUG = 'DEBUG',
   INFO = 'INFO',
   WARN = 'WARN',
   ERROR = 'ERROR',
-  FATAL = 'FATAL'
+  FATAL = 'FATAL',
 }
 
 export interface LogEntry {
@@ -13,33 +15,17 @@ export interface LogEntry {
   context: string;
   message: string;
   data?: any;
-  error?: {
-    message?: string;
-    stack?: string;
-  };
+  stack?: string;
 }
 
-export class AppLogger {
+export class Logger {
   private context: string;
-  private logLevel: LogLevel = import.meta.env.PROD ? LogLevel.INFO : LogLevel.DEBUG;
+  private isDev = import.meta.env.DEV;
+  private logBuffer: LogEntry[] = [];
+  private bufferSize = 100;
 
   constructor(context: string) {
     this.context = context;
-  }
-
-  private log(level: LogLevel, message: string, data?: any): void {
-    if (this.shouldLog(level)) {
-      const entry: LogEntry = {
-        timestamp: new Date(),
-        level,
-        context: this.context,
-        message,
-        data
-      };
-
-      this.output(entry);
-      this.persist(entry);
-    }
   }
 
   debug(message: string, data?: any): void {
@@ -55,77 +41,136 @@ export class AppLogger {
   }
 
   error(message: string, error?: Error | unknown, data?: any): void {
-    const errorObj = error instanceof Error ? error : new Error(String(error));
+    const errObj = error instanceof Error ? error : new Error(String(error || ''));
     this.log(LogLevel.ERROR, message, {
       ...data,
       error: {
-        message: errorObj?.message,
-        stack: errorObj?.stack
-      }
+        message: errObj?.message,
+        stack: errObj?.stack,
+        name: errObj?.name,
+      },
     });
   }
 
   fatal(message: string, error?: Error | unknown, data?: any): void {
-    const errorObj = error instanceof Error ? error : new Error(String(error));
+    const errObj = error instanceof Error ? error : new Error(String(error || ''));
     this.log(LogLevel.FATAL, message, {
       ...data,
       error: {
-        message: errorObj?.message,
-        stack: errorObj?.stack
-      }
+        message: errObj?.message,
+        stack: errObj?.stack,
+        name: errObj?.name,
+      },
     });
 
-    // In a real environment, trigger critical alert systems immediately (e.g. Sentry/Datadog)
-    this.sendToServer({
-      level: LogLevel.FATAL,
-      message,
+    // Flush immediately for fatal errors
+    this.flush();
+  }
+
+  private log(level: LogLevel, message: string, data?: any): void {
+    const entry: LogEntry = {
+      timestamp: new Date(),
+      level,
       context: this.context,
-      data
-    });
+      message,
+      data,
+    };
+
+    this.outputToConsole(entry);
+    this.addToBuffer(entry);
+    this.persistToDatabase(entry);
   }
 
-  private shouldLog(level: LogLevel): boolean {
-    const levels = [LogLevel.DEBUG, LogLevel.INFO, LogLevel.WARN, LogLevel.ERROR, LogLevel.FATAL];
-    return levels.indexOf(level) >= levels.indexOf(this.logLevel);
-  }
+  private outputToConsole(entry: LogEntry): void {
+    if (!this.isDev) return;
 
-  private output(entry: LogEntry): void {
     const color = this.getColorForLevel(entry.level);
+    const style = `color: ${color}; font-weight: bold;`;
+
     console.log(
       `%c[${entry.level}] ${entry.context}: ${entry.message}`,
-      `color: ${color}; font-weight: bold;`,
+      style,
       entry.data || ''
     );
   }
 
-  private persist(entry: LogEntry): void {
-    // NOTE: This will be connected to our Dexie local database for offline audit logging
-    // For now we dispatch a custom event that our DB listener can catch
-    const event = new CustomEvent('app:log', { detail: entry });
-    window.dispatchEvent(event);
-  }
-
-  private sendToServer(data: any): void {
-    // Mock server reporting
-    console.warn('CRITICAL ALERT SENT TO SERVER:', data);
-  }
-
   private getColorForLevel(level: LogLevel): string {
-    switch (level) {
-      case LogLevel.DEBUG:
-        return '#888888';
-      case LogLevel.INFO:
-        return '#0ea5e9';
-      case LogLevel.WARN:
-        return '#f59e0b';
-      case LogLevel.ERROR:
-        return '#ef4444';
-      case LogLevel.FATAL:
-        return '#7c2d12';
-      default:
-        return '#000000';
+    const colors: Record<LogLevel, string> = {
+      [LogLevel.DEBUG]: '#888888',
+      [LogLevel.INFO]: '#0ea5e9',
+      [LogLevel.WARN]: '#f59e0b',
+      [LogLevel.ERROR]: '#ef4444',
+      [LogLevel.FATAL]: '#7c2d12',
+    };
+    return colors[level];
+  }
+
+  private addToBuffer(entry: LogEntry): void {
+    this.logBuffer.push(entry);
+
+    if (this.logBuffer.length >= this.bufferSize) {
+      this.flush();
+    }
+  }
+
+  private async persistToDatabase(entry: LogEntry): Promise<void> {
+    try {
+      if (db && db.logs) {
+        await db.logs.add({
+          timestamp: entry.timestamp,
+          level: entry.level,
+          context: entry.context,
+          message: entry.message,
+          data: entry.data
+        });
+      }
+    } catch (error) {
+      console.error('Failed to persist log', error);
+    }
+  }
+
+  private async flush(): Promise<void> {
+    if (this.logBuffer.length === 0) return;
+
+    try {
+      const isTauri = typeof window !== 'undefined' && (window as any).__TAURI__;
+      if (isTauri) {
+        try {
+          const fsModuleName = '@tauri' + '-apps/api/fs';
+          const pathModuleName = '@tauri' + '-apps/api/path';
+          // @ts-ignore
+          const { writeTextFile, BaseDirectory } = await import(/* @vite-ignore */ fsModuleName);
+          // @ts-ignore
+          const { appDataDir } = await import(/* @vite-ignore */ pathModuleName);
+          const timestamp = new Date().toISOString().split('T')[0];
+          const filename = `logs-${timestamp}.jsonl`;
+
+          const content = this.logBuffer
+            .map(entry => JSON.stringify(entry))
+            .join('\n');
+
+          await writeTextFile(filename, content, {
+            dir: BaseDirectory.AppData,
+            append: true,
+          });
+        } catch (tauriError) {
+          console.error('Tauri FS writing failed', tauriError);
+        }
+      } else {
+        if (this.isDev) {
+          console.log('[Logger Flush] Logs flushed:', this.logBuffer);
+        }
+      }
+      this.logBuffer = [];
+    } catch (error) {
+      console.error('Failed to flush logs', error);
     }
   }
 }
 
-export const createLogger = (context: string) => new AppLogger(context);
+export function createLogger(context: string): Logger {
+  return new Logger(context);
+}
+
+export const logger = new Logger('GMAO');
+export { Logger as AppLogger };
