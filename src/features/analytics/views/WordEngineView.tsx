@@ -19,6 +19,7 @@ import { motion } from 'motion/react';
 import { PageHeader } from '@/shared/components/PageHeader';
 import { HeaderBentoCard } from '@/shared/components/HeaderBentoCard';
 import { GlassCard } from '@/shared/components/GlassCard';
+import { useTranslation } from 'react-i18next';
 import { 
   FileCode, 
   Download, 
@@ -34,6 +35,7 @@ import {
 import { toast } from 'sonner';
 
 export function WordEngineView({ user }: { user?: any }) {
+  const { t } = useTranslation();
   const [activeTemplate, setActiveTemplate] = useState<'rca' | 'contract'>('rca');
 
   // Machines List from DB
@@ -270,15 +272,12 @@ export function WordEngineView({ user }: { user?: any }) {
   };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 15 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col gap-6 w-full text-slate-100 dir-rtl font-sans p-4 md:p-6"
-    >
+    <div className="flex flex-col h-full bg-white dark:bg-[#0a0a0f] rounded-3xl border border-slate-200 dark:border-white/5 shadow-2xl text-slate-800 dark:text-slate-200 font-sans pb-4 overflow-hidden overflow-y-auto custom-scrollbar dir-ltr" dir="ltr">
       {/* PAGE HEADER */}
-      <PageHeader
-        title="محرك مستندات وورد (Word Engine DOCX)"
-        subtitle="توليد تقارير التحقيق في الأعطال الكبرى (RCA)، المخطط السببي إيشيكاوا، وعقود الصيانة والخدمات الخارجية."
+      <div className="p-6 md:p-8 pb-0 shrink-0">
+        <PageHeader
+        title={t('word.engine.title', 'محرك مستندات وورد (Word Engine DOCX)')}
+        subtitle={t('word.engine.subtitle', 'توليد تقارير التحقيق في الأعطال الكبرى (RCA)، المخطط السببي إيشيكاوا، وعقود الصيانة والخدمات الخارجية.')}
         icon={<FileCode className="w-7 h-7 text-blue-400" />}
         badgeText="v17.1 DOCX"
         badgeColor="blue"
@@ -288,34 +287,34 @@ export function WordEngineView({ user }: { user?: any }) {
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-200 text-slate-950 font-extrabold text-xs shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
             <Download className="w-4 h-4" />
-            <span>تصدير مستند Word (.docx)</span>
+            <span>{t('word.engine.quickDownload', 'تصدير مستند Word (.docx)')}</span>
           </button>
         }
       >
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <HeaderBentoCard
-            title="مراحل التحليل الخماسي"
+            title={t('word.engine.fiveWhysPhases', 'مراحل التحليل الخماسي')}
             subtitle="5-WHYS PHASES"
             value={`${fiveWhys.length} خطوات`}
             icon={<ListTodo className="w-3.5 h-3.5 text-blue-400" />}
             color="blue"
           />
           <HeaderBentoCard
-            title="أبعاد مخطط إيشيكاوا"
+            title={t('word.engine.ishikawaParameters', 'أبعاد مخطط إيشيكاوا')}
             subtitle="ISHIKAWA PARAMETERS"
             value="6 تصنيفات"
             icon={<ClipboardList className="w-3.5 h-3.5 text-blue-400" />}
             color="blue"
           />
           <HeaderBentoCard
-            title="ساعات التوقف (RCA)"
+            title={t('word.engine.downtimeHours', 'ساعات التوقف (RCA)')}
             subtitle="DOWNTIME TRACKED"
             value={`${downtimeHours} ساعة`}
             icon={<ShieldAlert className="w-3.5 h-3.5 text-rose-400" />}
             color="rose"
           />
           <HeaderBentoCard
-            title="اتفاقيات الخدمة الخارجية"
+            title={t('word.engine.externalAgreements', 'اتفاقيات الخدمة الخارجية')}
             subtitle="ACTIVE EXTERNAL SLA"
             value={slaHours}
             icon={<Building className="w-3.5 h-3.5 text-emerald-400" />}
@@ -323,8 +322,10 @@ export function WordEngineView({ user }: { user?: any }) {
           />
         </div>
       </PageHeader>
+    </div>
 
-      {/* TEMPLATE NAVIGATION TABS */}
+      <div className="flex flex-col flex-1 px-6 md:px-8 mt-6 gap-6 min-h-0">
+        {/* TEMPLATE NAVIGATION TABS */}
       <div className="flex items-center gap-2 bg-[#0a0a0f]/40 p-1.5 rounded-2xl border border-white/10 overflow-x-auto self-start">
         <button
           onClick={() => setActiveTemplate('rca')}
@@ -335,7 +336,7 @@ export function WordEngineView({ user }: { user?: any }) {
           }`}
         >
           <ShieldAlert className="w-4 h-4" />
-          <span>تقرير التحقيق في الأعطال الكبرى (RCA & Fishbone)</span>
+          <span>{t('word.engine.rcaDocx', 'تقرير التحقيق في الأعطال الكبرى (RCA & Fishbone)')}</span>
         </button>
 
         <button
@@ -347,7 +348,7 @@ export function WordEngineView({ user }: { user?: any }) {
           }`}
         >
           <Building className="w-4 h-4" />
-          <span>عقود الصيانة والخدمات الخارجية</span>
+          <span>{t('word.engine.maintenanceContracts', 'عقود الصيانة والخدمات الخارجية')}</span>
         </button>
       </div>
 
@@ -356,10 +357,10 @@ export function WordEngineView({ user }: { user?: any }) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* RCA BUILDER FORM */}
           <GlassCard className="p-6 flex flex-col gap-4">
-            <h3 className="text-sm font-bold text-white border-b border-white/10 pb-3">تكوين تقرير التحقيق التشخيصي (RCA)</h3>
+            <h3 className="text-sm font-bold text-white border-b border-white/10 pb-3">{t('word.engine.configureRca', 'تكوين تقرير التحقيق التشخيصي (RCA)')}</h3>
 
             <div>
-              <label className="text-xs text-slate-400 mb-1 block">اختر الآلة التي تعرضت للعطل</label>
+              <label className="text-xs text-slate-400 mb-1 block">{t('word.engine.chooseMachine', 'اختر الآلة التي تعرضت للعطل')}</label>
               <select
                 value={rcaMachineCode}
                 onChange={e => setRcaMachineCode(e.target.value)}
@@ -372,7 +373,7 @@ export function WordEngineView({ user }: { user?: any }) {
             </div>
 
             <div>
-              <label className="text-xs text-slate-400 mb-1 block">وصف حادث التوقف</label>
+              <label className="text-xs text-slate-400 mb-1 block">{t('word.engine.incidentTitle', 'وصف حادث التوقف')}</label>
               <textarea
                 value={rcaIncidentTitle}
                 onChange={e => setRcaIncidentTitle(e.target.value)}
@@ -383,7 +384,7 @@ export function WordEngineView({ user }: { user?: any }) {
 
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="text-xs text-slate-400 mb-1 block">ساعات التوقف</label>
+                <label className="text-xs text-slate-400 mb-1 block">{t('word.engine.downtimeHours', 'ساعات التوقف')}</label>
                 <input
                   type="text"
                   value={downtimeHours}
@@ -392,7 +393,7 @@ export function WordEngineView({ user }: { user?: any }) {
                 />
               </div>
               <div>
-                <label className="text-xs text-slate-400 mb-1 block">الخسارة التقديرية</label>
+                <label className="text-xs text-slate-400 mb-1 block">{t('word.engine.financialLoss', 'الخسارة التقديرية')}</label>
                 <input
                   type="text"
                   value={financialLoss}
@@ -407,7 +408,7 @@ export function WordEngineView({ user }: { user?: any }) {
               className="mt-2 w-full py-2.5 rounded-xl bg-white hover:bg-slate-200 text-slate-950 font-extrabold text-xs shadow-lg flex items-center justify-center gap-2 transition-all"
             >
               <Download className="w-4 h-4" />
-              <span>تصدير تقرير RCA صيغة Word (.docx)</span>
+              <span>{t('word.engine.generateRca', 'تصدير تقرير RCA صيغة Word (.docx)')}</span>
             </button>
           </GlassCard>
 
@@ -417,7 +418,7 @@ export function WordEngineView({ user }: { user?: any }) {
             <GlassCard className="p-6 flex flex-col gap-3">
               <h4 className="text-xs font-bold text-blue-400 flex items-center gap-2">
                 <HelpCircle className="w-4 h-4" />
-                التحليل الخماسي للأسباب (5-Whys Analysis)
+                {t('word.engine.editWhys', 'التحليل الخماسي للأسباب (5-Whys Analysis)')}
               </h4>
 
               <div className="space-y-2">
@@ -445,7 +446,7 @@ export function WordEngineView({ user }: { user?: any }) {
             <GlassCard className="p-6 flex flex-col gap-3">
               <h4 className="text-xs font-bold text-blue-400 flex items-center gap-2">
                 <GitCommit className="w-4 h-4" />
-                المخطط السببي إيشيكاوا (Ishikawa Fishbone Diagram)
+                {t('word.engine.ishikawaTitle', 'المخطط السببي إيشيكاوا (Ishikawa Fishbone Diagram)')}
               </h4>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
@@ -471,8 +472,8 @@ export function WordEngineView({ user }: { user?: any }) {
         <GlassCard className="p-6 flex flex-col gap-6">
           <div className="flex items-center justify-between border-b border-white/10 pb-4">
             <div>
-              <h3 className="text-base font-bold text-white">عقود الصيانة والخدمات الخارجية (Subcontractor Contracts)</h3>
-              <p className="text-xs text-slate-400 mt-1">توليد مستندات وورد قانونية وفنية متكاملة للموردين الخارجيين مع دمج مواصفات الآلات</p>
+              <h3 className="text-base font-bold text-white">{t('word.engine.contractsTitle', 'عقود الصيانة والخدمات الخارجية (Subcontractor Contracts)')}</h3>
+              <p className="text-xs text-slate-400 mt-1">{t('word.engine.contractsSubtitle', 'توليد مستندات وورد قانونية وفنية متكاملة للموردين الخارجيين مع دمج مواصفات الآلات')}</p>
             </div>
 
             <button
@@ -480,30 +481,31 @@ export function WordEngineView({ user }: { user?: any }) {
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white hover:bg-slate-200 text-slate-950 font-extrabold text-xs shadow-md transition-all"
             >
               <Download className="w-4 h-4" />
-              <span>توليد عقد Word (.docx)</span>
+              <span>{t('word.engine.generateContract', 'توليد عقد Word (.docx)')}</span>
             </button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
             <div>
-              <label className="text-slate-400 block mb-1">اسم المورد / الشركة الخارجية</label>
+              <label className="text-slate-400 block mb-1">{t('word.engine.providerName', 'اسم المورد / الشركة الخارجية')}</label>
               <input type="text" value={vendorName} onChange={e => setVendorName(e.target.value)} className="w-full p-2.5 bg-[#0a0a0f]/50 border border-white/10 rounded-xl text-white" />
             </div>
             <div>
-              <label className="text-slate-400 block mb-1">مدة العقد</label>
+              <label className="text-slate-400 block mb-1">{t('word.engine.contractDuration', 'مدة العقد')}</label>
               <input type="text" value={contractDuration} onChange={e => setContractDuration(e.target.value)} className="w-full p-2.5 bg-[#0a0a0f]/50 border border-white/10 rounded-xl text-white" />
             </div>
             <div>
-              <label className="text-slate-400 block mb-1">اتفاقية مستوى الخدمة (SLA Emergency Response)</label>
+              <label className="text-slate-400 block mb-1">{t('word.engine.slaEmergency', 'اتفاقية مستوى الخدمة (SLA Emergency Response)')}</label>
               <input type="text" value={slaHours} onChange={e => setSlaHours(e.target.value)} className="w-full p-2.5 bg-[#0a0a0f]/50 border border-white/10 rounded-xl text-white" />
             </div>
             <div>
-              <label className="text-slate-400 block mb-1">القيمة المالية الإجمالية للعقد</label>
+              <label className="text-slate-400 block mb-1">{t('word.engine.annualBudget', 'القيمة المالية الإجمالية للعقد')}</label>
               <input type="text" value={contractValue} onChange={e => setContractValue(e.target.value)} className="w-full p-2.5 bg-[#0a0a0f]/50 border border-white/10 rounded-xl text-white" />
             </div>
           </div>
         </GlassCard>
       )}
-    </motion.div>
+    </div>
+    </div>
   );
 }

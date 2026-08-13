@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { PageHeader } from '@/shared/components/PageHeader';
 import { HeaderBentoCard } from '@/shared/components/HeaderBentoCard';
 import { GlassCard } from '@/shared/components/GlassCard';
+import { useTranslation } from 'react-i18next';
 import { 
   FileSpreadsheet, 
   Download, 
@@ -25,6 +26,7 @@ import {
 import { toast } from 'sonner';
 
 export function ExcelEngineView({ user }: { user?: any }) {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'reorder' | 'preventive' | 'import'>('reorder');
   const [searchQuery, setSearchQuery] = useState('');
   
@@ -353,15 +355,12 @@ export function ExcelEngineView({ user }: { user?: any }) {
   };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 15 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col gap-6 w-full text-slate-100 dir-rtl font-sans p-4 md:p-6"
-    >
+    <div className="flex flex-col h-full bg-white dark:bg-[#0a0a0f] rounded-3xl border border-slate-200 dark:border-white/5 shadow-2xl text-slate-800 dark:text-slate-200 font-sans pb-4 overflow-hidden overflow-y-auto custom-scrollbar dir-ltr" dir="ltr">
       {/* PAGE HEADER */}
-      <PageHeader
-        title="محرك إكسيل التقني (Excel Engine)"
-        subtitle="تصدير واستيراد تقارير الجرد، جداول الصيانة الوقائية الإجمالية، والاستيراد الذكي المعالج لقانون الـ 999 مقعد."
+      <div className="p-6 md:p-8 pb-0 shrink-0">
+        <PageHeader
+        title={t('excel.engine.title', 'محرك إكسيل التقني (Excel Engine)')}
+        subtitle={t('excel.engine.subtitle', 'تصدير واستيراد تقارير الجرد، جداول الصيانة الوقائية الإجمالية، والاستيراد الذكي المعالج لقانون الـ 999 مقعد.')}
         icon={<FileSpreadsheet className="w-7 h-7 text-emerald-400" />}
         badgeText="v17.1 XLSX"
         badgeColor="emerald"
@@ -371,34 +370,34 @@ export function ExcelEngineView({ user }: { user?: any }) {
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white hover:bg-slate-200 text-slate-950 font-extrabold text-xs shadow-lg transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
             <Download className="w-4 h-4" />
-            <span>تصدير تقرير Excel سريعة</span>
+            <span>{t('excel.engine.quickExport', 'تصدير تقرير Excel سريعة')}</span>
           </button>
         }
       >
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <HeaderBentoCard
-            title="إجمالي قطع المخزن"
+            title={t('excel.engine.totalParts', 'إجمالي قطع المخزن')}
             subtitle="TOTAL INVENTORY BLUEPRINTS"
             value={reorderData.length}
             icon={<Boxes className="w-3.5 h-3.5" />}
             color="blue"
           />
           <HeaderBentoCard
-            title="تحت الحد الأدنى (نواقص)"
+            title={t('excel.engine.lowStock', 'تحت الحد الأدنى (نواقص)')}
             subtitle="LOW STOCK DEFICIENCIES"
             value={lowStockItems.length}
             icon={<AlertTriangle className="w-3.5 h-3.5 text-rose-400" />}
             color="rose"
           />
           <HeaderBentoCard
-            title="ميزانية إعادة التوريد"
+            title={t('excel.engine.reorderBudget', 'ميزانية إعادة التوريد')}
             subtitle="ESTIMATED REORDER BUDGET"
             value={`${totalReorderCost.toLocaleString()} DZD`}
             icon={<DollarSign className="w-3.5 h-3.5 text-emerald-400" />}
             color="emerald"
           />
           <HeaderBentoCard
-            title="مجموع الآلات المسجلة"
+            title={t('excel.engine.totalMachines', 'مجموع الآلات المسجلة')}
             subtitle="TOTAL ACTIVE MACHINES"
             value={machines.length}
             icon={<Factory className="w-3.5 h-3.5" />}
@@ -406,8 +405,10 @@ export function ExcelEngineView({ user }: { user?: any }) {
           />
         </div>
       </PageHeader>
+    </div>
 
-      {/* ENGINE NAVIGATION TABS */}
+      <div className="flex flex-col flex-1 px-6 md:px-8 mt-6 gap-6 min-h-0">
+        {/* ENGINE NAVIGATION TABS */}
       <div className="flex items-center gap-2 bg-[#0a0a0f]/40 p-1.5 rounded-2xl border border-white/10 overflow-x-auto self-start">
         <button
           onClick={() => setActiveTab('reorder')}
@@ -418,7 +419,7 @@ export function ExcelEngineView({ user }: { user?: any }) {
           }`}
         >
           <ShoppingCart className="w-4 h-4" />
-          <span>قالب الجرد المادي ورصيد المخزن</span>
+          <span>{t('excel.engine.reorderMatrix', 'قالب الجرد المادي ورصيد المخزن')}</span>
           {lowStockItems.length > 0 && (
             <span className="px-2 py-0.5 rounded-full text-[10px] bg-rose-500/30 text-rose-300 font-bold border border-rose-500/40">
               {lowStockItems.length}
@@ -435,7 +436,7 @@ export function ExcelEngineView({ user }: { user?: any }) {
           }`}
         >
           <Calendar className="w-4 h-4" />
-          <span>جدول الصيانة الوقائية الإجمالي</span>
+          <span>{t('excel.engine.preventiveSchedule', 'جدول الصيانة الوقائية الإجمالي')}</span>
         </button>
 
         <button
@@ -447,7 +448,7 @@ export function ExcelEngineView({ user }: { user?: any }) {
           }`}
         >
           <Upload className="w-4 h-4" />
-          <span>الاستيراد الذكي المعتمد</span>
+          <span>{t('excel.engine.smartImport', 'الاستيراد الذكي المعتمد')}</span>
         </button>
       </div>
 
@@ -458,13 +459,13 @@ export function ExcelEngineView({ user }: { user?: any }) {
           {/* ACTION BAR */}
           <GlassCard className="p-4 flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="relative w-full md:w-96">
-              <Search className="w-4 h-4 absolute right-3.5 top-3 text-slate-400" />
+              <Search className="w-4 h-4 absolute left-3 top-3 text-slate-400" />
               <input
                 type="text"
-                placeholder="بحث برمز القطعة، الاسم، أو الرف..."
+                placeholder={t('excel.engine.searchPlaceholder', 'بحث برمز القطعة، الاسم، أو الرف...')}
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full pr-10 pl-4 py-2 rounded-xl bg-[#0a0a0f]/50 border border-white/10 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                className="w-full pl-10 pr-4 py-2 rounded-xl bg-[#0a0a0f]/50 border border-white/10 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
               />
             </div>
 
@@ -474,7 +475,7 @@ export function ExcelEngineView({ user }: { user?: any }) {
                 className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-md transition-all"
               >
                 <ShoppingCart className="w-4 h-4" />
-                <span>إنشاء طلب توريد تلقائي ({lowStockItems.length})</span>
+                <span>{t('excel.engine.autoRequest', 'إنشاء طلب توريد تلقائي')} ({lowStockItems.length})</span>
               </button>
 
               <button
@@ -482,7 +483,7 @@ export function ExcelEngineView({ user }: { user?: any }) {
                 className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-white hover:bg-slate-200 text-slate-950 font-extrabold text-xs shadow-md transition-all"
               >
                 <Download className="w-4 h-4" />
-                <span>تصدير Excel XLSX</span>
+                <span>{t('excel.engine.exportXlsx', 'تصدير Excel XLSX')}</span>
               </button>
             </div>
           </GlassCard>
@@ -490,17 +491,17 @@ export function ExcelEngineView({ user }: { user?: any }) {
           {/* DATA TABLE */}
           <GlassCard className="overflow-hidden !p-0">
             <div className="overflow-x-auto">
-              <table className="w-full text-right text-xs">
+              <table dir="ltr" className="w-full text-left text-xs">
                 <thead className="bg-white/5 text-slate-400 uppercase border-b border-white/10">
                   <tr>
-                    <th className="p-4 font-bold">رمز القطعة</th>
-                    <th className="p-4 font-bold">اسم قطعة الغيار</th>
-                    <th className="p-4 text-center font-bold">الرصيد الحالي</th>
-                    <th className="p-4 text-center font-bold">الحد الأدنى</th>
-                    <th className="p-4 text-center font-bold">المقترح للشراء</th>
-                    <th className="p-4 font-bold">سعر الوحدة</th>
-                    <th className="p-4 font-bold">التكلفة التقديرية</th>
-                    <th className="p-4 text-center font-bold">الحالة</th>
+                    <th className="p-4 font-bold">{t('excel.engine.partCode', 'رمز القطعة')}</th>
+                    <th className="p-4 font-bold">{t('excel.engine.partName', 'اسم قطعة الغيار')}</th>
+                    <th className="p-4 text-center font-bold">{t('excel.engine.currentStock', 'الرصيد الحالي')}</th>
+                    <th className="p-4 text-center font-bold">{t('excel.engine.minThreshold', 'الحد الأدنى')}</th>
+                    <th className="p-4 text-center font-bold">{t('excel.engine.suggestedQty', 'المقترح للشراء')}</th>
+                    <th className="p-4 font-bold">{t('excel.engine.unitPrice', 'سعر الوحدة')}</th>
+                    <th className="p-4 font-bold">{t('excel.engine.estimatedCost', 'التكلفة التقديرية')}</th>
+                    <th className="p-4 text-center font-bold">{t('excel.engine.status', 'الحالة')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
@@ -522,12 +523,12 @@ export function ExcelEngineView({ user }: { user?: any }) {
                           {item.isBelowMin ? (
                             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">
                               <AlertTriangle className="w-3 h-3" />
-                              تحت الحد
+                              {t('excel.engine.underMin', 'تحت الحد')}
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                               <CheckCircle2 className="w-3 h-3" />
-                              مكتمل
+                              {t('excel.engine.inStock', 'مكتمل')}
                             </span>
                           )}
                         </td>
@@ -536,7 +537,7 @@ export function ExcelEngineView({ user }: { user?: any }) {
                   ) : (
                     <tr>
                       <td colSpan={8} className="p-8 text-center text-slate-400">
-                        لا توجد بيانات مطابقة لشروط البحث
+                        {t('excel.engine.noData', 'لا توجد بيانات مطابقة لشروط البحث')}
                       </td>
                     </tr>
                   )}
@@ -552,29 +553,29 @@ export function ExcelEngineView({ user }: { user?: any }) {
         <div className="flex flex-col gap-6">
           <GlassCard className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
-              <h3 className="text-base font-bold text-white">جدول الصيانة الوقائية الإجمالي (Preventive Master Schedule)</h3>
-              <p className="text-xs text-slate-400 mt-1">توليد شيت إكسيل منظم يضم المهام، الساعات، التخصص، وتوزيع العمالة</p>
+              <h3 className="text-base font-bold text-white">{t('excel.engine.preventiveScheduleTitle', 'جدول الصيانة الوقائية الإجمالي (Preventive Master Schedule)')}</h3>
+              <p className="text-xs text-slate-400 mt-1">{t('excel.engine.preventiveScheduleSubtitle', 'توليد شيت إكسيل منظم يضم المهام، الساعات، التخصص، وتوزيع العمالة')}</p>
             </div>
             <button
               onClick={exportPreventiveScheduleToExcel}
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white hover:bg-slate-200 text-slate-950 font-extrabold text-xs shadow-md transition-all"
             >
               <Download className="w-4 h-4" />
-              <span>تصدير الجدول إلى Excel</span>
+              <span>{t('excel.engine.exportSchedule', 'تصدير الجدول إلى Excel')}</span>
             </button>
           </GlassCard>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <GlassCard className="p-5">
-              <span className="text-xs text-slate-400 font-bold">إجمالي مهام الصيانة</span>
+              <span className="text-xs text-slate-400 font-bold">{t('excel.engine.totalTasks', 'إجمالي مهام الصيانة')}</span>
               <p className="text-2xl font-black text-white mt-1">{machineTasks.length || 12}</p>
             </GlassCard>
             <GlassCard className="p-5">
-              <span className="text-xs text-slate-400 font-bold">الساعات التقديرية الأسبوعية</span>
-              <p className="text-2xl font-black text-white mt-1">48.5 ساعة</p>
+              <span className="text-xs text-slate-400 font-bold">{t('excel.engine.weeklyHours', 'الساعات التقديرية الأسبوعية')}</span>
+              <p className="text-2xl font-black text-white mt-1">48.5 {t('excel.engine.hours', 'ساعة')}</p>
             </GlassCard>
             <GlassCard className="p-5">
-              <span className="text-xs text-slate-400 font-bold">التخصصات المطلوبة</span>
+              <span className="text-xs text-slate-400 font-bold">{t('excel.engine.requiredSkills', 'التخصصات المطلوبة')}</span>
               <p className="text-xs font-bold text-blue-400 mt-2">MÉCANIQUE | HYDRAULIQUE | ÉLECTRIQUE</p>
             </GlassCard>
           </div>
@@ -586,9 +587,9 @@ export function ExcelEngineView({ user }: { user?: any }) {
         <div className="flex flex-col gap-6">
           <GlassCard className="p-6 flex flex-col md:flex-row items-center justify-between gap-4">
             <div>
-              <h3 className="text-base font-bold text-white">الاستيراد الذكي المعتمد لقطع الغيار والآلات</h3>
+              <h3 className="text-base font-bold text-white">{t('excel.engine.smartImportTitle', 'الاستيراد الذكي المعتمد لقطع الغيار والآلات')}</h3>
               <p className="text-xs text-slate-400 mt-1">
-                يفحص ملف Excel تلقائياً للتأكد من عدم خرق قانون الـ 999 مقعد وتطابق الأكواد الثلاثية (ROB-001) قبل حفظها
+                {t('excel.engine.smartImportSubtitle', 'يفحص ملف Excel تلقائياً للتأكد من عدم خرق قانون الـ 999 مقعد وتطابق الأكواد الثلاثية (ROB-001) قبل حفظها')}
               </p>
             </div>
 
@@ -597,15 +598,15 @@ export function ExcelEngineView({ user }: { user?: any }) {
               className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-emerald-300 border border-emerald-500/30 font-bold text-xs"
             >
               <Download className="w-4 h-4" />
-              <span>تحميل قالب Excel القياسي جاهز للتعبئة</span>
+              <span>{t('excel.engine.downloadTemplate', 'تحميل قالب Excel القياسي جاهز للتعبئة')}</span>
             </button>
           </GlassCard>
 
           {/* UPLOAD BOX */}
           <GlassCard className="p-8 border-2 border-dashed border-emerald-500/30 bg-emerald-950/10 flex flex-col items-center justify-center text-center">
             <Upload className="w-12 h-12 text-emerald-400 mb-3 animate-pulse" />
-            <p className="text-sm font-bold text-white">اسحب ملف Excel هنا أو اضغط للاختيار</p>
-            <p className="text-xs text-slate-400 mt-1">يدعم صيغ .xlsx, .xls, .csv</p>
+            <p className="text-sm font-bold text-white">{t('excel.engine.dragDrop', 'اسحب ملف Excel هنا أو اضغط للاختيار')}</p>
+            <p className="text-xs text-slate-400 mt-1">{t('excel.engine.supportedFormats', 'يدعم صيغ .xlsx, .xls, .csv')}</p>
             <input
               type="file"
               accept=".xlsx, .xls, .csv"
@@ -619,8 +620,8 @@ export function ExcelEngineView({ user }: { user?: any }) {
             <div className="flex flex-col gap-4">
               <GlassCard className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-4 text-xs font-bold">
-                  <span className="text-emerald-400">الصفوف الصالحة: {importValidation.validCount}</span>
-                  <span className="text-rose-400">الصفوف غير الصالحة: {importValidation.invalidCount}</span>
+                  <span className="text-emerald-400">{t('excel.engine.validRows', 'الصفوف الصالحة')}: {importValidation.validCount}</span>
+                  <span className="text-rose-400">{t('excel.engine.invalidRows', 'الصفوف غير الصالحة')}: {importValidation.invalidCount}</span>
                 </div>
 
                 <button
@@ -628,38 +629,38 @@ export function ExcelEngineView({ user }: { user?: any }) {
                   disabled={importValidation.validCount === 0}
                   className="px-6 py-2 rounded-xl bg-white hover:bg-slate-200 disabled:opacity-50 text-slate-950 font-extrabold text-xs shadow-lg transition-all"
                 >
-                  استيراد الصفوف الصالحة ({importValidation.validCount})
+                  {t('excel.engine.importValid', 'استيراد الصفوف الصالحة')} ({importValidation.validCount})
                 </button>
               </GlassCard>
 
               <GlassCard className="overflow-hidden !p-0">
                 <div className="overflow-x-auto">
-                  <table className="w-full text-right text-xs">
+                  <table dir="ltr" className="w-full text-left text-xs">
                     <thead className="bg-white/5 text-slate-400 border-b border-white/10">
                       <tr>
-                        <th className="p-3 font-bold">رقم الصف</th>
-                        <th className="p-3 font-bold">رمز القطعة</th>
-                        <th className="p-3 font-bold">اسم قطعة الغيار</th>
-                        <th className="p-3 text-center font-bold">حالة الفحص</th>
-                        <th className="p-3 font-bold">الملاحظات والأخطاء</th>
+                        <th className="p-3 font-bold">{t('excel.engine.rowNumber', 'رقم الصف')}</th>
+                        <th className="p-3 font-bold">{t('excel.engine.partCode', 'رمز القطعة')}</th>
+                        <th className="p-3 font-bold">{t('excel.engine.partName', 'اسم قطعة الغيار')}</th>
+                        <th className="p-3 text-center font-bold">{t('excel.engine.checkStatus', 'حالة الفحص')}</th>
+                        <th className="p-3 font-bold">{t('excel.engine.errors', 'الملاحظات والأخطاء')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
                       {importValidation.rows.map((r) => (
                         <tr key={r.rowNumber} className={r.isValid ? 'bg-emerald-950/10' : 'bg-rose-950/20'}>
                           <td className="p-3 font-mono text-slate-400">#{r.rowNumber}</td>
-                          <td className="p-3 font-mono font-bold text-white">{r.code || 'مفقود'}</td>
-                          <td className="p-3 text-slate-200">{r.name || 'مفقود'}</td>
+                          <td className="p-3 font-mono font-bold text-white">{r.code || t('excel.engine.missing', 'مفقود')}</td>
+                          <td className="p-3 text-slate-200">{r.name || t('excel.engine.missing', 'مفقود')}</td>
                           <td className="p-3 text-center">
                             {r.isValid ? (
-                              <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">مقبول</span>
+                              <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold">{t('excel.engine.accepted', 'مقبول')}</span>
                             ) : (
-                              <span className="px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 font-bold">مرفوض</span>
+                              <span className="px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 font-bold">{t('excel.engine.rejected', 'مرفوض')}</span>
                             )}
                           </td>
                           <td className="p-3">
                             {r.isValid ? (
-                              <span className="text-emerald-400">متوافق مع قانون الـ 999 مقعد</span>
+                              <span className="text-emerald-400">{t('excel.engine.slotsOk', 'متوافق مع قانون الـ 999 مقعد')}</span>
                             ) : (
                               <span className="text-rose-400">{r.errors.join(' | ')}</span>
                             )}
@@ -674,7 +675,8 @@ export function ExcelEngineView({ user }: { user?: any }) {
           )}
         </div>
       )}
-    </motion.div>
+    </div>
+    </div>
   );
 }
 

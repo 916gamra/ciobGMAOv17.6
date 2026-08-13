@@ -145,43 +145,39 @@ export function MachineRegistryView() {
   }, []);
 
   return (
-    <motion.div 
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="w-full h-full flex flex-col gap-6 relative z-10"
-    >
+    <div className="flex flex-col h-full bg-white dark:bg-[#0a0a0f] rounded-3xl border border-slate-200 dark:border-white/5 shadow-2xl text-slate-800 dark:text-slate-200 font-sans pb-4 overflow-hidden overflow-y-auto custom-scrollbar dir-ltr" dir="ltr">
+      <div className="p-6 md:p-8 pb-0 shrink-0">
       <PageHeader
-        title={t('machines.title', 'سجل الآلات والتوأم الرقمي')}
-        subtitle={t('machines.subtitle', 'قاعدة بيانات شاملة لجميع الآلات والمعدات المادية ومؤشرات الجاهزية.')}
+        title={t('machines.title', 'Machine Registry')}
+        subtitle={t('machines.subtitle', 'Comprehensive Machinery & Asset Directory')}
         icon={<Factory className="w-7 h-7 text-indigo-400" />}
-        badgeText="التوأم الرقمي"
+        badgeText={t('machines.badge', 'Machine Registry')}
         badgeColor="indigo"
       >
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <HeaderBentoCard
-            title="إجمالي الآلات"
+            title={t('machines.total', 'إجمالي الآلات')}
             subtitle="TOTAL MACHINES"
             value={machines.length}
             icon={<Factory className="w-3.5 h-3.5" />}
             color="blue"
           />
           <HeaderBentoCard
-            title="قطاعات المعمل"
+            title={t('machines.sectors', 'قطاعات المعمل')}
             subtitle="SECTORS"
             value={sectors.length}
             icon={<Cpu className="w-3.5 h-3.5" />}
             color="blue"
           />
           <HeaderBentoCard
-            title="الفريق الموجه"
+            title={t('machines.squad', 'الفريق الموجه')}
             subtitle="TECHNICIANS SQUAD"
             value={technicians.length}
             icon={<Activity className="w-3.5 h-3.5" />}
             color="emerald"
           />
           <HeaderBentoCard
-            title="جاهزية العمليات"
+            title={t('machines.health', 'جاهزية العمليات')}
             subtitle="OPERATIONAL HEALTH"
             value="100%"
             icon={<Box className="w-3.5 h-3.5" />}
@@ -189,7 +185,9 @@ export function MachineRegistryView() {
           />
         </div>
       </PageHeader>
+      </div>
 
+      <div className="flex flex-col flex-1 px-6 md:px-8 mt-6 gap-6 min-h-0">
       <motion.div variants={itemVariants} className="flex-1 min-h-0 flex flex-col">
         <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl h-full flex flex-col bg-[#0a0a0f]/60 backdrop-blur-xl">
           <div className="p-6 md:p-8 border-b border-white/10 bg-white/[0.02] flex flex-col lg:flex-row lg:items-center justify-between gap-6 shrink-0 relative z-10">
@@ -272,10 +270,9 @@ export function MachineRegistryView() {
                       exit={{ opacity: 0, scale: 0.98 }}
                       transition={{ duration: 0.5, delay: idx * 0.1, ease: [0.16, 1, 0.3, 1] }}
                     >
-                      <GlassCard 
-                        className="!p-0 relative overflow-hidden group h-full flex flex-col hover:border-indigo-500/40 transition-all duration-300 border-white/10 bg-[#0a0a0f]/60 backdrop-blur-xl"
+                      <div 
+                        className="!p-0 relative overflow-hidden group h-full flex flex-col hover:border-indigo-500 transition-all duration-300 border border-white/10 bg-[#0a0a0f] rounded-3xl"
                       >
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl group-hover:bg-indigo-500/10 transition-colors pointer-events-none" />
                         
                         {/* Make body card clickable to open MachineDetailsModal */}
                         <div 
@@ -283,10 +280,10 @@ export function MachineRegistryView() {
                           className="p-6 relative z-10 flex-1 cursor-pointer"
                         >
                           <div className="flex justify-between items-start mb-5">
-                            <span className="inline-block px-3 py-1.5 bg-white/[0.03] border border-white/10 rounded-lg text-[10px] font-mono font-bold text-indigo-400 tracking-widest shadow-sm">
+                            <span className="inline-block px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-[10px] font-mono font-bold text-slate-300 tracking-widest shadow-sm">
                               {machine.referenceCode}
                             </span>
-                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-[#0a0a0f]/60 backdrop-blur-md border border-white/10 p-1 rounded-lg">
+                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-white/5 backdrop-blur-md border border-white/10 p-1 rounded-lg">
                               <button 
                                 onClick={(e) => { 
                                   e.stopPropagation(); 
@@ -294,21 +291,21 @@ export function MachineRegistryView() {
                                   setWizardInitialStep(3); // Blueprint selection
                                   setIsWizardOpen(true);
                                 }}
-                                className="p-1.5 rounded-md hover:bg-purple-500/20 text-purple-400 transition-colors"
+                                className="p-1.5 rounded-md hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
                                 title="Link to Blueprint"
                               >
                                 <Link2 className="w-3.5 h-3.5" />
                               </button>
                               <button 
                                 onClick={(e) => { e.stopPropagation(); setSelectedMachineForQr(machine); }}
-                                className="p-1.5 rounded-md hover:bg-emerald-500/20 text-emerald-400 transition-colors"
+                                className="p-1.5 rounded-md hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
                                 title="Digital ID & QR Card"
                               >
                                 <QrCode className="w-3.5 h-3.5" />
                               </button>
                               <button 
                                 onClick={(e) => { e.stopPropagation(); setSelectedMachineForBom({ id: machine.id, name: machine.name }); }}
-                                className="p-1.5 rounded-md hover:bg-indigo-500/20 text-indigo-400 transition-colors"
+                                className="p-1.5 rounded-md hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
                                 title="BOM Configuration"
                               >
                                 <Wrench className="w-3.5 h-3.5" />
@@ -322,7 +319,7 @@ export function MachineRegistryView() {
                               </button>
                               <button 
                                 onClick={(e) => { e.stopPropagation(); handleDelete(machine.id, machine.name); }}
-                                className="p-1.5 rounded-md hover:bg-white/10 text-slate-400 hover:text-red-400 transition-colors"
+                                className="p-1.5 rounded-md hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors"
                                 title="Decommission Machine"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -330,18 +327,18 @@ export function MachineRegistryView() {
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-3 mb-2 group/title">
+                          <div className="flex items-center gap-3 mb-2">
                             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)] animate-pulse" />
-                            <h3 className="text-xl font-bold text-slate-100 leading-none tracking-tight uppercase truncate group-hover/title:text-indigo-400 transition-colors">{machine.name}</h3>
+                            <h3 className="text-xl font-bold text-slate-400 leading-none tracking-tight uppercase truncate group-hover:text-white group-hover:font-black transition-all duration-300">{machine.name}</h3>
                           </div>
                           
-                          <div className="flex flex-col gap-1.5 mt-3">
-                            <p className="text-[10px] font-bold text-slate-500 flex items-center gap-1.5 uppercase tracking-widest">
-                              <Activity className="w-3.5 h-3.5 opacity-40 text-indigo-400" /> {machine.sectorName}
+                          <div className="flex flex-col gap-1.5 mt-3 transition-colors duration-300">
+                            <p className="text-[10px] font-bold text-slate-500 group-hover:text-slate-300 flex items-center gap-1.5 uppercase tracking-widest transition-colors">
+                              <Activity className="w-3.5 h-3.5 opacity-40 text-slate-400" /> {machine.sectorName}
                             </p>
                             {machine.managerName && (
-                               <p className="text-[10px] font-bold text-indigo-400/80 flex items-center gap-1.5 uppercase tracking-widest">
-                                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                               <p className="text-[10px] font-bold text-slate-500 group-hover:text-slate-300 flex items-center gap-1.5 uppercase tracking-widest transition-colors">
+                                 <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 opacity-40 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                                  Resp: {machine.managerName}
                                </p>
                             )}
@@ -354,23 +351,23 @@ export function MachineRegistryView() {
                               e.stopPropagation();
                               setSelectedMachineForPdrLink(machine);
                             }}
-                            className="mt-4 w-full py-2 px-3.5 rounded-xl border border-teal-500/20 hover:border-teal-500/40 text-teal-400 hover:bg-teal-500/5 text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all relative z-20"
+                            className="mt-4 w-full py-2 px-3.5 rounded-xl border border-white/10 hover:border-white/30 text-slate-400 hover:text-white hover:bg-white/5 text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all relative z-20 group/btn"
                           >
-                            <Link2 className="w-4 h-4" /> {t('machines.linkSparePart', 'Link Spare Part')}
+                            <Link2 className="w-4 h-4 text-slate-500 group-hover/btn:text-white" /> {t('machines.linkSparePart', 'Link Spare Part')}
                           </button>
                         </div>
                         
-                        <div className="mt-auto grid grid-cols-2 divide-x divide-white/5 border-t border-white/5 bg-white/[0.02] text-[10px] font-bold text-slate-400 uppercase tracking-widest relative z-10">
+                        <div className="mt-auto grid grid-cols-2 divide-x divide-white/5 border-t border-white/5 bg-white/[0.02] text-[10px] font-bold text-slate-500 group-hover:text-slate-300 uppercase tracking-widest relative z-10 transition-colors duration-300">
                           <div className="p-4 flex items-center gap-2 justify-center" title="Family">
-                            <Box className="w-4 h-4 text-slate-500" />
+                            <Box className="w-4 h-4 text-slate-500 group-hover:text-slate-400 transition-colors" />
                             <span className="truncate">{machine.familyName}</span>
                           </div>
                           <div className="p-4 flex items-center gap-2 justify-center" title="Template">
-                            <Tag className="w-4 h-4 text-slate-500" />
+                            <Tag className="w-4 h-4 text-slate-500 group-hover:text-slate-400 transition-colors" />
                             <span className="truncate">{machine.templateName}</span>
                           </div>
                         </div>
-                      </GlassCard>
+                      </div>
                     </motion.div>
                   ))}
                 </AnimatePresence>
@@ -550,6 +547,7 @@ export function MachineRegistryView() {
         )}
       </AnimatePresence>
 
-    </motion.div>
+    </div>
+    </div>
   );
 }

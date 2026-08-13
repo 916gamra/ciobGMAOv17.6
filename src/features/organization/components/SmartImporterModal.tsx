@@ -318,7 +318,7 @@ export function SmartImporterModal({ onClose }: SmartImporterModalProps) {
                 </div>
 
                 <div className="flex-1 overflow-y-auto custom-scrollbar border border-white/5 rounded-2xl bg-[#0a0a0f]/20">
-                  <table className="w-full text-left text-xs">
+                  <table dir="ltr" className="w-full text-left text-xs">
                     <thead className="sticky top-0 bg-[#0f111a] text-slate-400 uppercase tracking-widest">
                       <tr>
                         <th className="px-4 py-3 font-medium border-b border-white/5">Status</th>

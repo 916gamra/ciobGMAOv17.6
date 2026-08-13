@@ -345,54 +345,58 @@ export function StockHistoryView() {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="w-full space-y-8 pb-12 px-4 relative z-10 lg:px-8"
+      className="flex flex-col h-full bg-[#0a0a0f] rounded-3xl border border-white/5 shadow-2xl text-slate-200 font-sans pb-4 overflow-hidden overflow-y-auto custom-scrollbar dir-ltr"
+      dir="ltr"
     >
       {/* Visual Header */}
-      <PageHeader
-        title={t('pdr.history.title', 'سجل الحركة والتحليل العضوي للاستهلاك')}
-        subtitle={t('pdr.history.subtitle', 'نظام ذكي لمراقبة استهلاك الآلات الفعلي واقتراح ربط المكونات بشجرة المنتجات والكميات المثبتة.')}
-        icon={<History className="w-7 h-7 text-cyan-400" />}
-        badgeText="التحليل العضوي"
-        badgeColor="cyan"
-      >
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <HeaderBentoCard
-            title="إجمالي الإيداعات"
-            subtitle="TOTAL DEPOSITS"
-            value={statistics.totalIn}
-            valueUnit="قطعة"
-            icon={<ArrowDownRight className="w-3.5 h-3.5" />}
-            color="emerald"
-          />
-          <HeaderBentoCard
-            title="إجمالي السحوبات"
-            subtitle="TOTAL WITHDRAWALS"
-            value={statistics.totalOut}
-            valueUnit="قطعة"
-            icon={<ArrowUpRight className="w-3.5 h-3.5" />}
-            color="amber"
-          />
-          <HeaderBentoCard
-            title="الآلات المعايرة"
-            subtitle="CALIBRATED MACHINES"
-            value={statistics.machinesWithOfficialParts}
-            valueUnit="آلة"
-            icon={<Cpu className="w-3.5 h-3.5" />}
-            color="blue"
-          />
-          <HeaderBentoCard
-            title="المكونات المربوطة"
-            subtitle="MAPPED COMPONENTS"
-            value={statistics.totalMappedComponentsCount}
-            valueUnit="عنصر"
-            icon={<Link2 className="w-3.5 h-3.5" />}
-            color="purple"
-          />
-        </div>
-      </PageHeader>
+      <div className="p-6 md:p-8 pb-0 shrink-0">
+        <PageHeader
+          title={t('pdr.history.title')}
+          subtitle={t('pdr.history.subtitle')}
+          icon={<History className="w-7 h-7 text-cyan-400" />}
+          badgeText={t('pdr.history.badge')}
+          badgeColor="cyan"
+        >
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <HeaderBentoCard
+              title={t('pdr.history.totalDeposits')}
+              subtitle="TOTAL DEPOSITS"
+              value={statistics.totalIn}
+              valueUnit={t('analytics.unit.part')}
+              icon={<ArrowDownRight className="w-3.5 h-3.5" />}
+              color="emerald"
+            />
+            <HeaderBentoCard
+              title={t('pdr.history.totalWithdrawals')}
+              subtitle="TOTAL WITHDRAWALS"
+              value={statistics.totalOut}
+              valueUnit={t('analytics.unit.part')}
+              icon={<ArrowUpRight className="w-3.5 h-3.5" />}
+              color="amber"
+            />
+            <HeaderBentoCard
+              title={t('pdr.history.calibratedMachines')}
+              subtitle="CALIBRATED MACHINES"
+              value={statistics.machinesWithOfficialParts}
+              valueUnit={t('pdr.history.machineUnit')}
+              icon={<Cpu className="w-3.5 h-3.5" />}
+              color="blue"
+            />
+            <HeaderBentoCard
+              title={t('pdr.history.mappedComponents')}
+              subtitle="MAPPED COMPONENTS"
+              value={statistics.totalMappedComponentsCount}
+              valueUnit={t('pdr.history.itemUnit')}
+              icon={<Link2 className="w-3.5 h-3.5" />}
+              color="purple"
+            />
+          </div>
+        </PageHeader>
+      </div>
 
-      {/* Tabs Menu */}
-      <motion.div variants={itemVariants} className="flex items-center gap-1 bg-[#090d16] p-1 rounded-2xl border border-white/5 self-start max-w-md">
+      <div className="flex flex-col flex-1 px-6 md:px-8 mt-6 gap-6 min-h-0">
+        {/* Tabs Menu */}
+        <motion.div variants={itemVariants} className="flex items-center gap-1 bg-[#090d16] p-1 rounded-2xl border border-white/5 self-start max-w-md shrink-0">
         <button
           onClick={() => setActiveSubTab('ledger')}
           className={cn(
@@ -475,8 +479,8 @@ export function StockHistoryView() {
             {/* Ledger table */}
             <div className="rounded-2xl border border-white/10 bg-[#0a0a0f]/60 backdrop-blur-xl overflow-hidden shadow-2xl flex flex-col h-[600px]">
               <div className="flex-1 overflow-auto custom-scrollbar">
-                <table className="w-full text-right border-collapse whitespace-nowrap">
-                  <thead className="sticky top-0 bg-[#0f172a] z-20 border-b border-white/10 text-right">
+                <table dir="ltr" className="w-full text-left border-collapse whitespace-nowrap">
+                  <thead className="sticky top-0 bg-[#0f172a] z-20 border-b border-white/10 text-left">
                     <tr>
                       <th className="px-6 py-3.5 font-sans font-bold text-slate-300 uppercase tracking-wider text-xs">Movement Type & Date</th>
                       <th className="px-6 py-3.5 font-sans font-bold text-slate-300 uppercase tracking-wider text-xs">Spare Part</th>
@@ -538,7 +542,7 @@ export function StockHistoryView() {
                           )}
                         </td>
 
-                        <td className="px-6 py-4 text-right">
+                        <td className="px-6 py-4 text-left">
                           <p className="text-xs text-slate-400 max-w-xs break-words font-sans">
                             {mov.notes || <span className="text-slate-700 italic">No notes</span>}
                           </p>
@@ -807,7 +811,7 @@ export function StockHistoryView() {
                           </h3>
 
                           <GlassCard className="!p-0 border-white/5 overflow-hidden">
-                            <table className="w-full text-right border-collapse">
+                            <table dir="ltr" className="w-full text-left border-collapse">
                               <thead className="bg-white/[0.02] border-b border-white/5">
                                 <tr>
                                   <th className="px-5 py-3 text-xs font-bold text-slate-400">Part Name</th>
@@ -919,6 +923,7 @@ export function StockHistoryView() {
           </motion.div>
         )}
       </AnimatePresence>
+      </div>
     </motion.div>
   );
 }

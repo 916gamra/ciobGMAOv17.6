@@ -1,11 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence, Variants } from 'motion/react';
+import { useTranslation } from 'react-i18next';
 import { GlassCard } from '@/shared/components/GlassCard';
 import { PageHeader } from '@/shared/components/PageHeader';
+import { HeaderBentoCard } from '@/shared/components/HeaderBentoCard';
 import { Select } from '@/shared/components/Select';
 import { Input } from '@/shared/components/Input';
 import { Button } from '@/shared/components/Button';
-import { ClipboardCheck, User, Cpu, Search, Plus, Minus, Trash2, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { ClipboardCheck, User, Cpu, Search, Plus, Minus, Trash2, CheckCircle2, AlertCircle, Loader2, Boxes, Wrench, ShoppingCart } from 'lucide-react';
 import { useRequisitionEngine } from '../hooks/useRequisitionEngine';
 
 interface CartItem {
@@ -26,6 +28,7 @@ const itemVariants: Variants = {
 };
 
 export function RequisitionHubView() {
+  const { t } = useTranslation();
   const { technicians, machines, blueprints, inventory, isLoading, submitRequisition } = useRequisitionEngine();
   
   const [selectedTechId, setSelectedTechId] = useState('');
@@ -132,7 +135,8 @@ export function RequisitionHubView() {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="w-full space-y-6 pb-24 relative lg:px-8"
+      className="flex flex-col h-full bg-[#0a0a0f] rounded-3xl border border-white/5 shadow-2xl text-slate-200 font-sans pb-4 overflow-hidden overflow-y-auto custom-scrollbar dir-ltr"
+      dir="ltr"
     >
       <AnimatePresence>
         {toast && (
@@ -152,13 +156,57 @@ export function RequisitionHubView() {
         )}
       </AnimatePresence>
 
-      <PageHeader
-        title="Requisition Hub"
-        subtitle="Central hub to request and deduct spare parts from inventory."
-        icon={<ClipboardCheck className="w-8 h-8 text-cyan-400" />}
-        badgeColor="cyan"
-        className="mb-8"
-      />
+      <div className="p-6 md:p-8 pb-0 shrink-0">
+        <PageHeader
+          title={t('requisition.hub.title')}
+          subtitle={t('requisition.hub.subtitle')}
+          icon={<ClipboardCheck className="w-8 h-8 text-cyan-400" />}
+          badgeText={t('requisition.hub.badge')}
+          badgeColor="cyan"
+          className="mb-8"
+        >
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <HeaderBentoCard
+              title={t('requisition.hub.blueprints')}
+              subtitle="TOTAL BLUEPRINTS"
+              value={blueprints.length}
+              valueUnit={t('pdr.catalog.blueprintUnit')}
+              icon={<Boxes className="w-3.5 h-3.5" />}
+              color="cyan"
+              isActive={false}
+            />
+            <HeaderBentoCard
+              title={t('requisition.hub.technicians')}
+              subtitle="ACTIVE TECHS"
+              value={technicians.length}
+              valueUnit={t('requisition.hub.techUnit')}
+              icon={<User className="w-3.5 h-3.5" />}
+              color="emerald"
+              isActive={false}
+            />
+            <HeaderBentoCard
+              title={t('requisition.hub.machines')}
+              subtitle="ACTIVE MACHINES"
+              value={machines.length}
+              valueUnit={t('pdr.history.machineUnit')}
+              icon={<Cpu className="w-3.5 h-3.5" />}
+              color="blue"
+              isActive={false}
+            />
+            <HeaderBentoCard
+              title={t('requisition.hub.cartItems')}
+              subtitle="SELECTED ITEMS"
+              value={cart.reduce((sum, item) => sum + item.quantity, 0)}
+              valueUnit={t('analytics.unit.part')}
+              icon={<ShoppingCart className="w-3.5 h-3.5" />}
+              color="purple"
+              isActive={false}
+            />
+          </div>
+        </PageHeader>
+      </div>
+
+      <div className="flex flex-col flex-1 px-6 md:px-8 mt-2 gap-6 min-h-0">
 
       <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
@@ -244,12 +292,12 @@ export function RequisitionHubView() {
 
           <GlassCard className="flex-1 overflow-hidden p-0 flex flex-col h-[500px]">
              <div className="overflow-y-auto p-2">
-                <table className="w-full text-left border-collapse">
+                <table dir="ltr" className="w-full text-left border-collapse">
                   <thead className="sticky top-0 bg-transparent/80 backdrop-blur-md z-10">
                     <tr className="border-b border-white/10">
                       <th className="px-4 py-3 font-semibold text-slate-400 text-xs uppercase tracking-wider">Reference</th>
                       <th className="px-4 py-3 font-semibold text-slate-400 text-xs uppercase tracking-wider text-center">Available Stock</th>
-                      <th className="px-4 py-3 font-semibold text-slate-400 text-xs uppercase tracking-wider text-right">Action</th>
+                      <th className="px-4 py-3 font-semibold text-slate-400 text-xs uppercase tracking-wider text-left">Action</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/10">
@@ -266,7 +314,7 @@ export function RequisitionHubView() {
                                 {remaining} {part.unit}
                               </span>
                            </td>
-                           <td className="px-4 py-3 text-right">
+                           <td className="px-4 py-3 text-left">
                               <Button
                                 onClick={() => handleAddToCart(part)}
                                 disabled={isDepleted}
@@ -289,9 +337,10 @@ export function RequisitionHubView() {
           </GlassCard>
         </div>
       </motion.div>
+      </div>
 
       {/* Floating Action Button Bar */}
-      <div className="fixed bottom-0 left-[72px] right-0 bg-[#0a0a0f]/60 backdrop-blur-xl border-t border-white/10 p-4 flex justify-end z-40">
+      <div className="sticky bottom-0 left-0 right-0 bg-[#0a0a0f]/90 backdrop-blur-xl border-t border-white/10 p-4 flex justify-end z-40">
          <div className="w-full flex justify-between items-center px-4 lg:px-8">
             <div className="text-sm font-medium text-slate-400">
               {cart.length > 0 ? (

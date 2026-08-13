@@ -208,61 +208,64 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="w-full space-y-6 pb-12 px-4 relative z-10 lg:px-8 text-right"
+      className="flex flex-col h-full bg-[#0a0a0f] rounded-3xl border border-white/5 shadow-2xl text-slate-200 font-sans pb-4 overflow-hidden overflow-y-auto custom-scrollbar dir-ltr"
+      dir="ltr"
     >
       {/* Upper Subtle HUD Banner */}
       <div className="absolute top-0 right-0 left-0 h-[280px] bg-gradient-to-b from-slate-800/10 via-transparent to-transparent pointer-events-none z-0 rounded-t-[3rem]" />
 
-      {/* Premium Header Layout */}
-      <PageHeader
-        title={t('pdr.dashboard.title', 'رادار قطع الغيار (PDR)')}
-        subtitle={t('pdr.dashboard.subtitle', 'مراقبة حية للمخزون الفعلي، التحذيرات المبكرة، وحركة الاستهلاك')}
-        icon={<Box className="w-7 h-7 text-cyan-400" />}
-        badgeText="مراقبة حية"
-        badgeColor="cyan"
-      >
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <HeaderBentoCard
-            title="الصحة العامة"
-            subtitle="مؤشر الجاهزية"
-            value={healthPercentage}
-            valueUnit="%"
-            icon={<Activity className="w-3.5 h-3.5" />}
-            color="cyan"
-            isActive={false}
-          />
-          <HeaderBentoCard
-            title="الرصيد الفعلي"
-            subtitle="إجمالي القطع"
-            value={totalStockItems}
-            valueUnit="قطعة"
-            icon={<Box className="w-3.5 h-3.5" />}
-            color="emerald"
-            isActive={false}
-          />
-          <HeaderBentoCard
-            title="تحذيرات النقص"
-            subtitle="نقص حرج"
-            value={criticalShortages}
-            valueUnit="تنبيه"
-            icon={<AlertOctagon className="w-3.5 h-3.5" />}
-            color={criticalShortages > 0 ? "rose" : "emerald"}
-            isActive={false}
-          />
-          <HeaderBentoCard
-            title="تحت حد الأمان"
-            subtitle="مخزون منخفض"
-            value={lowStockWarnings}
-            valueUnit="تنبيه"
-            icon={<AlertTriangle className="w-3.5 h-3.5" />}
-            color={lowStockWarnings > 0 ? "amber" : "slate"}
-            isActive={false}
-          />
-        </div>
-      </PageHeader>
+      <div className="p-6 md:p-8 pb-0 shrink-0">
+        {/* Premium Header Layout */}
+        <PageHeader
+          title={t('pdr.dashboard.title')}
+          subtitle={t('pdr.dashboard.subtitle')}
+          icon={<Box className="w-7 h-7 text-cyan-400" />}
+          badgeText={t('pdr.dashboard.badge')}
+          badgeColor="cyan"
+        >
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <HeaderBentoCard
+              title={t('pdr.dashboard.healthTitle')}
+              subtitle="READINESS INDEX"
+              value={healthPercentage}
+              valueUnit="%"
+              icon={<Activity className="w-3.5 h-3.5" />}
+              color="cyan"
+              isActive={false}
+            />
+            <HeaderBentoCard
+              title={t('pdr.dashboard.stockVolumeTitle')}
+              subtitle="TOTAL PARTS"
+              value={totalStockItems}
+              valueUnit={t('analytics.unit.part')}
+              icon={<Box className="w-3.5 h-3.5" />}
+              color="emerald"
+              isActive={false}
+            />
+            <HeaderBentoCard
+              title={t('pdr.dashboard.criticalShortagesTitle')}
+              subtitle="CRITICAL SHORTAGE"
+              value={criticalShortages}
+              valueUnit={t('pdr.dashboard.alertUnit')}
+              icon={<AlertOctagon className="w-3.5 h-3.5" />}
+              color={criticalShortages > 0 ? "rose" : "emerald"}
+              isActive={false}
+            />
+            <HeaderBentoCard
+              title={t('pdr.dashboard.lowStockTitle')}
+              subtitle="LOW INVENTORY"
+              value={lowStockWarnings}
+              valueUnit={t('pdr.dashboard.alertUnit')}
+              icon={<AlertTriangle className="w-3.5 h-3.5" />}
+              color={lowStockWarnings > 0 ? "amber" : "slate"}
+              isActive={false}
+            />
+          </div>
+        </PageHeader>
+      </div>
 
       {/* Main Grid Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative z-10">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 relative z-10 mx-6 md:mx-8 mb-6 mt-6">
         
         {/* Left Columns: Beautiful Stock Radar Table Panel */}
         <motion.div variants={itemVariants} className="lg:col-span-2 space-y-6">
@@ -272,12 +275,12 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
             {/* Control Panel Header */}
             <div className="p-4 md:p-5 border-b border-white/5 bg-white/[0.01] flex flex-col xl:flex-row xl:items-center justify-between gap-4 shrink-0">
               <div className="flex items-center gap-3 w-full xl:w-auto justify-start">
-                <div className="w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0">
-                  <Sliders className="w-4 h-4 text-cyan-400" />
+                <div className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                  <Sliders className="w-4 h-4 text-white" />
                 </div>
                 <div className="text-right">
                   <h2 className="text-sm font-extrabold text-white uppercase tracking-tight font-sans">الأصول والمخزون الفعلي</h2>
-                  <p className="text-[9px] font-bold text-cyan-400/60 uppercase tracking-widest font-mono">تتبع حي للمكونات</p>
+                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest font-mono">تتبع حي للمكونات</p>
                 </div>
               </div>
 
@@ -314,17 +317,17 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                 {/* Entry Action */}
                 <button
                   onClick={() => setIsAddModalOpen(true)}
-                  className="px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-200 font-bold text-xs transition-all flex items-center gap-1.5 font-sans"
+                  className="px-3 py-2 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-slate-300 font-bold text-xs transition-all flex items-center gap-1.5 font-sans"
                 >
-                  <Plus className="w-3.5 h-3.5 text-cyan-400" /> {t('pdr.dashboard.addInventory', 'إدخال مخزون')}
+                  <Plus className="w-3.5 h-3.5 text-slate-300" /> {t('pdr.dashboard.addInventory', 'إدخال مخزون')}
                 </button>
 
                 {/* Transaction Action */}
                 <button
                   onClick={() => { setPreselectedStockId(undefined); setIsModalOpen(true); }}
-                  className="px-3.5 py-2 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-300 font-bold text-xs transition-all flex items-center gap-1.5 shadow-[0_0_12px_rgba(6,182,212,0.15)]"
+                  className="px-3.5 py-2 rounded-xl bg-white text-slate-950 hover:bg-slate-200 border border-transparent font-extrabold text-xs transition-all flex items-center gap-1.5 shadow-lg"
                 >
-                  <ArrowRightLeft className="w-3.5 h-3.5 text-cyan-400" /> حركة (صرف / إيداع)
+                  <ArrowRightLeft className="w-3.5 h-3.5 text-slate-950" /> حركة (صرف / إيداع)
                 </button>
               </div>
             </div>
@@ -340,7 +343,7 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                     className={cn(
                       "px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 whitespace-nowrap",
                       urgencyFilter === 'ALL'
-                        ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-sm"
+                        ? "bg-white/10 text-white border border-white/20 shadow-sm"
                         : "text-slate-400 hover:text-white hover:bg-white/5 border border-transparent"
                     )}
                   >
@@ -389,7 +392,7 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                       className={cn(
                         "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5",
                         viewMode === 'table'
-                          ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-sm"
+                          ? "bg-white/10 text-white border border-white/20 shadow-sm"
                           : "text-slate-400 hover:text-white"
                       )}
                       title="عرض القائمة"
@@ -401,7 +404,7 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                       className={cn(
                         "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5",
                         viewMode === 'grid'
-                          ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-sm"
+                          ? "bg-white/10 text-white border border-white/20 shadow-sm"
                           : "text-slate-400 hover:text-white"
                       )}
                       title="عرض البطاقات"
@@ -423,7 +426,7 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
               </div>
 
               <div className="text-[10px] font-mono text-slate-500">
-                النتيجة: <strong className="text-cyan-400">{filteredInventory.length}</strong> من أصل {inventory.length}
+                النتيجة: <strong className="text-white">{filteredInventory.length}</strong> من أصل {inventory.length}
               </div>
             </div>
             
@@ -444,12 +447,12 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                 /* Crystal Clear High-Contrast Table View */
                 <div className="rounded-2xl border border-white/10 bg-[#0a0a0f]/60 backdrop-blur-xl overflow-hidden shadow-2xl">
                   <div className="overflow-x-auto custom-scrollbar">
-                    <table className="w-full text-right border-collapse font-sans">
+                    <table dir="ltr" className="w-full text-left border-collapse font-sans">
                       <thead className="bg-white/[0.04] border-b border-white/10">
                         <tr>
-                          <th className="py-3.5 px-4 text-xs font-bold text-slate-300 uppercase tracking-wider text-right">كود القطعة / Reference</th>
-                          <th className="py-3.5 px-4 text-xs font-bold text-slate-300 uppercase tracking-wider text-right">اسم القطعة والعائلة</th>
-                          <th className="py-3.5 px-4 text-xs font-bold text-slate-300 uppercase tracking-wider text-right">موقع التخزين</th>
+                          <th className="py-3.5 px-4 text-xs font-bold text-slate-300 uppercase tracking-wider text-left">كود القطعة / Reference</th>
+                          <th className="py-3.5 px-4 text-xs font-bold text-slate-300 uppercase tracking-wider text-left">اسم القطعة والعائلة</th>
+                          <th className="py-3.5 px-4 text-xs font-bold text-slate-300 uppercase tracking-wider text-left">موقع التخزين</th>
                           <th className="py-3.5 px-4 text-xs font-bold text-slate-300 uppercase tracking-wider text-center">الرصيد الفعلي</th>
                           <th className="py-3.5 px-4 text-xs font-bold text-slate-300 uppercase tracking-wider text-center">الحد الأدنى</th>
                           <th className="py-3.5 px-4 text-xs font-bold text-slate-300 uppercase tracking-wider text-center">حالة المخزون</th>
@@ -475,13 +478,13 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                           return (
                             <tr key={item.id} className="hover:bg-white/[0.04] transition-colors border-b border-white/5 group">
                               {/* Reference Code */}
-                              <td className="py-3.5 px-4 font-mono text-cyan-400 font-bold text-sm tracking-wide">
+                              <td className="py-3.5 px-4 font-mono text-white font-bold text-sm tracking-wide">
                                 {item.blueprintReference}
                               </td>
 
                               {/* Part Name & Family */}
                               <td className="py-3.5 px-4">
-                                <div className="font-bold text-white text-sm group-hover:text-cyan-400 transition-colors">
+                                <div className="font-bold text-white text-sm group-hover:text-slate-200 transition-colors">
                                   {item.partName}
                                 </div>
                                 <div className="text-[10px] font-mono text-slate-400 mt-0.5 flex items-center gap-1.5">
@@ -523,9 +526,9 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                               <td className="py-3.5 px-4 text-left">
                                 <button
                                   onClick={() => handleQuickAction(item.id)}
-                                  className="px-3 py-1.5 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-300 text-xs font-bold transition-all flex items-center gap-1.5 ml-auto shadow-sm"
+                                  className="px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-slate-300 text-xs font-bold transition-all flex items-center gap-1.5 ml-auto shadow-sm"
                                 >
-                                  <ArrowRightLeft className="w-3.5 h-3.5 text-cyan-400" />
+                                  <ArrowRightLeft className="w-3.5 h-3.5 text-slate-300" />
                                   حركة
                                 </button>
                               </td>
@@ -588,15 +591,15 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                             >
                               <div className="flex justify-between items-start mb-5 gap-4">
                                 <div className="flex items-center gap-3 overflow-hidden">
-                                  <div className="w-10 h-10 rounded-xl bg-[#0a0a0f]/40 border border-white/10 flex items-center justify-center shrink-0 group-hover:border-cyan-500/20 transition-colors shadow-inner">
-                                    <Box className="w-5 h-5 text-slate-400 group-hover:text-cyan-400 transition-colors" />
+                                  <div className="w-10 h-10 rounded-xl bg-[#0a0a0f]/40 border border-white/10 flex items-center justify-center shrink-0 group-hover:border-white/20 transition-colors shadow-inner">
+                                    <Box className="w-5 h-5 text-slate-400 group-hover:text-white transition-colors" />
                                   </div>
                                   <div className="overflow-hidden">
                                     <div className="flex items-center gap-2">
-                                      <h3 className="font-bold text-white text-sm group-hover:text-cyan-400 transition-colors truncate">{item.partName}</h3>
+                                      <h3 className="font-bold text-white text-sm group-hover:text-slate-200 transition-colors truncate">{item.partName}</h3>
                                       <span className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">NEW</span>
                                     </div>
-                                    <p className="text-[10px] text-cyan-400 font-mono mt-0.5 truncate">{item.blueprintReference}</p>
+                                    <p className="text-[10px] text-white font-mono mt-0.5 truncate">{item.blueprintReference}</p>
                                   </div>
                                 </div>
                                 <div className="flex items-baseline gap-1.5 bg-[#0a0a0f]/40 border border-white/10 px-2 py-1 rounded-lg shrink-0">
@@ -639,7 +642,7 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                                   e.stopPropagation();
                                   handleQuickAction(item.id);
                                 }}
-                                className="p-4 flex items-center gap-2 justify-center hover:bg-white/[0.05] hover:text-cyan-400 transition-colors cursor-pointer" title="حركة"
+                                className="p-4 flex items-center gap-2 justify-center hover:bg-white/[0.05] hover:text-white transition-colors cursor-pointer" title="حركة"
                               >
                                 <ArrowRightLeft className="w-4 h-4" />
                                 <span className="truncate">حركة</span>
@@ -663,12 +666,12 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
             <div className="p-5 border-b border-white/5 bg-white/[0.01] flex items-center justify-between gap-4 shrink-0">
               <div className="flex items-center gap-2">
                 <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500" />
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
                 </span>
                 <h2 className="text-xs font-extrabold text-white uppercase tracking-tight">سجل العمليات المباشر</h2>
               </div>
-              <span className="text-[8px] font-mono text-cyan-400 border border-cyan-500/25 bg-cyan-500/10 px-2 py-0.5 rounded-md shadow-[0_0_10px_rgba(6,182,212,0.15)] font-black">
+              <span className="text-[8px] font-mono text-emerald-400 border border-emerald-500/25 bg-emerald-500/10 px-2 py-0.5 rounded-md shadow-[0_0_10px_rgba(52,211,153,0.15)] font-black">
                 بث حي
               </span>
             </div>
@@ -699,13 +702,13 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                         key={movement.id}
                         className={cn(
                           "ml-8 p-4 rounded-2xl bg-white/[0.02] border transition-all flex flex-col gap-2 group relative",
-                          isNewest ? "border-cyan-500/20 bg-white/[0.04] shadow-[0_0_15px_rgba(6,182,212,0.05)]" : "border-white/5 hover:border-white/10"
+                          isNewest ? "border-emerald-500/20 bg-white/[0.04] shadow-[0_0_15px_rgba(52,211,153,0.05)]" : "border-white/5 hover:border-white/10"
                         )}
                       >
                         {/* Timeline point */}
                         <div className={cn(
                           "absolute left-[-37px] top-6 w-2.5 h-2.5 rounded-full border-2 border-slate-950 z-10 transition-colors",
-                          isNewest ? "bg-cyan-400 shadow-[0_0_8px_rgba(6,182,212,0.8)] animate-pulse" : 
+                          isNewest ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)] animate-pulse" : 
                           movement.type === 'IN' ? "bg-emerald-500" : "bg-amber-500"
                         )} />
 
@@ -715,14 +718,14 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                               "w-5 h-5 rounded-lg flex items-center justify-center shrink-0 border text-[10px] font-extrabold",
                               movement.type === 'IN' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' :
                               movement.type === 'OUT' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' :
-                              'bg-cyan-500/10 border-cyan-500/20 text-cyan-400'
+                              'bg-white/10 border-white/20 text-white'
                             )}>
                               {movement.type === 'IN' ? '+' : movement.type === 'OUT' ? '-' : '='}
                             </div>
                             <span className={cn(
                               "text-[9px] font-black uppercase tracking-wider",
                               movement.type === 'IN' ? "text-emerald-400" : 
-                              movement.type === 'OUT' ? "text-amber-400" : "text-cyan-400"
+                              movement.type === 'OUT' ? "text-amber-400" : "text-white"
                             )}>
                               {movement.type === 'IN' ? 'إيداع' : movement.type === 'OUT' ? 'صرف' : 'تسوية'}
                             </span>
@@ -735,7 +738,7 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                         
                         {/* Component metadata */}
                         <div className="text-left rtl:text-right">
-                          <div className="font-extrabold text-slate-200 text-xs group-hover:text-cyan-400 transition-colors">
+                          <div className="font-extrabold text-slate-200 text-xs group-hover:text-white transition-colors">
                             {movement.partName}
                           </div>
                           <div className="text-[9px] text-slate-500 font-mono mt-0.5">
@@ -753,7 +756,7 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                           <div className={cn(
                             "font-mono text-xs font-black",
                             movement.type === 'IN' ? "text-emerald-400" : 
-                            movement.type === 'OUT' ? "text-amber-400" : "text-cyan-400"
+                            movement.type === 'OUT' ? "text-amber-400" : "text-white"
                           )}>
                             {movement.quantity} {(movement as any).unit || 'وحدة'}
                           </div>

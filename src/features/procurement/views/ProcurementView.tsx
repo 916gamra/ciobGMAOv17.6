@@ -1,8 +1,10 @@
 import { PageHeader } from "@/shared/components/PageHeader";
+import { HeaderBentoCard } from "@/shared/components/HeaderBentoCard";
 import React, { useState } from 'react';
 import { motion, AnimatePresence, Variants } from 'motion/react';
+import { useTranslation } from 'react-i18next';
 import { GlassCard } from '@/shared/components/GlassCard';
-import { ShoppingCart, Clock, CheckCircle2, AlertCircle, Search, Filter, Loader2, ArrowRightCircle, PackagePlus, Zap, TrendingUp, DollarSign } from 'lucide-react';
+import { ShoppingCart, Clock, CheckCircle2, AlertCircle, Search, Filter, Loader2, ArrowRightCircle, PackagePlus, Zap, TrendingUp, DollarSign, Package } from 'lucide-react';
 import { useProcurementEngine } from '@/features/pdr-engine/hooks/useProcurementEngine';
 import { useNotifications } from '@/shared/hooks/useNotifications';
 import { cn } from '@/shared/utils';
@@ -18,6 +20,7 @@ const itemVariants: Variants = {
 };
 
 export function ProcurementView() {
+  const { t } = useTranslation();
   const { orders, isLoading, confirmOrder, fulfillOrder } = useProcurementEngine();
   const { showSuccess, showError } = useNotifications();
   const [searchTerm, setSearchTerm] = useState('');
@@ -75,23 +78,61 @@ export function ProcurementView() {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="w-full space-y-8 pb-12 relative px-4 lg:px-8"
+      className="flex flex-col h-full bg-[#0a0a0f] rounded-3xl border border-white/5 shadow-2xl text-slate-200 font-sans pb-4 overflow-hidden overflow-y-auto custom-scrollbar dir-ltr"
+      dir="ltr"
     >
-      <PageHeader
-        title="Procurement Pipeline"
-        subtitle="Supply chain management and purchase order tracking."
-        icon={<ShoppingCart className="w-6 h-6 text-cyan-500" />}
-        actions={
-          <>
-            <StatCompact icon={<Clock className="w-4 h-4 text-amber-500" />} label="Active" value={orderedCount.toString()} />
-            <StatCompact icon={<TrendingUp className="w-4 h-4 text-cyan-500" />} label="Growth" value="+12%" />
-            <StatCompact icon={<CheckCircle2 className="w-4 h-4 text-emerald-500" />} label="Synced" value={fulfilledCount.toString()} />
-            <StatCompact icon={<DollarSign className="w-4 h-4 text-slate-400" />} label="Spend" value={`${(totalSpend/1000).toFixed(1)}k`} />
-          </>
-        }
-      />
+      <div className="p-6 md:p-8 pb-0 shrink-0">
+        <PageHeader
+          title={t('procurement.pipeline.title')}
+          subtitle={t('procurement.pipeline.subtitle')}
+          icon={<ShoppingCart className="w-7 h-7 text-cyan-400" />}
+          badgeText={t('procurement.pipeline.badge')}
+          badgeColor="cyan"
+          className="mb-8"
+        >
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <HeaderBentoCard
+              title={t('procurement.pipeline.activeOrders')}
+              subtitle="ON ROUTE"
+              value={orderedCount}
+              valueUnit={t('procurement.pipeline.orderUnit')}
+              icon={<Clock className="w-3.5 h-3.5" />}
+              color="amber"
+              isActive={false}
+            />
+            <HeaderBentoCard
+              title={t('procurement.pipeline.syncedOrders')}
+              subtitle="FULFILLED"
+              value={fulfilledCount}
+              valueUnit={t('procurement.pipeline.syncUnit')}
+              icon={<CheckCircle2 className="w-3.5 h-3.5" />}
+              color="emerald"
+              isActive={false}
+            />
+            <HeaderBentoCard
+              title={t('procurement.pipeline.totalOrders')}
+              subtitle="TOTAL ORDERS"
+              value={orders.length}
+              valueUnit={t('procurement.pipeline.poUnit')}
+              icon={<Package className="w-3.5 h-3.5" />}
+              color="cyan"
+              isActive={false}
+            />
+            <HeaderBentoCard
+              title={t('procurement.pipeline.totalSpend')}
+              subtitle="ESTIMATED SPEND"
+              value={`${(totalSpend/1000).toFixed(1)}k`}
+              valueUnit="USD"
+              icon={<DollarSign className="w-3.5 h-3.5" />}
+              color="purple"
+              isActive={false}
+            />
+          </div>
+        </PageHeader>
+      </div>
 
-      <motion.div variants={itemVariants}>
+      <div className="flex flex-col flex-1 px-6 md:px-8 mt-6 gap-6 min-h-0">
+        <motion.div variants={itemVariants}>
         <GlassCard className="!p-0 border-white/5 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-3xl">
         <div className="p-8 border-b border-white/5 bg-white/[0.01] flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
@@ -122,7 +163,7 @@ export function ProcurementView() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table dir="ltr" className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-[#1a1c23]/50">
                 <th className="px-8 py-5 font-bold text-slate-500 text-[10px] uppercase tracking-widest">Order ID</th>
@@ -130,8 +171,8 @@ export function ProcurementView() {
                 <th className="px-8 py-5 font-bold text-slate-500 text-[10px] uppercase tracking-widest">Date</th>
                 <th className="px-8 py-5 font-bold text-slate-500 text-[10px] uppercase tracking-widest">BOM Lines</th>
                 <th className="px-8 py-5 font-bold text-slate-500 text-[10px] uppercase tracking-widest">Status</th>
-                <th className="px-8 py-5 font-bold text-slate-500 text-[10px] uppercase tracking-widest text-right">Value</th>
-                <th className="px-8 py-5 font-bold text-slate-500 text-[10px] uppercase tracking-widest text-right">Actions</th>
+                <th className="px-8 py-5 font-bold text-slate-500 text-[10px] uppercase tracking-widest text-left">Value</th>
+                <th className="px-8 py-5 font-bold text-slate-500 text-[10px] uppercase tracking-widest text-left">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/[0.03] bg-[#0a0a0f]/5">
@@ -178,10 +219,10 @@ export function ProcurementView() {
                           {style.label}
                         </motion.div>
                       </td>
-                      <td className="px-8 py-6 text-sm font-mono font-medium text-white text-right">
+                      <td className="px-8 py-6 text-sm font-mono font-medium text-white text-left">
                         ${order.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                       </td>
-                      <td className="px-8 py-6 text-right">
+                      <td className="px-8 py-6 text-left">
                         <div className="flex justify-end gap-2">
                           {order.status === 'PENDING' && (
                             <button
@@ -231,6 +272,7 @@ export function ProcurementView() {
         </div>
         </GlassCard>
       </motion.div>
+      </div>
     </motion.div>
   );
 }

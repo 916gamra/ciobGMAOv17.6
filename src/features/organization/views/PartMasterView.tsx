@@ -8,6 +8,7 @@ import { useNotifications } from '@/shared/hooks/useNotifications';
 import { GlassCard } from '@/shared/components/GlassCard';
 import { cn } from '@/shared/utils';
 import { generatePdrSlotId } from '@/core/config/pdrMatrix';
+import { useTranslation } from 'react-i18next';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -20,6 +21,7 @@ const itemVariants: Variants = {
 };
 
 export function PartMasterView() {
+  const { t } = useTranslation();
   const { blueprints, templates, families, createBlueprint } = useMasterCatalogEngine();
   const { showSuccess, showError } = useNotifications();
   const parentRef = useRef<HTMLDivElement>(null);
@@ -96,13 +98,15 @@ export function PartMasterView() {
       className="w-full h-full flex flex-col gap-6 relative z-10 lg:px-4"
     >
       <PageHeader
-        title="Part Blueprints Registry"
-        subtitle="Technical master registry for standard component parts and catalog references."
+        title={t('partMaster.title', 'Part Blueprints Registry')}
+        subtitle={t('partMaster.subtitle', 'Technical master registry for standard component parts and catalog references.')}
         icon={<Database className="w-6 h-6 text-amber-500" />}
+        badgeText={t('partMaster.badge', 'Blueprints Registry')}
+        badgeColor="amber"
         actions={
           <>
-            <StatCompact icon={<Database className="w-4 h-4 text-amber-500" />} label="Part Blueprints" value={blueprints.length.toString()} />
-            <StatCompact icon={<LayoutTemplate className="w-4 h-4 text-emerald-500" />} label="Templates" value={templates.length.toString()} />
+            <StatCompact icon={<Database className="w-4 h-4 text-amber-500" />} label={t('partMaster.total', 'Part Blueprints')} value={blueprints.length.toString()} />
+            <StatCompact icon={<LayoutTemplate className="w-4 h-4 text-emerald-500" />} label={t('partMaster.templates', 'Templates')} value={templates.length.toString()} />
           </>
         }
       />

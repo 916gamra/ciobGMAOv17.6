@@ -20,7 +20,7 @@ export function MasterPartsCatalogHub({ defaultTab = 'pdr', tabId, user, onLogou
   })();
 
   return (
-    <div className="flex flex-col h-full w-full bg-[#0a0a0f] text-slate-200 overflow-hidden">
+    <div className="flex flex-col h-full w-full text-slate-200 overflow-hidden">
       {/* Main Tab View Canvas */}
       <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
         {activeTab === 'components-lab' && <ComponentsLabView tabId={tabId || ''} user={user} />}

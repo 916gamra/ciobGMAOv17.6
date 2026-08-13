@@ -7,7 +7,7 @@ export interface HeaderBentoCardProps {
   value: string | number;
   valueUnit?: string;
   icon?: React.ReactNode;
-  color?: 'amber' | 'cyan' | 'blue' | 'yellow' | 'emerald' | 'orange' | 'purple' | 'rose' | 'slate';
+  color?: 'amber' | 'cyan' | 'blue' | 'yellow' | 'emerald' | 'orange' | 'purple' | 'rose' | 'slate' | 'indigo';
   isActive?: boolean;
   onClick?: () => void;
   className?: string;
@@ -54,6 +54,11 @@ const COLOR_MAPS = {
     activeBg: 'bg-rose-500/15 border-rose-500/40 shadow-[0_4px_20px_rgba(244,63,94,0.25)]',
     valueColor: 'text-rose-400',
   },
+  indigo: {
+    bgIcon: 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400',
+    activeBg: 'bg-indigo-500/15 border-indigo-500/40 shadow-[0_4px_20px_rgba(99,102,241,0.25)]',
+    valueColor: 'text-indigo-400',
+  },
   slate: {
     bgIcon: 'bg-slate-500/10 border-slate-500/20 text-slate-300',
     activeBg: 'bg-white/10 border-white/30 shadow-[0_4px_20px_rgba(255,255,255,0.1)]',
@@ -77,8 +82,9 @@ export function HeaderBentoCard({
   return (
     <div
       onClick={onClick}
+      dir="ltr"
       className={cn(
-        "p-3.5 rounded-2xl border transition-all duration-300 relative group overflow-hidden select-none backdrop-blur-md flex flex-col justify-between",
+        "p-3.5 rounded-2xl border transition-all duration-300 relative group overflow-hidden select-none backdrop-blur-md flex flex-col justify-between text-left",
         onClick ? "cursor-pointer" : "cursor-default",
         isActive
           ? `${theme.activeBg} scale-[1.02]`
@@ -86,17 +92,17 @@ export function HeaderBentoCard({
         className
       )}
     >
-      <div className="flex items-center justify-between mb-2 gap-2">
+      <div className="flex items-center justify-between mb-2 gap-2 flex-row">
         {icon && (
-          <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border", theme.bgIcon)}>
+          <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border transition-all duration-300 group-hover:scale-110 shadow-sm", theme.bgIcon)}>
             {icon}
           </div>
         )}
-        <div className="text-end min-w-0">
+        <div className="text-right min-w-0">
           <span className="text-xs font-mono font-extrabold text-white tracking-wider block truncate">
             {value}
             {valueUnit && (
-              <span className="text-[10px] text-slate-400 font-sans font-normal ms-1">
+              <span className="text-[10px] text-slate-400 font-sans font-normal ml-1">
                 {valueUnit}
               </span>
             )}
@@ -104,7 +110,7 @@ export function HeaderBentoCard({
         </div>
       </div>
 
-      <div className="flex flex-col text-start min-w-0">
+      <div className="flex flex-col text-left min-w-0">
         <span className="text-xs font-bold text-white leading-tight truncate">{title}</span>
         {subtitle && (
           <span className="text-[9px] font-mono text-slate-400 uppercase tracking-widest mt-0.5 truncate">

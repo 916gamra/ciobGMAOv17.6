@@ -263,66 +263,68 @@ export function ComponentRadarView() {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="w-full h-full flex flex-col gap-6 relative z-10 lg:px-8 pb-24 pt-2 font-sans"
+      className="flex flex-col h-full bg-[#0a0a0f] rounded-3xl border border-white/5 shadow-2xl text-slate-200 font-sans pb-4 overflow-hidden"
     >
-      {/* Page Header with Integrated Compact Stats */}
-      <PageHeader
-        title={t('corrective.componentRadar.title', 'رادار اكتشاف الشجرة الهيكلية')}
-        subtitle={t('corrective.componentRadar.subtitle', 'التقاط المكونات والأجزاء المستهلكة أثناء التدخلات العلاجية وتأكيدها داخل الشجرة الفنية للآلة.')}
-        icon={<Radar className="w-7 h-7 text-orange-400" />}
-        badgeText="رادار الهيكلية"
-        badgeColor="orange"
-        actions={
-          <button
-            onClick={handleBulkBindAll}
-            disabled={stats.unlinkedCount === 0}
-            className={cn(
-              "font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95",
-              stats.unlinkedCount > 0
-                ? "bg-white text-slate-950 hover:bg-slate-200"
-                : "bg-white/10 text-slate-500 cursor-not-allowed opacity-50 border border-white/10"
-            )}
-          >
-            <Sparkles className="w-4 h-4" />
-            <span>{t('corrective.componentRadar.confirmGaps', 'تأكيد الفجوات')} ({stats.unlinkedCount})</span>
-          </button>
-        }
-      >
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <HeaderBentoCard
-            title="المكونات المكتشفة"
-            subtitle="DISCOVERED PARTS"
-            value={stats.totalPairs}
-            icon={<Activity className="w-3.5 h-3.5" />}
-            color="purple"
-          />
-          <HeaderBentoCard
-            title="فجوات غير مرابطة"
-            subtitle="UNLINKED GAPS"
-            value={stats.unlinkedCount}
-            icon={<AlertTriangle className="w-3.5 h-3.5" />}
-            color="amber"
-          />
-          <HeaderBentoCard
-            title="مكونات مؤكدة"
-            subtitle="CONFIRMED B.O.M"
-            value={stats.linkedCount}
-            icon={<CheckCircle2 className="w-3.5 h-3.5" />}
-            color="emerald"
-          />
-          <HeaderBentoCard
-            title="نضج الشجرة"
-            subtitle="TREE MATURITY"
-            value={stats.maturityRate}
-            valueUnit="%"
-            icon={<ShieldCheck className="w-3.5 h-3.5" />}
-            color="cyan"
-          />
-        </div>
-      </PageHeader>
+      {/* Page Header Cockpit */}
+      <div className="p-6 md:p-8 pb-0">
+        <PageHeader
+          title={t('corrective.componentRadar.title', 'رادار اكتشاف الشجرة الهيكلية')}
+          subtitle={t('corrective.componentRadar.subtitle', 'التقاط المكونات والأجزاء المستهلكة أثناء التدخلات العلاجية وتأكيدها داخل الشجرة الفنية للآلة.')}
+          icon={<Radar className="w-7 h-7 text-orange-400" />}
+          badgeText={t('corrective.componentRadar.badge', 'رادار الهيكلية')}
+          badgeColor="orange"
+          actions={
+            <button
+              onClick={handleBulkBindAll}
+              disabled={stats.unlinkedCount === 0}
+              className={cn(
+                "font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95",
+                stats.unlinkedCount > 0
+                  ? "bg-white text-slate-950 hover:bg-slate-200"
+                  : "bg-white/10 text-slate-500 cursor-not-allowed opacity-50 border border-white/10"
+              )}
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>{t('corrective.componentRadar.confirmGaps', 'تأكيد الفجوات')} ({stats.unlinkedCount})</span>
+            </button>
+          }
+        >
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <HeaderBentoCard
+              title={t('corrective.componentRadar.totalDiscovered', 'المكونات المكتشفة')}
+              subtitle="DISCOVERED PARTS"
+              value={stats.totalPairs}
+              icon={<Activity className="w-3.5 h-3.5" />}
+              color="purple"
+            />
+            <HeaderBentoCard
+              title={t('corrective.componentRadar.unlinkedGaps', 'فجوات غير مرابطة')}
+              subtitle="UNLINKED GAPS"
+              value={stats.unlinkedCount}
+              icon={<AlertTriangle className="w-3.5 h-3.5" />}
+              color="amber"
+            />
+            <HeaderBentoCard
+              title={t('corrective.componentRadar.confirmedComponents', 'مكونات مؤكدة')}
+              subtitle="CONFIRMED B.O.M"
+              value={stats.linkedCount}
+              icon={<CheckCircle2 className="w-3.5 h-3.5" />}
+              color="emerald"
+            />
+            <HeaderBentoCard
+              title={t('corrective.componentRadar.maturity', 'نضج الشجرة')}
+              subtitle="TREE MATURITY"
+              value={stats.maturityRate}
+              valueUnit="%"
+              icon={<ShieldCheck className="w-3.5 h-3.5" />}
+              color="cyan"
+            />
+          </div>
+        </PageHeader>
+      </div>
 
       {/* CORE TABLE CONTAINER (FACTORY ADMIN CRYSTAL HIGH-CONTRAST DESIGN) */}
-      <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl flex-1 flex flex-col bg-[#0a0a0f]/60 backdrop-blur-xl">
+      <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl flex-1 flex flex-col bg-[#0a0a0f]/60 backdrop-blur-xl mx-6 md:mx-8 mb-6 mt-6">
         {/* Table Registry Header + FilterBar */}
         <div className="p-6 md:p-8 border-b border-white/10 bg-white/[0.02] flex flex-col gap-6 shrink-0 relative z-10">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
@@ -417,7 +419,7 @@ export function ComponentRadarView() {
           ) : viewMode === 'table' ? (
             /* CRYSTAL HIGH-CONTRAST TABLE VIEW */
             <div className="w-full overflow-x-auto rounded-2xl border border-white/10 bg-[#0a0a0f]/60 backdrop-blur-xl shadow-2xl">
-              <table className="w-full text-right border-collapse text-xs">
+              <table dir="ltr" className="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="bg-white/[0.04] border-b border-white/10 text-slate-300 font-bold uppercase tracking-wider font-mono text-[11px]">
                     <th className="py-3.5 px-4">حالة الربط بالشجرة</th>

@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, type TaskExecution, type ConsumedPartClaim } from '@/core/db';
 import { motion, AnimatePresence } from 'motion/react';
@@ -31,6 +32,7 @@ import { PdrPageSkeleton } from '../components/PdrPageSkeleton';
 import { toast } from 'sonner';
 
 export function StockReconciliationView({ user }: { user: any }) {
+  const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'PENDING' | 'RECONCILED'>('ALL');
 
@@ -248,53 +250,56 @@ export function StockReconciliationView({ user }: { user: any }) {
   };
 
   return (
-    <div className="w-full h-full flex flex-col gap-6 relative z-10 lg:px-8 pb-24 pt-2 font-sans" dir="rtl">
+    <div className="flex flex-col h-full bg-[#0a0a0f] rounded-3xl border border-white/5 shadow-2xl text-slate-200 font-sans pb-4 overflow-hidden overflow-y-auto custom-scrollbar dir-ltr" dir="ltr">
       {/* HEADER COCKPIT */}
-      <PageHeader
-        title="مطابقة سحوبات البونات"
-        subtitle="واجهة سيادية لمسؤول المخزن لمراجعة ومطابقة القطع الجديدة المسجلة في التدخلات العلاجية برقم البون."
-        icon={<ClipboardCheck className="w-7 h-7 text-cyan-400" />}
-        badgeText="رادار المطابقة"
-        badgeColor="cyan"
-      >
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <HeaderBentoCard
-            title="إجمالي طلبات السحب"
-            subtitle="TOTAL CLAIMS"
-            value={stats.total}
-            valueUnit="سحب"
-            icon={<Box className="w-3.5 h-3.5" />}
-            color="cyan"
-          />
-          <HeaderBentoCard
-            title="في انتظار المطابقة"
-            subtitle="PENDING AUDIT"
-            value={stats.pending}
-            valueUnit="طلب"
-            icon={<Clock className="w-3.5 h-3.5" />}
-            color="amber"
-          />
-          <HeaderBentoCard
-            title="مطابقة وموثقة"
-            subtitle="RECONCILED"
-            value={stats.reconciled}
-            valueUnit="بون"
-            icon={<CheckCircle2 className="w-3.5 h-3.5" />}
-            color="emerald"
-          />
-          <HeaderBentoCard
-            title="معتمدة ومخصومة"
-            subtitle="DEDUCTED STOCK"
-            value={stats.deducted}
-            valueUnit="عملية"
-            icon={<PackageCheck className="w-3.5 h-3.5" />}
-            color="blue"
-          />
-        </div>
-      </PageHeader>
+      <div className="p-6 md:p-8 pb-0 shrink-0">
+        <PageHeader
+          title={t('pdr.reconciliation.title')}
+          subtitle={t('pdr.reconciliation.subtitle')}
+          icon={<ClipboardCheck className="w-7 h-7 text-cyan-400" />}
+          badgeText={t('pdr.reconciliation.badge')}
+          badgeColor="cyan"
+        >
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <HeaderBentoCard
+              title={t('pdr.reconciliation.totalClaims')}
+              subtitle="TOTAL CLAIMS"
+              value={stats.total}
+              valueUnit={t('pdr.reconciliation.claimUnit')}
+              icon={<Box className="w-3.5 h-3.5" />}
+              color="cyan"
+            />
+            <HeaderBentoCard
+              title={t('pdr.reconciliation.pendingAudit')}
+              subtitle="PENDING AUDIT"
+              value={stats.pending}
+              valueUnit={t('pdr.reconciliation.reqUnit')}
+              icon={<Clock className="w-3.5 h-3.5" />}
+              color="amber"
+            />
+            <HeaderBentoCard
+              title={t('pdr.reconciliation.reconciled')}
+              subtitle="RECONCILED"
+              value={stats.reconciled}
+              valueUnit={t('pdr.reconciliation.bonUnit')}
+              icon={<CheckCircle2 className="w-3.5 h-3.5" />}
+              color="emerald"
+            />
+            <HeaderBentoCard
+              title={t('pdr.reconciliation.deductedStock')}
+              subtitle="DEDUCTED STOCK"
+              value={stats.deducted}
+              valueUnit={t('pdr.reconciliation.opUnit')}
+              icon={<PackageCheck className="w-3.5 h-3.5" />}
+              color="blue"
+            />
+          </div>
+        </PageHeader>
+      </div>
 
-      {/* FILTER & CONTROL BAR */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-[#0a0a0f]/60 border border-slate-800 backdrop-blur-md">
+      <div className="flex flex-col flex-1 px-6 md:px-8 mt-6 gap-6 min-h-0">
+        {/* FILTER & CONTROL BAR */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-[#0a0a0f]/60 border border-white/5 backdrop-blur-md shrink-0">
         <div className="relative flex-1 w-full">
           <Search className="w-4 h-4 text-slate-400 absolute right-3.5 top-1/2 -translate-y-1/2" />
           <input
@@ -343,13 +348,13 @@ export function StockReconciliationView({ user }: { user: any }) {
       {/* TABLE RADAR */}
       <div className="rounded-2xl border border-white/10 bg-[#0a0a0f]/60 backdrop-blur-xl overflow-hidden shadow-2xl">
         <div className="overflow-x-auto custom-scrollbar">
-          <table className="w-full text-right text-xs border-collapse">
+          <table dir="ltr" className="w-full text-left text-xs border-collapse">
             <thead className="bg-white/[0.04] text-slate-300 border-b border-white/10 font-bold uppercase tracking-wider">
               <tr>
-                <th className="py-3.5 px-4 text-right">رقم البون (Voucher ID)</th>
-                <th className="py-3.5 px-4 text-right">الآلة والقطاع</th>
-                <th className="py-3.5 px-4 text-right">الفني وتاريخ التدخل</th>
-                <th className="py-3.5 px-4 text-right">القطعة المسجلة</th>
+                <th className="py-3.5 px-4 text-left">رقم البون (Voucher ID)</th>
+                <th className="py-3.5 px-4 text-left">الآلة والقطاع</th>
+                <th className="py-3.5 px-4 text-left">الفني وتاريخ التدخل</th>
+                <th className="py-3.5 px-4 text-left">القطعة المسجلة</th>
                 <th className="py-3.5 px-4 text-center">الكمية</th>
                 <th className="py-3.5 px-4 text-center">رصيد المخزن الفعلي</th>
                 <th className="py-3.5 px-4 text-center">حالة المطابقة</th>
@@ -477,6 +482,7 @@ export function StockReconciliationView({ user }: { user: any }) {
             </tbody>
           </table>
         </div>
+      </div>
       </div>
     </div>
   );

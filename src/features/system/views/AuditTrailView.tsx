@@ -203,7 +203,7 @@ export function AuditTrailView() {
         </div>
         
         <div className="overflow-x-auto bg-transparent flex-1">
-          <table className="w-full text-left border-collapse whitespace-nowrap min-w-[800px]">
+          <table dir="ltr" className="w-full text-left border-collapse whitespace-nowrap min-w-[800px]">
             <thead className="sticky top-0 bg-transparent/90 backdrop-blur-md z-20 border-b border-white/[0.05]">
               <tr>
                 <th className="px-6 py-4 font-bold text-slate-500 uppercase tracking-wider text-[10px]">Timestamp</th>

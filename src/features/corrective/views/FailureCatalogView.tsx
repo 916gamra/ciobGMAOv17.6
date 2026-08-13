@@ -337,46 +337,46 @@ export function FailureCatalogView() {
   }, [selectedTemplate]);
 
   return (
-    <div className="flex flex-col h-full bg-[#0a0a0f] text-slate-200 dir-rtl" dir="rtl">
+    <div className="flex flex-col h-full bg-[#0a0a0f] rounded-3xl border border-white/5 shadow-2xl text-slate-200 font-sans pb-4 overflow-hidden">
       {/* Header Cockpit */}
       <div className="p-6 md:p-8 pb-0">
         <PageHeader
           title={t('corrective.failureCatalog.title', 'مختبر الأعطال والشجرة التشخيصية')}
           subtitle={t('corrective.failureCatalog.subtitle', 'الانتقال من التوثيق الجاف إلى التحليل المتقدم وهندسة الموثوقية الصناعية (RAMS & FMEA) لأصول المصنع.')}
-          icon={<AlertTriangle className="w-7 h-7 text-orange-400 animate-pulse" />}
-          badgeText="مختبر الأعطال والتشخيص v17.1"
+          icon={<AlertTriangle className="w-7 h-7 text-orange-400" />}
+          badgeText={t('corrective.failureCatalog.badge', 'مختبر الأعطال والتشخيص v17.1')}
           badgeColor="orange"
         >
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <HeaderBentoCard
-              title="العائلات الصناعية"
+              title={t('corrective.failureCatalog.statFamilies', 'العائلات الصناعية')}
               subtitle="CATEGORIES"
               value={categories.length}
-              valueUnit="عائلة"
+              valueUnit={t('unit.family', 'عائلة')}
               icon={<FolderTree className="w-3.5 h-3.5" />}
               color="orange"
             />
             <HeaderBentoCard
-              title="أنواع الأعطال"
+              title={t('corrective.failureCatalog.statFailures', 'أنواع الأعطال')}
               subtitle="FAILURES"
               value={templates.length}
-              valueUnit="نوع"
+              valueUnit={t('unit.type', 'نوع')}
               icon={<AlertTriangle className="w-3.5 h-3.5" />}
               color="amber"
             />
             <HeaderBentoCard
-              title="مستوى الموثوقية"
+              title={t('corrective.failureCatalog.statReliability', 'مستوى الموثوقية')}
               subtitle="RELIABILITY"
               value="94.2%"
-              valueUnit="ممتاز"
+              valueUnit={t('unit.excellent', 'ممتاز')}
               icon={<Activity className="w-3.5 h-3.5" />}
               color="emerald"
             />
             <HeaderBentoCard
-              title="حالة شجرة التشخيص"
+              title={t('corrective.failureCatalog.statTreeStatus', 'حالة شجرة التشخيص')}
               subtitle="DIAGNOSTIC STATUS"
               value="100%"
-              valueUnit="جاهزة"
+              valueUnit={t('unit.ready', 'جاهزة')}
               icon={<CheckCircle2 className="w-3.5 h-3.5" />}
               color="blue"
             />
@@ -397,7 +397,7 @@ export function FailureCatalogView() {
             )}
           >
             <FolderTree className="w-3.5 h-3.5" />
-            <span>كتالوج وإدارة الأعطال</span>
+            <span>{t('corrective.failureCatalog.tabCatalog', 'كتالوج وإدارة الأعطال')}</span>
           </button>
 
           <button
@@ -410,7 +410,7 @@ export function FailureCatalogView() {
             )}
           >
             <Activity className="w-3.5 h-3.5" />
-            <span>محاكي شجرة التشخيص تفاعلي</span>
+            <span>{t('corrective.failureCatalog.tabSimulator', 'محاكي شجرة التشخيص تفاعلي')}</span>
           </button>
 
           <button
@@ -423,7 +423,7 @@ export function FailureCatalogView() {
             )}
           >
             <Layers className="w-3.5 h-3.5" />
-            <span>مخطط عظمة السمكة (Ishikawa)</span>
+            <span>{t('corrective.failureCatalog.tabIshikawa', 'مخطط عظمة السمكة (Ishikawa)')}</span>
           </button>
 
           <button
@@ -436,29 +436,38 @@ export function FailureCatalogView() {
             )}
           >
             <Sliders className="w-3.5 h-3.5" />
-            <span>مختبر تحليل مخاطر الفشل (FMEA)</span>
+            <span>{t('corrective.failureCatalog.tabFmea', 'مختبر تحليل مخاطر الفشل (FMEA)')}</span>
           </button>
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex min-h-0 flex-row-reverse mt-4">
+      {/* Main Content Area (CRYSTAL GLASS SHELL CONTAINER) */}
+      <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl flex-1 flex min-h-0 bg-[#0a0a0f]/60 backdrop-blur-xl mx-6 md:mx-8 mb-6 mt-4">
         
-        {/* Right Sidebar - Categories & Selection (Common context for all viewModes) */}
-        <div className="w-80 border-l border-white/5 bg-white/[0.01] flex flex-col overflow-y-auto custom-scrollbar shrink-0">
-          <div className="p-4">
-            <div className="flex items-center justify-between mb-4 flex-row-reverse">
-              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest text-right">العائلات والقطاعات</h3>
-              <button 
-                onClick={() => setIsAddingCategory(true)}
-                className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-lg px-2.5 py-1.5 text-[11px] shadow-md transition-all flex items-center gap-1.5 cursor-pointer active:scale-95 flex-row-reverse"
-              >
-                <Plus className="w-3.5 h-3.5 text-slate-950" />
-                <span>عائلة جديدة</span>
-              </button>
+        {/* Left Sidebar - Categories & Selection */}
+        <div className="w-80 border-r border-orange-500/20 bg-gradient-to-b from-orange-950/40 via-[#0a0a0f]/95 to-[#0a0a0f]/98 backdrop-blur-xl relative flex flex-col overflow-y-auto custom-scrollbar shrink-0">
+          
+          {/* Background ambient engine accent glow */}
+          <div className="absolute -top-12 -right-12 w-48 h-48 bg-orange-500/15 rounded-full blur-3xl pointer-events-none" />
+
+          <div className="p-5 relative z-10 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-black text-white uppercase tracking-wider">{t('corrective.failureCatalog.familiesAndSectors', 'العائلات والقطاعات')}</h3>
+              <span className="text-[10px] bg-white/10 text-slate-300 font-mono px-2 py-0.5 rounded-full border border-white/10 font-bold">
+                {categories.length} Cat
+              </span>
             </div>
+
+            {/* Prominent Action Button */}
+            <button 
+              onClick={() => setIsAddingCategory(true)}
+              className="w-full bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-3 py-2.5 text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+            >
+              <Plus className="w-4 h-4 text-slate-950" />
+              <span>{t('corrective.failureCatalog.newFamilyBtn', 'إضافة عائلة أعطال جديدة')}</span>
+            </button>
             
-            <div className="space-y-2">
+            <div className="space-y-2 pt-1">
               {categories.map(cat => (
                 <button
                   key={cat.id}
@@ -468,16 +477,18 @@ export function FailureCatalogView() {
                     resetDiagnosticSimulator();
                   }}
                   className={cn(
-                    "w-full flex items-center justify-between p-3 rounded-xl border transition-all text-sm font-semibold flex-row-reverse",
+                    "w-full flex items-center justify-between p-3 rounded-xl border transition-all text-xs font-bold cursor-pointer text-start",
                     selectedCategoryId === cat.id 
-                      ? "bg-orange-500/10 border-orange-500/30 text-orange-400 shadow-[0_0_15px_rgba(249,115,22,0.1)]"
-                      : "bg-white/[0.02] border-white/5 text-slate-400 hover:text-slate-200 hover:bg-white/5 hover:border-white/10"
+                      ? "bg-orange-500/15 border-orange-500/40 text-orange-300 font-extrabold shadow-[0_4px_20px_rgba(249,115,22,0.2)]"
+                      : "bg-[#0a0a0f] border-white/10 text-slate-300 hover:bg-white/[0.05] hover:text-white"
                   )}
                 >
-                  <div className="flex items-center gap-3 flex-row-reverse">
+                  <div className="flex items-center gap-3">
                     <div className={cn(
-                      "p-2 rounded-lg",
-                      selectedCategoryId === cat.id ? "bg-orange-500/20" : "bg-white/5"
+                      "p-2 rounded-lg border transition-colors",
+                      selectedCategoryId === cat.id 
+                        ? "bg-orange-500/20 border-orange-500/40 text-orange-300" 
+                        : "bg-white/5 border-white/10 text-slate-300"
                     )}>
                       {cat.name.includes('Mécanique') || cat.name.includes('ميكانيك') ? <Wrench className="w-4 h-4" /> :
                        cat.name.includes('Électrique') || cat.name.includes('كهرباء') ? <Zap className="w-4 h-4" /> :
@@ -489,8 +500,8 @@ export function FailureCatalogView() {
                     <span>{cat.name}</span>
                   </div>
                   <ChevronRight className={cn(
-                    "w-4 h-4 transition-transform rotate-180",
-                    selectedCategoryId === cat.id ? "opacity-100 translate-x-0" : "opacity-0 translate-x-2"
+                    "w-4 h-4 transition-transform rtl:rotate-180",
+                    selectedCategoryId === cat.id ? "opacity-100 text-orange-400" : "opacity-40 text-slate-500"
                   )} />
                 </button>
               ))}
@@ -498,9 +509,9 @@ export function FailureCatalogView() {
 
             {/* Sub-Selector for Failure Templates (Highly relevant for Diagnostic Labs) */}
             {selectedCategory && (
-              <div className="mt-8 pt-6 border-t border-white/5">
-                <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest text-right mb-4">العطل المستهدف للدراسة</h3>
-                <div className="space-y-1.5">
+              <div className="mt-6 pt-5 border-t border-white/10 space-y-3">
+                <h3 className="text-xs font-black text-white uppercase tracking-wider text-right">العطل المستهدف للدراسة</h3>
+                <div className="space-y-2">
                   {filteredTemplates.map(tmpl => (
                     <button
                       key={tmpl.id}
@@ -509,15 +520,15 @@ export function FailureCatalogView() {
                         resetDiagnosticSimulator();
                       }}
                       className={cn(
-                        "w-full text-right p-2.5 rounded-lg text-xs font-bold border transition-all flex items-center justify-between flex-row-reverse",
+                        "w-full text-right p-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-between flex-row-reverse cursor-pointer",
                         selectedTemplateId === tmpl.id
-                          ? "bg-white text-slate-950 border-white"
-                          : "bg-[#0a0a0f]/40 text-slate-400 hover:text-slate-200 border-white/5 hover:bg-white/[0.02]"
+                          ? "bg-white text-slate-950 border-white shadow-md font-extrabold"
+                          : "bg-[#0a0a0f] text-slate-300 border-white/10 hover:text-white hover:bg-white/[0.05]"
                       )}
                     >
                       <span className="truncate">{tmpl.name}</span>
                       <span className={cn(
-                        "w-2 h-2 rounded-full shrink-0 ml-2",
+                        "w-2.5 h-2.5 rounded-full shrink-0 ml-2 border border-black/20",
                         tmpl.severity === 'critical' ? 'bg-rose-500' :
                         tmpl.severity === 'high' ? 'bg-orange-500' :
                         tmpl.severity === 'medium' ? 'bg-amber-500' : 'bg-emerald-500'
@@ -525,7 +536,7 @@ export function FailureCatalogView() {
                     </button>
                   ))}
                   {filteredTemplates.length === 0 && (
-                    <p className="text-xs text-slate-500 text-center py-4">يرجى تسجيل عطل أولاً</p>
+                    <p className="text-xs text-slate-400 text-center py-4 font-medium">يرجى تسجيل عطل أولاً</p>
                   )}
                 </div>
               </div>
@@ -594,64 +605,72 @@ export function FailureCatalogView() {
                       </div>
                     ) : (
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        {filteredTemplates.map(template => (
-                          <div
-                            key={template.id}
-                            onClick={() => setSelectedTemplateId(template.id)}
-                            className={cn(
-                              "p-5 rounded-2xl bg-white/[0.02] border transition-all group relative overflow-hidden cursor-pointer",
-                              selectedTemplateId === template.id 
-                                ? "border-orange-500/40 bg-orange-500/[0.02]" 
-                                : "border-white/10 hover:border-white/20"
-                            )}
-                          >
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full blur-3xl group-hover:bg-orange-500/10 pointer-events-none transition-all" />
-                            
-                            <div className="flex items-start justify-between relative z-10 flex-row-reverse">
-                              <div className="text-right flex-1 pr-2">
-                                <div className="flex items-center gap-2 justify-end flex-row-reverse mb-1">
-                                  <h3 className="text-lg font-bold text-white group-hover:text-orange-400 transition-colors">
-                                    {template.name}
-                                  </h3>
-                                  {selectedTemplateId === template.id && (
-                                    <span className="w-2 h-2 rounded-full bg-orange-500 animate-ping" />
-                                  )}
-                                </div>
-                                {template.description && (
-                                  <p className="text-sm text-slate-400 line-clamp-2 leading-relaxed mt-1">{template.description}</p>
-                                )}
-                                
-                                <div className="mt-4 flex items-center justify-end gap-3 flex-row-reverse">
-                                  <span className={cn(
-                                    "px-2.5 py-1 rounded-md text-[10px] font-bold border font-mono tracking-wider",
-                                    template.severity === 'critical' ? "bg-rose-500/10 text-rose-400 border-rose-500/20" :
-                                    template.severity === 'high' ? "bg-orange-500/10 text-orange-400 border-orange-500/20" :
-                                    template.severity === 'medium' ? "bg-amber-500/10 text-amber-400 border-amber-500/20" :
-                                    "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                                  )}>
-                                    {template.severity === 'critical' ? 'CRITICAL / حرج' :
-                                     template.severity === 'high' ? 'HIGH / عالي' :
-                                     template.severity === 'medium' ? 'MEDIUM / متوسط' : 'LOW / منخفض'}
-                                  </span>
-                                  <span className="text-xs text-slate-500">رمز المعايرة: TR-{(template.id.substring(0,4)).toUpperCase()}</span>
+                        {filteredTemplates.map(template => {
+                          const isSelected = selectedTemplateId === template.id;
+                          return (
+                            <div
+                              key={template.id}
+                              onClick={() => setSelectedTemplateId(template.id)}
+                              className={cn(
+                                "p-5 rounded-2xl border transition-all duration-500 relative overflow-hidden cursor-pointer group",
+                                isSelected 
+                                  ? "border-2 border-orange-500 bg-[#0a0a0f] scale-[1.03] shadow-[0_0_25px_rgba(249,115,22,0.25)]" 
+                                  : "bg-[#0a0a0f] border-white/10 text-slate-300 hover:bg-white/[0.05] hover:scale-[1.01]"
+                              )}
+                            >
+                              {/* Ambient Bottom Glow */}
+                              {isSelected && (
+                                <div className="bg-orange-500/25 rounded-full blur-xl absolute -bottom-10 left-1/2 -translate-x-1/2 w-28 h-16 pointer-events-none z-0" />
+                              )}
+
+                              <div className="relative z-10 w-full h-full flex flex-col justify-between">
+                                <div className="flex items-start justify-between flex-row-reverse">
+                                  <div className="text-right flex-1 pr-2">
+                                    <div className="flex items-center gap-2 justify-end flex-row-reverse mb-1">
+                                      <h3 className="text-lg font-bold text-white group-hover:text-orange-400 transition-colors">
+                                        {template.name}
+                                      </h3>
+                                      {isSelected && (
+                                        <span className="w-2 h-2 rounded-full bg-orange-500 animate-ping" />
+                                      )}
+                                    </div>
+                                    {template.description && (
+                                      <p className="text-sm text-slate-400 line-clamp-2 leading-relaxed mt-1">{template.description}</p>
+                                    )}
+                                    
+                                    <div className="mt-4 flex items-center justify-end gap-3 flex-row-reverse">
+                                      <span className={cn(
+                                        "px-2.5 py-1 rounded-md text-[10px] font-bold border font-mono tracking-wider",
+                                        template.severity === 'critical' ? "bg-rose-500/10 text-rose-400 border-rose-500/20" :
+                                        template.severity === 'high' ? "bg-orange-500/10 text-orange-400 border-orange-500/20" :
+                                        template.severity === 'medium' ? "bg-amber-500/10 text-amber-400 border-amber-500/20" :
+                                        "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                                      )}>
+                                        {template.severity === 'critical' ? 'CRITICAL / حرج' :
+                                         template.severity === 'high' ? 'HIGH / عالي' :
+                                         template.severity === 'medium' ? 'MEDIUM / متوسط' : 'LOW / منخفض'}
+                                      </span>
+                                      <span className="text-xs text-slate-500">رمز المعايرة: TR-{(template.id.substring(0,4)).toUpperCase()}</span>
+                                    </div>
+                                  </div>
+                                  
+                                  <button
+                                    onClick={async (e) => {
+                                      e.stopPropagation();
+                                      if (window.confirm('هل أنت متأكد من حذف هذا العطل من كشوفات المصنع نهائياً؟')) {
+                                        await deleteTemplate(template.id);
+                                        showSuccess('تم حذف العطل من كتالوج النظام');
+                                      }
+                                    }}
+                                    className="p-2 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100 shrink-0 self-start cursor-pointer"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
                                 </div>
                               </div>
-                              
-                              <button
-                                onClick={async (e) => {
-                                  e.stopPropagation();
-                                  if (window.confirm('هل أنت متأكد من حذف هذا العطل من كشوفات المصنع نهائياً؟')) {
-                                    await deleteTemplate(template.id);
-                                    showSuccess('تم حذف العطل من كتالوج النظام');
-                                  }
-                                }}
-                                className="p-2 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100 shrink-0 self-start"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
                             </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
                   </div>
@@ -1032,7 +1051,7 @@ export function FailureCatalogView() {
           </AnimatePresence>
         </div>
 
-      </div>
+      </GlassCard>
 
       {/* Add Category Modal */}
       <AnimatePresence>

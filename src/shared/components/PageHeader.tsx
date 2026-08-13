@@ -124,8 +124,10 @@ export function PageHeader({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
         <div className="flex items-start md:items-center gap-3.5 relative z-10 text-start">
           {icon && (
-            <div className="shrink-0 flex items-center justify-center">
-              {icon}
+            <div className="shrink-0 flex items-center justify-center relative">
+              <div className="relative z-10 animate-pulse">
+                {icon}
+              </div>
             </div>
           )}
           <div className="text-start min-w-0">

@@ -7,6 +7,7 @@ import { motion } from 'motion/react';
 import { PageHeader } from '@/shared/components/PageHeader';
 import { HeaderBentoCard } from '@/shared/components/HeaderBentoCard';
 import { GlassCard } from '@/shared/components/GlassCard';
+import { useTranslation } from 'react-i18next';
 import { 
   FileText, 
   Printer, 
@@ -24,6 +25,7 @@ import {
 import { toast } from 'sonner';
 
 export function PdfEngineView({ user }: { user?: any }) {
+  const { t } = useTranslation();
   const [activeTemplate, setActiveTemplate] = useState<'workOrder' | 'binLabels' | 'certificate'>('workOrder');
 
   // Database Queries
@@ -372,15 +374,12 @@ export function PdfEngineView({ user }: { user?: any }) {
   };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 15 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col gap-6 w-full text-slate-100 dir-rtl font-sans p-4 md:p-6"
-    >
+    <div className="flex flex-col h-full bg-white dark:bg-[#0a0a0f] rounded-3xl border border-slate-200 dark:border-white/5 shadow-2xl text-slate-800 dark:text-slate-200 font-sans pb-4 overflow-hidden overflow-y-auto custom-scrollbar dir-ltr" dir="ltr">
       {/* PAGE HEADER */}
-      <PageHeader
-        title="محرك التقارير الفنية (PDF Engine)"
-        subtitle="توليد بطاقات أوامر العمل الميدانية بالباركود، ملصقات الأرفف، وشهادات السلامة وجاهزية الآلة المعتمدة."
+      <div className="p-6 md:p-8 pb-0 shrink-0">
+        <PageHeader
+        title={t('pdf.engine.title', 'محرك التقارير الفنية (PDF Engine)')}
+        subtitle={t('pdf.engine.subtitle', 'توليد بطاقات أوامر العمل الميدانية بالباركود، ملصقات الأرفف، وشهادات السلامة وجاهزية الآلة المعتمدة.')}
         icon={<FileText className="w-7 h-7 text-rose-400" />}
         badgeText="v17.1 PDF"
         badgeColor="rose"
@@ -390,34 +389,34 @@ export function PdfEngineView({ user }: { user?: any }) {
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-lg shadow-rose-950/40 transition-all hover:scale-[1.02] active:scale-[0.98]"
           >
             <Download className="w-4 h-4" />
-            <span>إصدار بطاقة عمل PDF</span>
+            <span>{t('pdf.engine.issueWo', 'إصدار بطاقة عمل PDF')}</span>
           </button>
         }
       >
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <HeaderBentoCard
-            title="كتالوج قطع الغيار"
+            title={t('pdf.engine.partsCatalog', 'كتالوج قطع الغيار')}
             subtitle="PDR BLUEPRINTS"
             value={pdrBlueprints.length}
             icon={<LayoutGrid className="w-3.5 h-3.5" />}
             color="blue"
           />
           <HeaderBentoCard
-            title="الوحدات المخزنية"
+            title={t('pdf.engine.storageUnits', 'الوحدات المخزنية')}
             subtitle="TOTAL STORAGE UNITS"
             value={inventoryItems.length}
             icon={<Boxes className="w-3.5 h-3.5" />}
             color="emerald"
           />
           <HeaderBentoCard
-            title="الآلات المسجلة"
+            title={t('pdf.engine.registeredMachinery', 'الآلات المسجلة')}
             subtitle="REGISTERED MACHINERY"
             value={machines.length}
             icon={<Factory className="w-3.5 h-3.5" />}
             color="purple"
           />
           <HeaderBentoCard
-            title="معدل جاهزية النظام"
+            title={t('pdf.engine.systemEngineStatus', 'معدل جاهزية النظام')}
             subtitle="SYSTEM ENGINE STATUS"
             value="100%"
             icon={<FileDigit className="w-3.5 h-3.5" />}
@@ -425,8 +424,10 @@ export function PdfEngineView({ user }: { user?: any }) {
           />
         </div>
       </PageHeader>
+    </div>
 
-      {/* TEMPLATE NAVIGATION TABS */}
+      <div className="flex flex-col flex-1 px-6 md:px-8 mt-6 gap-6 min-h-0">
+        {/* TEMPLATE NAVIGATION TABS */}
       <div className="flex items-center gap-2 bg-[#0a0a0f]/40 p-1.5 rounded-2xl border border-white/10 overflow-x-auto self-start">
         <button
           onClick={() => setActiveTemplate('workOrder')}
@@ -437,7 +438,7 @@ export function PdfEngineView({ user }: { user?: any }) {
           }`}
         >
           <Wrench className="w-4 h-4" />
-          <span>بطاقة أمر العمل الميداني</span>
+          <span>{t('pdf.engine.fieldWoCard', 'بطاقة أمر العمل الميداني')}</span>
         </button>
 
         <button
@@ -449,7 +450,7 @@ export function PdfEngineView({ user }: { user?: any }) {
           }`}
         >
           <Tag className="w-4 h-4" />
-          <span>بطاقات الأرفف والباركود</span>
+          <span>{t('pdf.engine.binTagsBarcode', 'بطاقات الأرفف والباركود')}</span>
         </button>
 
         <button
@@ -461,7 +462,7 @@ export function PdfEngineView({ user }: { user?: any }) {
           }`}
         >
           <ShieldCheck className="w-4 h-4" />
-          <span>شهادة جاهزية الآلة والسلامة</span>
+          <span>{t('pdf.engine.clearanceCertificate', 'شهادة جاهزية الآلة والسلامة')}</span>
         </button>
       </div>
 
@@ -472,11 +473,11 @@ export function PdfEngineView({ user }: { user?: any }) {
           <GlassCard className="p-6 flex flex-col gap-4">
             <h3 className="text-sm font-bold text-white flex items-center gap-2 border-b border-white/10 pb-3">
               <SlidersHorizontal className="w-4 h-4 text-rose-400" />
-              تكوين بيانات بطاقة أمر العمل
+              {t('pdf.engine.configureWoData', 'تكوين بيانات بطاقة أمر العمل')}
             </h3>
 
             <div>
-              <label className="text-xs text-slate-400 mb-1 block">اختر الآلة المستهدفة</label>
+              <label className="text-xs text-slate-400 mb-1 block">{t('pdf.engine.chooseTargetMachine', 'اختر الآلة المستهدفة')}</label>
               <select
                 value={selectedMachineId}
                 onChange={e => setSelectedMachineId(e.target.value)}
@@ -489,7 +490,7 @@ export function PdfEngineView({ user }: { user?: any }) {
             </div>
 
             <div>
-              <label className="text-xs text-slate-400 mb-1 block">عنوان مهمة الصيانة</label>
+              <label className="text-xs text-slate-400 mb-1 block">{t('pdf.engine.woTitle', 'عنوان مهمة الصيانة')}</label>
               <input
                 type="text"
                 value={woTitle}
@@ -499,7 +500,7 @@ export function PdfEngineView({ user }: { user?: any }) {
             </div>
 
             <div>
-              <label className="text-xs text-slate-400 mb-1 block">الفني الميداني المسؤول</label>
+              <label className="text-xs text-slate-400 mb-1 block">{t('pdf.engine.responsibleTech', 'الفني الميداني المسؤول')}</label>
               <input
                 type="text"
                 value={techName}
@@ -509,15 +510,15 @@ export function PdfEngineView({ user }: { user?: any }) {
             </div>
 
             <div>
-              <label className="text-xs text-slate-400 mb-1 block">مستوى الأولوية</label>
+              <label className="text-xs text-slate-400 mb-1 block">{t('pdf.engine.priorityLevel', 'مستوى الأولوية')}</label>
               <select
                 value={woPriority}
                 onChange={e => setWoPriority(e.target.value as any)}
                 className="w-full p-2.5 rounded-xl bg-[#0a0a0f]/50 border border-white/10 text-xs text-white"
               >
-                <option value="MEDIUM">عادية (MEDIUM)</option>
-                <option value="HIGH">عالية (HIGH)</option>
-                <option value="CRITICAL">حرجة جداً (CRITICAL)</option>
+                <option value="MEDIUM">{t('pdf.engine.priorityMedium', 'عادية (MEDIUM)')}</option>
+                <option value="HIGH">{t('pdf.engine.priorityHigh', 'عالية (HIGH)')}</option>
+                <option value="CRITICAL">{t('pdf.engine.priorityCritical', 'حرجة جداً (CRITICAL)')}</option>
               </select>
             </div>
 
@@ -526,7 +527,7 @@ export function PdfEngineView({ user }: { user?: any }) {
               className="mt-2 w-full py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-lg shadow-rose-950 flex items-center justify-center gap-2"
             >
               <Download className="w-4 h-4" />
-              <span>توليد وتنزيل بطاقة أمر العمل (PDF)</span>
+              <span>{t('pdf.engine.generateWoPdf', 'توليد وتنزيل بطاقة أمر العمل (PDF)')}</span>
             </button>
           </GlassCard>
 
@@ -544,7 +545,7 @@ export function PdfEngineView({ user }: { user?: any }) {
               <div className="p-4 rounded-xl bg-slate-100 border border-slate-200 flex justify-between items-center">
                 <div>
                   <h4 className="font-bold text-base text-slate-900">{selectedMachine.referenceCode}</h4>
-                  <p className="text-xs text-slate-600">رمز الآلة: {selectedMachine.referenceCode} | القسم: {selectedMachine.sectorId || 'Production-01'}</p>
+                  <p className="text-xs text-slate-600">{t('pdf.engine.previewMachine', 'رمز الآلة')}: {selectedMachine.referenceCode} | {t('pdf.engine.previewSector', 'القسم')}: {selectedMachine.sectorId || 'Production-01'}</p>
                 </div>
                 <div className="w-12 h-12 rounded bg-white p-1 border flex items-center justify-center">
                   <QrCode className="w-10 h-10 text-slate-800" />
@@ -552,19 +553,19 @@ export function PdfEngineView({ user }: { user?: any }) {
               </div>
 
               <div>
-                <h5 className="font-bold text-xs text-rose-700 uppercase tracking-wider mb-2">1. قائمة الخطوات التشغيلية (Checklist)</h5>
+                <h5 className="font-bold text-xs text-rose-700 uppercase tracking-wider mb-2">{t('pdf.engine.checklistTitle', '1. قائمة الخطوات التشغيلية (Checklist)')}</h5>
                 <div className="space-y-1.5 text-xs text-slate-700">
-                  <p>☑ عزل الطاقة الكهربائية (LOTO Safety Clearance)</p>
-                  <p>☑ تفريغ الخزان الهيدروليكي واستبدال المرشحات</p>
-                  <p>☑ تركيب المحمل الكروي الجديد والمحاذاة بالليزر</p>
+                  <p>☑ {t('pdf.engine.lotoSafety', 'عزل الطاقة الكهربائية (LOTO Safety Clearance)')}</p>
+                  <p>☑ {t('pdf.engine.drainReservoir', 'تفريغ الخزان الهيدروليكي واستبدال المرشحات')}</p>
+                  <p>☑ {t('pdf.engine.installBearing', 'تركيب المحمل الكروي الجديد والمحاذاة بالليزر')}</p>
                 </div>
               </div>
 
               <div>
-                <h5 className="font-bold text-xs text-rose-700 uppercase tracking-wider mb-2">2. قطع الغيار المستهلكة من المخزن</h5>
+                <h5 className="font-bold text-xs text-rose-700 uppercase tracking-wider mb-2">{t('pdf.engine.consumedParts', '2. قطع الغيار المستهلكة من المخزن')}</h5>
                 <div className="grid grid-cols-3 gap-2 text-xs font-mono bg-slate-50 p-2 rounded border">
                   <div>ROB-001 (Ball Bearing)</div>
-                  <div>2 Units</div>
+                  <div>2 {t('pdf.engine.units', 'Units')}</div>
                   <div>Rack A-01-02</div>
                 </div>
               </div>
@@ -578,8 +579,8 @@ export function PdfEngineView({ user }: { user?: any }) {
         <div className="flex flex-col gap-6">
           <GlassCard className="p-6 flex flex-col md:flex-row items-center justify-between gap-4">
             <div>
-              <h3 className="text-base font-bold text-white">بطاقات الأرفف بالباركود (PDR Bin Labels Grid A4)</h3>
-              <p className="text-xs text-slate-400 mt-1">طباعة شبكة ملصقات A4 تحتوي على كود المقعد الثلاثي والباركود لسرعة الكسح بالمخزن</p>
+              <h3 className="text-base font-bold text-white">{t('pdf.engine.binLabelsTitle', 'بطاقات الأرفف بالباركود (PDR Bin Labels Grid A4)')}</h3>
+              <p className="text-xs text-slate-400 mt-1">{t('pdf.engine.binLabelsSubtitle', 'طباعة شبكة ملصقات A4 تحتوي على كود المقعد الثلاثي والباركود لسرعة الكسح بالمخزن')}</p>
             </div>
 
             <div className="flex items-center gap-3">
@@ -588,8 +589,8 @@ export function PdfEngineView({ user }: { user?: any }) {
                 onChange={e => setLabelGridFormat(e.target.value as any)}
                 className="p-2.5 rounded-xl bg-[#0a0a0f]/50 border border-white/10 text-xs text-white"
               >
-                <option value="2x4">شبكة 2x4 (8 ملصقات كبيرة)</option>
-                <option value="3x5">شبكة 3x5 (15 ملصقاً قياسياً)</option>
+                <option value="2x4">{t('pdf.engine.grid2x4', 'شبكة 2x4 (8 ملصقات كبيرة)')}</option>
+                <option value="3x5">{t('pdf.engine.grid3x5', 'شبكة 3x5 (15 ملصقاً قياسياً)')}</option>
               </select>
 
               <button
@@ -597,7 +598,7 @@ export function PdfEngineView({ user }: { user?: any }) {
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-md"
               >
                 <Printer className="w-4 h-4" />
-                <span>تنزيل شبكة الملصقات PDF</span>
+                <span>{t('pdf.engine.downloadBinLabels', 'تنزيل شبكة الملصقات PDF')}</span>
               </button>
             </div>
           </GlassCard>
@@ -610,7 +611,7 @@ export function PdfEngineView({ user }: { user?: any }) {
                   <span>RACK A-0{idx}</span>
                 </div>
                 <h4 className="font-mono font-black text-sm text-slate-900 mt-2">ROB-00{idx}</h4>
-                <p className="text-xs text-slate-600 font-medium truncate">محمل كروي 6205-2RS</p>
+                <p className="text-xs text-slate-600 font-medium truncate">{t('pdf.engine.bearingSample', 'محمل كروي 6205-2RS')}</p>
                 <div className="mt-3 bg-slate-100 p-2 rounded text-center font-mono text-[9px]">
                   |||| | |||||| | ||||||| | ||
                   <p className="mt-1 text-[8px] text-slate-500">*ROB-00{idx}*</p>
@@ -626,8 +627,8 @@ export function PdfEngineView({ user }: { user?: any }) {
         <div className="flex flex-col gap-6">
           <GlassCard className="p-6 flex flex-col md:flex-row items-center justify-between gap-4">
             <div>
-              <h3 className="text-base font-bold text-white">شهادة جاهزية الآلة والسلامة (Clearance Certificate)</h3>
-              <p className="text-xs text-slate-400 mt-1">شهادة معتمدة تحتوي على المؤشرات التشخيصية قبل وبعد الصيانة وتوقيعات السلامة</p>
+              <h3 className="text-base font-bold text-white">{t('pdf.engine.certTitle', 'شهادة جاهزية الآلة والسلامة (Clearance Certificate)')}</h3>
+              <p className="text-xs text-slate-400 mt-1">{t('pdf.engine.certSubtitle', 'شهادة معتمدة تحتوي على المؤشرات التشخيصية قبل وبعد الصيانة وتوقيعات السلامة')}</p>
             </div>
 
             <button
@@ -635,30 +636,31 @@ export function PdfEngineView({ user }: { user?: any }) {
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-md"
             >
               <Download className="w-4 h-4" />
-              <span>إصدار شهادة الجاهزية (PDF)</span>
+              <span>{t('pdf.engine.generateCert', 'إصدار شهادة الجاهزية (PDF)')}</span>
             </button>
           </GlassCard>
 
           <GlassCard className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
             <div>
-              <label className="text-slate-400 block mb-1">الاهتزاز قبل الصيانة (Vibration Before)</label>
+              <label className="text-slate-400 block mb-1">{t('pdf.engine.vibrationBefore', 'الاهتزاز قبل الصيانة (Vibration Before)')}</label>
               <input type="text" value={vibrationBefore} onChange={e => setVibrationBefore(e.target.value)} className="w-full p-2.5 bg-[#0a0a0f]/50 border border-white/10 rounded-xl text-white" />
             </div>
             <div>
-              <label className="text-slate-400 block mb-1">الاهتزاز بعد الصيانة (Vibration After)</label>
+              <label className="text-slate-400 block mb-1">{t('pdf.engine.vibrationAfter', 'الاهتزاز بعد الصيانة (Vibration After)')}</label>
               <input type="text" value={vibrationAfter} onChange={e => setVibrationAfter(e.target.value)} className="w-full p-2.5 bg-[#0a0a0f]/50 border border-white/10 rounded-xl text-white" />
             </div>
             <div>
-              <label className="text-slate-400 block mb-1">الحرارة قبل الصيانة (Temp Before)</label>
+              <label className="text-slate-400 block mb-1">{t('pdf.engine.tempBefore', 'الحرارة قبل الصيانة (Temp Before)')}</label>
               <input type="text" value={tempBefore} onChange={e => setTempBefore(e.target.value)} className="w-full p-2.5 bg-[#0a0a0f]/50 border border-white/10 rounded-xl text-white" />
             </div>
             <div>
-              <label className="text-slate-400 block mb-1">الحرارة بعد الصيانة (Temp After)</label>
+              <label className="text-slate-400 block mb-1">{t('pdf.engine.tempAfter', 'الحرارة بعد الصيانة (Temp After)')}</label>
               <input type="text" value={tempAfter} onChange={e => setTempAfter(e.target.value)} className="w-full p-2.5 bg-[#0a0a0f]/50 border border-white/10 rounded-xl text-white" />
             </div>
           </GlassCard>
         </div>
       )}
-    </motion.div>
+    </div>
+    </div>
   );
 }

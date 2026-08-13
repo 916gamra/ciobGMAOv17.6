@@ -219,14 +219,14 @@ export function ComponentsCatalogView() {
   };
 
   return (
-    <div className="flex flex-col h-full text-slate-200 font-sans dir-rtl" dir="rtl">
+    <div className="flex flex-col h-full bg-[#0a0a0f] rounded-3xl border border-white/5 shadow-2xl text-slate-200 font-sans pb-4 overflow-hidden">
       {/* Page Header Cockpit */}
       <div className="p-6 md:p-8 pb-0">
         <PageHeader
           title={t('corrective.componentsCatalog.title', 'كتالوج المكونات والأجزاء')}
           subtitle={t('corrective.componentsCatalog.subtitle', 'دليل المكونات الفنية وتجميعات الأجزاء المرتبطة بآلات ومعدات المعمل.')}
           icon={<Cpu className="w-7 h-7 text-orange-400" />}
-          badgeText="المكونات والتجميعات"
+          badgeText={t('corrective.componentsCatalog.badge', 'المكونات والتجميعات')}
           badgeColor="orange"
           actions={
             <button 
@@ -234,40 +234,40 @@ export function ComponentsCatalogView() {
               className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
             >
               <Plus className="w-4 h-4 text-slate-950" /> 
-              <span>إضافة مكون جديد</span>
+              <span>{t('corrective.componentsCatalog.newComponent', 'إضافة مكون جديد')}</span>
             </button>
           }
         >
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <HeaderBentoCard
-              title="إجمالي القوالب"
+              title={t('corrective.componentsCatalog.totalTemplates', 'إجمالي القوالب')}
               subtitle="TEMPLATES"
               value={templates.length}
-              valueUnit="قالب"
+              valueUnit={t('unit.template', 'قالب')}
               icon={<Layers className="w-3.5 h-3.5" />}
               color="orange"
             />
             <HeaderBentoCard
-              title="البصمات المكونة"
+              title={t('corrective.componentsCatalog.blueprints', 'البصمات المكونة')}
               subtitle="BLUEPRINTS"
               value={blueprints.length}
-              valueUnit="بصمة"
+              valueUnit={t('unit.blueprint', 'بصمة')}
               icon={<Tag className="w-3.5 h-3.5" />}
               color="cyan"
             />
             <HeaderBentoCard
-              title="قوالب PDR المرتبطة"
+              title={t('corrective.componentsCatalog.linkedPdr', 'قوالب PDR المرتبطة')}
               subtitle="PDR LINKED"
               value={pdrTemplates.length}
-              valueUnit="قالب"
+              valueUnit={t('unit.template', 'قالب')}
               icon={<Link2 className="w-3.5 h-3.5" />}
               color="emerald"
             />
             <HeaderBentoCard
-              title="حالة الربط الهندسي"
+              title={t('corrective.componentsCatalog.linkStatus', 'حالة الربط الهندسي')}
               subtitle="LINK STATUS"
               value="100%"
-              valueUnit="نشط"
+              valueUnit={t('unit.active', 'نشط')}
               icon={<CheckCircle2 className="w-3.5 h-3.5" />}
               color="emerald"
             />
@@ -279,12 +279,12 @@ export function ComponentsCatalogView() {
       <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl flex-1 flex flex-col bg-[#0a0a0f]/60 backdrop-blur-xl mx-6 md:mx-8 mb-6 mt-6">
         {/* Table Registry Header + FilterBar */}
         <div className="p-6 md:p-8 border-b border-white/10 bg-white/[0.02] flex flex-col gap-6 shrink-0 relative z-10">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 flex-row-reverse">
-            <div className="flex items-center justify-end gap-4 flex-row-reverse">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
               <div className="w-12 h-12 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shrink-0">
                 <Cpu className="w-6 h-6 text-orange-400" />
               </div>
-              <div className="text-right">
+              <div>
                 <h2 className="text-lg font-bold text-white uppercase tracking-tight font-sans">
                   كتالوج المكونات الفنية وتجميعات الآلات
                 </h2>
@@ -294,14 +294,14 @@ export function ComponentsCatalogView() {
               </div>
             </div>
 
-            <div className="flex items-center justify-end gap-2 flex-row-reverse">
+            <div className="flex items-center gap-2">
               <BadgePill color="orange">
                 {filteredTemplates.length} مكون مسجل
               </BadgePill>
               <button
                 type="button"
                 onClick={openNewTemplate}
-                className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 flex-row-reverse"
+                className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
               >
                 <Plus className="w-4 h-4 text-slate-950" />
                 <span>إضافة مكون جديد</span>
@@ -369,7 +369,7 @@ export function ComponentsCatalogView() {
           {viewMode === 'table' ? (
             /* CRYSTAL HIGH-CONTRAST TABLE VIEW */
             <div className="w-full overflow-x-auto rounded-2xl border border-white/10 bg-[#0a0a0f]/60 backdrop-blur-xl shadow-2xl">
-              <table className="w-full text-right border-collapse text-xs">
+              <table dir="ltr" className="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="bg-white/[0.04] border-b border-white/10 text-slate-300 font-bold uppercase tracking-wider font-mono text-[11px]">
                     <th className="py-3.5 px-4">العائلة الفنية</th>
@@ -488,7 +488,7 @@ export function ComponentsCatalogView() {
                         {/* EXPANDABLE BLUEPRINTS & PDR PANEL */}
                         {isExpanded && (
                           <tr className="bg-[#0a0a0f]/80 border-b border-white/10">
-                            <td colSpan={6} className="p-4 md:p-6 text-right">
+                            <td colSpan={6} className="p-4 md:p-6 text-left">
                               <div className="space-y-4 pr-6 border-r-2 border-orange-500/40">
                                 {/* Blueprints sub-section */}
                                 <div className="space-y-3">

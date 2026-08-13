@@ -69,51 +69,49 @@ export function StaffRegistryView() {
   };
 
   return (
-    <motion.div 
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="w-full h-full flex flex-col gap-6 relative z-10"
-    >
+    <div className="flex flex-col h-full bg-white dark:bg-[#0a0a0f] rounded-3xl border border-slate-200 dark:border-white/5 shadow-2xl text-slate-800 dark:text-slate-200 font-sans pb-4 overflow-hidden overflow-y-auto custom-scrollbar dir-ltr" dir="ltr">
+      <div className="p-6 md:p-8 pb-0 shrink-0">
       <PageHeader
-        title={t('staff.title', 'طاقم العمل والتقنيين')}
-        subtitle={t('staff.subtitle', 'سجل طواقم الصيانة والتشغيل النشطة ومراقبة الكفاءة والتوزيع.')}
+        title={t('staff.title', 'Operational Staff')}
+        subtitle={t('staff.subtitle', 'Active Maintenance Personnel Directory')}
         icon={<Users className="w-7 h-7 text-indigo-400" />}
-        badgeText="سجل الطواقم"
+        badgeText={t('staff.badge', 'Staff Registry')}
         badgeColor="indigo"
       >
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <HeaderBentoCard
-            title="إجمالي المقاعد"
+            title={t('staff.totalSlots', 'Total Slots')}
             subtitle="TOTAL SLOTS"
             value={staffSlots.length}
             icon={<Users className="w-3.5 h-3.5" />}
             color="blue"
           />
           <HeaderBentoCard
-            title="الكوادر النشطة"
+            title={t('staff.activePersonnel', 'Active Personnel')}
             subtitle="ACTIVE PERSONNEL"
             value={activeStaff.length}
             icon={<UserCircle2 className="w-3.5 h-3.5" />}
             color="emerald"
           />
           <HeaderBentoCard
-            title="المقاعد الاحتياطية"
+            title={t('staff.spareSlots', 'Spare Slots')}
             subtitle="SPARE SLOTS"
             value={staffSlots.length - activeStaff.length}
             icon={<Pocket className="w-3.5 h-3.5" />}
             color="amber"
           />
           <HeaderBentoCard
-            title="حالة المصفوفة"
+            title={t('staff.matrixLock', 'Matrix Lock')}
             subtitle="MATRIX LOCK"
-            value="مؤمنة"
+            value={t('staff.lockedValue', 'Secured')}
             icon={<Lock className="w-3.5 h-3.5" />}
             color="cyan"
           />
         </div>
       </PageHeader>
+      </div>
 
+      <div className="flex flex-col flex-1 px-6 md:px-8 mt-6 gap-6 min-h-0">
       <motion.div variants={itemVariants} className="flex-1 min-h-0 flex flex-col">
         <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl h-full flex flex-col bg-[#0a0a0f]/60 backdrop-blur-xl">
           <div className="p-6 md:p-8 border-b border-white/10 bg-white/[0.02] flex flex-col md:flex-row md:items-center justify-between gap-6 shrink-0 relative z-10">
@@ -218,20 +216,18 @@ export function StaffRegistryView() {
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
-                      className="titan-card overflow-hidden flex flex-col group relative shadow-2xl p-0 hover:border-indigo-500/40 transition-all duration-300 border-white/10 bg-[#0a0a0f]/60 backdrop-blur-xl"
+                      className="titan-card overflow-hidden flex flex-col group relative shadow-none p-0 hover:border-indigo-500 transition-all duration-300 border border-white/10 bg-[#0a0a0f] rounded-3xl"
                     >
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl group-hover:bg-indigo-500/10 transition-colors pointer-events-none" />
-                      
                       {/* ID Header Plaque */}
-                      <div className="flex justify-between items-center bg-white/[0.02] p-4 border-b border-white/5 relative z-10">
+                      <div className="flex justify-between items-center bg-white/[0.02] p-4 border-b border-white/5 relative z-10 transition-colors duration-300 group-hover:bg-white/[0.04]">
                         <div className="flex items-center gap-2">
                            <div className={`w-1.5 h-1.5 rounded-full ${tech.isActive ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)] animate-pulse' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]'}`} />
-                           <span className={`text-[10px] font-mono tracking-widest uppercase font-bold ${tech.isActive ? 'text-slate-200' : 'text-slate-500'}`}>{tech.id}</span>
+                           <span className={`text-[10px] font-mono tracking-widest uppercase font-bold transition-colors ${tech.isActive ? 'text-slate-400 group-hover:text-slate-200' : 'text-slate-600'}`}>{tech.id}</span>
                         </div>
-                        <div className="flex opacity-0 group-hover:opacity-100 transition-all duration-300 gap-1 bg-[#0a0a0f]/60 backdrop-blur-md border border-white/10 p-1 rounded-lg">
+                        <div className="flex opacity-0 group-hover:opacity-100 transition-all duration-300 gap-1 bg-white/5 backdrop-blur-md border border-white/10 p-1 rounded-lg">
                            <button 
                              onClick={() => handleEdit(tech)}
-                             className="p-1.5 rounded-md hover:bg-white/10 text-slate-400 hover:text-indigo-400 transition-colors"
+                             className="p-1.5 rounded-md hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
                              title="Configure Slot"
                            >
                              <Edit3 className="w-3.5 h-3.5" />
@@ -240,22 +236,22 @@ export function StaffRegistryView() {
                       </div>
 
                       <div className={`p-6 flex flex-col items-center text-center relative z-10 flex-1 ${!tech.isActive && 'opacity-60 grayscale'}`}>
-                        <div className={`w-20 h-20 rounded-2xl flex items-center justify-center text-3xl font-semibold shadow-[inset_0_0_20px_rgba(14,165,233,0.15)] group-hover:scale-105 transition-transform duration-500 text-white ${tech.color} bg-opacity-20 border border-white/10 mb-5`}>
+                        <div className={`w-20 h-20 rounded-2xl flex items-center justify-center text-3xl font-semibold group-hover:scale-105 transition-transform duration-500 text-slate-300 group-hover:text-white bg-white/5 border border-white/10 mb-5`}>
                           {tech.initials}
                         </div>
                         
-                        <h3 className="text-xl font-bold text-white tracking-wide mb-2 uppercase">{tech.name}</h3>
+                        <h3 className="text-xl font-bold text-slate-400 group-hover:text-white group-hover:font-black tracking-wide mb-2 uppercase transition-all duration-300">{tech.name}</h3>
                         
-                        <div className="flex items-center gap-1.5 text-[10px] text-indigo-400/90 mb-5 bg-indigo-500/10 px-3 py-1.5 rounded-md border border-indigo-500/20 uppercase tracking-widest font-bold">
+                        <div className="flex items-center gap-1.5 text-[10px] text-slate-400 mb-5 bg-white/5 px-3 py-1.5 rounded-md border border-white/10 uppercase tracking-widest font-bold">
                           <Pocket className="w-3.5 h-3.5" />
                           <span>{tech.role}</span>
                         </div>
                         
-                        <div className="w-full bg-[#0a0a0f]/20 rounded-xl p-4 border border-white/5 flex flex-col gap-2 mt-auto text-left">
-                          <span className="text-[10px] uppercase tracking-widest font-bold text-slate-500 flex items-center gap-1.5">
-                            <Fingerprint className="w-3.5 h-3.5 text-emerald-500" /> Physical Badge ID
+                        <div className="w-full bg-[#0a0a0f] rounded-xl p-4 border border-white/5 flex flex-col gap-2 mt-auto text-left group-hover:bg-white/5 transition-colors">
+                          <span className="text-[10px] uppercase tracking-widest font-bold text-slate-500 flex items-center gap-1.5 group-hover:text-slate-400 transition-colors">
+                            <Fingerprint className="w-3.5 h-3.5 text-slate-500 group-hover:text-slate-400" /> Physical Badge ID
                           </span>
-                          <div className="text-sm font-bold text-slate-200 font-mono uppercase tracking-tight">
+                          <div className="text-sm font-bold text-slate-400 group-hover:text-slate-200 font-mono uppercase tracking-tight transition-colors">
                              {tech.realBadgeId || 'NOT CONFIGURED'}
                           </div>
                         </div>
@@ -275,7 +271,8 @@ export function StaffRegistryView() {
           </div>
         </GlassCard>
       </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 }
 

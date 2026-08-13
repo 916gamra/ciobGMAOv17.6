@@ -591,36 +591,36 @@ export function PreventiveRadarView() {
     <div className="flex flex-col h-full bg-[#0a0a0f] p-6 text-slate-200 relative overflow-hidden custom-scrollbar">
       {/* Page Header */}
       <PageHeader
-        title={t("preventive.radar.title", "رادار الصيانة الوقائية")}
-        subtitle={t("preventive.radar.subtitle", "البث اللحظي لصحة أصول ومعدات المصنع وتتبع تنفيذ خطط الصيانة وجدولتها")}
+        title={t("preventive.radar.title", "Preventive Maintenance Radar")}
+        subtitle={t("preventive.radar.subtitle", "Real-time health telemetry of factory assets and scheduled preventive maintenance operations")}
         icon={<Radar className="w-7 h-7 text-emerald-400" />}
         badgeColor="emerald"
-        badgeText={t("portals.preventive", "الصيانة الوقائية")}
+        badgeText={t("preventive.badge", "Preventive Maintenance")}
       >
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <HeaderBentoCard
-            title="إجمالي الآلات"
+            title={t("preventive.radar.totalMachines", "Total Machinery")}
             subtitle="TOTAL EQUIPMENT"
             value={stats.totalMachines}
             icon={<Radar className="w-3.5 h-3.5" />}
             color="emerald"
           />
           <HeaderBentoCard
-            title="آلات في خطر"
+            title={t("preventive.radar.criticalAlerts", "Critical Alerts")}
             subtitle="CRITICAL ALERTS"
             value={stats.criticalMachines}
             icon={<AlertTriangle className="w-3.5 h-3.5" />}
             color="rose"
           />
           <HeaderBentoCard
-            title="مهام وقائية معلقة"
+            title={t("preventive.radar.pendingTasks", "Pending Tasks")}
             subtitle="PENDING TASKS"
             value={stats.pendingCount}
             icon={<Clock className="w-3.5 h-3.5" />}
             color="amber"
           />
           <HeaderBentoCard
-            title="مهام منجزة"
+            title={t("preventive.radar.completedPrev", "Completed Interventions")}
             subtitle="COMPLETED PREV"
             value={stats.completedCount}
             icon={<ClipboardCheck className="w-3.5 h-3.5" />}
@@ -630,19 +630,18 @@ export function PreventiveRadarView() {
       </PageHeader>
 
       {/* Control Cockpit Card */}
-      <div className="mb-6 bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-4" dir="rtl">
+      <div className="mb-6 bg-slate-900/60 backdrop-blur-xl border border-white/10 rounded-2xl p-4 shadow-2xl flex flex-col md:flex-row items-center justify-between gap-4">
         {/* Filters and Search Bar */}
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
           {/* Search Input */}
           <div className="flex items-center bg-[#0a0a0f]/40 rounded-xl px-3 py-1.5 border border-white/5 focus-within:border-emerald-500/30 transition-all w-full md:w-auto">
-            <Search className="w-4 h-4 text-slate-400 shrink-0 ml-2" />
+            <Search className="w-4 h-4 text-slate-400 shrink-0 mr-2 rtl:mr-0 rtl:ml-2" />
             <input
               type="text"
-              placeholder={t("preventive.radar.search", "بحث عن آلة...")}
-              className="bg-transparent border-none outline-none text-xs text-white placeholder-slate-500 font-medium text-right w-full md:w-36"
+              placeholder={t("preventive.radar.search", "Search machinery...")}
+              className="bg-transparent border-none outline-none text-xs text-white placeholder-slate-500 font-medium w-full md:w-36"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              dir="rtl"
             />
           </div>
 
@@ -651,10 +650,9 @@ export function PreventiveRadarView() {
             <select
               value={selectedSector}
               onChange={(e) => setSelectedSector(e.target.value)}
-              className="w-full md:w-auto bg-[#0a0a0f]/40 border border-white/5 rounded-xl py-1.5 px-3 text-xs text-slate-300 focus:outline-none focus:border-emerald-500/50 appearance-none min-w-[110px] text-right"
-              dir="rtl"
+              className="w-full md:w-auto bg-[#0a0a0f]/40 border border-white/5 rounded-xl py-1.5 px-3 text-xs text-slate-300 focus:outline-none focus:border-emerald-500/50 appearance-none min-w-[110px]"
             >
-              <option value="ALL" className="bg-[#0a0a0f]">{t("preventive.radar.allSectors", "كل القطاعات")}</option>
+              <option value="ALL" className="bg-[#0a0a0f]">{t("preventive.radar.allSectors", "All Production Sectors")}</option>
               {sectors.map((s) => (
                 <option key={s.id} value={s.id} className="bg-[#0a0a0f]">
                   {s.name}
@@ -668,10 +666,9 @@ export function PreventiveRadarView() {
             <select
               value={selectedTech}
               onChange={(e) => setSelectedTech(e.target.value)}
-              className="w-full md:w-auto bg-[#0a0a0f]/40 border border-white/5 rounded-xl py-1.5 px-3 text-xs text-slate-300 focus:outline-none focus:border-emerald-500/50 appearance-none min-w-[110px] text-right"
-              dir="rtl"
+              className="w-full md:w-auto bg-[#0a0a0f]/40 border border-white/5 rounded-xl py-1.5 px-3 text-xs text-slate-300 focus:outline-none focus:border-emerald-500/50 appearance-none min-w-[110px]"
             >
-              <option value="ALL" className="bg-[#0a0a0f]">{t("preventive.radar.allTechnicians", "كل التقنيين")}</option>
+              <option value="ALL" className="bg-[#0a0a0f]">{t("preventive.radar.allTechs", "All Technicians")}</option>
               {technicians.map((t) => (
                 <option key={t.id} value={t.id} className="bg-[#0a0a0f]">
                   {t.name}

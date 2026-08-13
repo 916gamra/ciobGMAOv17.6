@@ -352,7 +352,8 @@ export function MachineDetailsView({ tabId }: { tabId: string }) {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="w-full h-full flex flex-col gap-6 relative z-10 lg:px-8 pt-4"
+      className="w-full h-full flex flex-col gap-6 relative z-10 lg:px-8 pt-4 dir-ltr"
+      dir="ltr"
     >
       <motion.header variants={itemVariants} className="flex flex-col md:flex-row md:items-start justify-between gap-6 shrink-0 relative">
         <div className="absolute -top-20 -left-10 w-96 h-96 bg-indigo-500/10 blur-[120px] rounded-full pointer-events-none" />

@@ -336,43 +336,43 @@ export function BreakdownLogView({ user }: { user: any }) {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="flex flex-col h-full text-slate-200 font-sans"
+      className="flex flex-col h-full bg-[#0a0a0f] rounded-3xl border border-white/5 shadow-2xl text-slate-200 font-sans pb-4 overflow-hidden"
     >
       
       {/* HEADER COCKPIT WITH INTEGRATED COMPACT STATS */}
-      <div className="mx-6 md:mx-8 mt-6">
+      <div className="p-6 md:p-8 pb-0">
         <PageHeader
           title={t('corrective.breakdownLog.title', 'سجل التدخلات والأعطال الطارئة')}
           subtitle={t('corrective.breakdownLog.subtitle', 'التوثيق اللحظي للتدخلات العلاجية ومتابعة حالة إصلاح الأصول والقطع المستهلكة')}
           icon={<Wrench className="w-7 h-7 text-orange-400" />}
-          badgeText="العمليات العلاجية"
+          badgeText={t('corrective.breakdownLog.badge', 'العمليات العلاجية')}
           badgeColor="orange"
         >
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <HeaderBentoCard
-              title="إجمالي التدخلات"
+              title={t('corrective.breakdownLog.totalRepairs', 'إجمالي التدخلات')}
               subtitle="TOTAL REPAIRS"
               value={stats.totalRepairs}
               icon={<Wrench className="w-3.5 h-3.5" />}
               color="orange"
             />
             <HeaderBentoCard
-              title="ساعات التوقف"
+              title={t('corrective.breakdownLog.downtimeMetric', 'ساعات التوقف')}
               subtitle="DOWNTIME METRIC"
               value={Math.round(stats.totalDowntime / 60)}
-              valueUnit="ساعة"
+              valueUnit={t('unit.hour', 'ساعة')}
               icon={<Clock className="w-3.5 h-3.5" />}
               color="amber"
             />
             <HeaderBentoCard
-              title="أعطال حرجة"
+              title={t('corrective.breakdownLog.criticalIncidents', 'أعطال حرجة')}
               subtitle="CRITICAL INCIDENTS"
               value={stats.criticalIncidents}
               icon={<AlertTriangle className="w-3.5 h-3.5" />}
               color="rose"
             />
             <HeaderBentoCard
-              title="في انتظار المطابقة"
+              title={t('corrective.breakdownLog.pendingReconcile', 'في انتظار المطابقة')}
               subtitle="PENDING RECONCILE"
               value={stats.pendingReconciliations}
               icon={<Package className="w-3.5 h-3.5" />}
@@ -485,7 +485,7 @@ export function BreakdownLogView({ user }: { user: any }) {
           {viewMode === 'table' ? (
             /* CRYSTAL HIGH-CONTRAST TABLE VIEW */
             <div className="w-full overflow-x-auto rounded-2xl border border-white/10 bg-[#0a0a0f]/60 backdrop-blur-xl shadow-2xl">
-              <table className="w-full text-right border-collapse text-xs">
+              <table dir="ltr" className="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="bg-white/[0.04] border-b border-white/10 text-slate-300 font-bold uppercase tracking-wider font-mono text-[11px]">
                     <th className="py-3.5 px-4">رقم البون</th>
@@ -1408,7 +1408,7 @@ export function BreakdownLogView({ user }: { user: any }) {
                     </div>
                   ) : (
                     <div className="rounded-xl border border-white/10 overflow-hidden bg-[#0a0a0f]/60">
-                      <table className="w-full text-right border-collapse text-[11px]">
+                      <table dir="ltr" className="w-full text-left border-collapse text-[11px]">
                         <thead>
                           <tr className="bg-white/[0.04] border-b border-white/10 text-slate-400 font-bold font-mono">
                             <th className="p-2.5">حالة القطعة</th>

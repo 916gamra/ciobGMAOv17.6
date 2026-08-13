@@ -170,29 +170,29 @@ export function SecurityDashboard() {
           <div className="space-y-4">
             <h2 className="text-lg font-bold text-white">التهديدات المكتشفة</h2>
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+              <table dir="ltr" className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-white/10 text-xs uppercase tracking-wider text-slate-400">
-                    <th className="py-3 px-4 text-right">النوع</th>
-                    <th className="py-3 px-4 text-right">الخطورة</th>
-                    <th className="py-3 px-4 text-right">درجة التهديد</th>
-                    <th className="py-3 px-4 text-right">المصدر</th>
-                    <th className="py-3 px-4 text-right">التوقيت</th>
+                    <th className="py-3 px-4 text-left">النوع</th>
+                    <th className="py-3 px-4 text-left">الخطورة</th>
+                    <th className="py-3 px-4 text-left">درجة التهديد</th>
+                    <th className="py-3 px-4 text-left">المصدر</th>
+                    <th className="py-3 px-4 text-left">التوقيت</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5 text-sm">
                   {report?.detectedThreats?.length > 0 ? (
                     report.detectedThreats.map((t: any) => (
                       <tr key={t.id} className="hover:bg-white/[0.04] transition-colors">
-                        <td className="py-3 px-4 text-right font-mono text-cyan-300">{t.type}</td>
-                        <td className="py-3 px-4 text-right">
+                        <td className="py-3 px-4 text-left font-mono text-cyan-300">{t.type}</td>
+                        <td className="py-3 px-4 text-left">
                           <span className={`px-2 py-1 rounded-lg text-xs font-bold ${getBadgeColor(t.severity)}`}>
                             {t.severity}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-right font-mono">{t.score}/100</td>
-                        <td className="py-3 px-4 text-right text-slate-400">{t.source}</td>
-                        <td className="py-3 px-4 text-right text-slate-400 font-mono text-xs">
+                        <td className="py-3 px-4 text-left font-mono">{t.score}/100</td>
+                        <td className="py-3 px-4 text-left text-slate-400">{t.source}</td>
+                        <td className="py-3 px-4 text-left text-slate-400 font-mono text-xs">
                           {new Date(t.timestamp).toLocaleTimeString()}
                         </td>
                       </tr>
@@ -250,27 +250,27 @@ export function SecurityDashboard() {
           <div className="space-y-4">
             <h2 className="text-lg font-bold text-white">سجلات سلامة البيانات والتحقق</h2>
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+              <table dir="ltr" className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-white/10 text-xs uppercase tracking-wider text-slate-400">
-                    <th className="py-3 px-4 text-right">معرف البيانات</th>
-                    <th className="py-3 px-4 text-right">نوع الخرق</th>
-                    <th className="py-3 px-4 text-right">الخطورة</th>
-                    <th className="py-3 px-4 text-right">التوقيت</th>
+                    <th className="py-3 px-4 text-left">معرف البيانات</th>
+                    <th className="py-3 px-4 text-left">نوع الخرق</th>
+                    <th className="py-3 px-4 text-left">الخطورة</th>
+                    <th className="py-3 px-4 text-left">التوقيت</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5 text-sm">
                   {report?.integrityViolations?.length > 0 ? (
                     report.integrityViolations.map((v: any) => (
                       <tr key={v.id} className="hover:bg-white/[0.04] transition-colors">
-                        <td className="py-3 px-4 text-right font-mono text-cyan-300">{v.id}</td>
-                        <td className="py-3 px-4 text-right">{v.type}</td>
-                        <td className="py-3 px-4 text-right">
+                        <td className="py-3 px-4 text-left font-mono text-cyan-300">{v.id}</td>
+                        <td className="py-3 px-4 text-left">{v.type}</td>
+                        <td className="py-3 px-4 text-left">
                           <span className={`px-2 py-1 rounded-lg text-xs font-bold ${getBadgeColor(v.severity)}`}>
                             {v.severity}
                           </span>
                         </td>
-                        <td className="py-3 px-4 text-right text-slate-400 font-mono text-xs">
+                        <td className="py-3 px-4 text-left text-slate-400 font-mono text-xs">
                           {new Date(v.timestamp).toLocaleTimeString()}
                         </td>
                       </tr>
@@ -290,23 +290,23 @@ export function SecurityDashboard() {
           <div className="space-y-4">
             <h2 className="text-lg font-bold text-white">الجلسات النشطة المؤمنة</h2>
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
+              <table dir="ltr" className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-white/10 text-xs uppercase tracking-wider text-slate-400">
-                    <th className="py-3 px-4 text-right">معرف الجلسة</th>
-                    <th className="py-3 px-4 text-right">معرف المستخدم</th>
-                    <th className="py-3 px-4 text-right">عنوان IP</th>
-                    <th className="py-3 px-4 text-right">آخر نشاط</th>
+                    <th className="py-3 px-4 text-left">معرف الجلسة</th>
+                    <th className="py-3 px-4 text-left">معرف المستخدم</th>
+                    <th className="py-3 px-4 text-left">عنوان IP</th>
+                    <th className="py-3 px-4 text-left">آخر نشاط</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5 text-sm">
                   {report?.activeSessions?.length > 0 ? (
                     report.activeSessions.map((s: any) => (
                       <tr key={s.id} className="hover:bg-white/[0.04] transition-colors">
-                        <td className="py-3 px-4 text-right font-mono text-xs text-cyan-300">{s.id.substring(0, 16)}...</td>
-                        <td className="py-3 px-4 text-right font-bold">{s.userId}</td>
-                        <td className="py-3 px-4 text-right font-mono">{s.ipAddress}</td>
-                        <td className="py-3 px-4 text-right text-slate-400 font-mono text-xs">
+                        <td className="py-3 px-4 text-left font-mono text-xs text-cyan-300">{s.id.substring(0, 16)}...</td>
+                        <td className="py-3 px-4 text-left font-bold">{s.userId}</td>
+                        <td className="py-3 px-4 text-left font-mono">{s.ipAddress}</td>
+                        <td className="py-3 px-4 text-left text-slate-400 font-mono text-xs">
                           {new Date(s.lastActivity).toLocaleTimeString()}
                         </td>
                       </tr>

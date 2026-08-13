@@ -104,51 +104,49 @@ export function SectorRegistryView() {
   };
 
   return (
-    <motion.div 
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="w-full h-full flex flex-col gap-6 relative z-10"
-    >
+    <div className="flex flex-col h-full bg-white dark:bg-[#0a0a0f] rounded-3xl border border-slate-200 dark:border-white/5 shadow-2xl text-slate-800 dark:text-slate-200 font-sans pb-4 overflow-hidden overflow-y-auto custom-scrollbar dir-ltr" dir="ltr">
+      <div className="p-6 md:p-8 pb-0 shrink-0">
       <PageHeader
-        title={t('sectors.title', 'مناطق الإنتاج وقطاعات المعمل')}
-        subtitle={t('sectors.subtitle', 'التنظيم الهيكلي الكلي للمصنع وإدارة قطاعات ومناطق التشغيل.')}
+        title={t('sectors.title', 'Production Zones')}
+        subtitle={t('sectors.subtitle', 'Macro-Level Facility Organization & Area Management')}
         icon={<Network className="w-7 h-7 text-indigo-400" />}
-        badgeText="الهيكل الكلي"
+        badgeText={t('sectors.badge', 'Production Zones')}
         badgeColor="indigo"
       >
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <HeaderBentoCard
-            title="المناطق النشطة"
-            subtitle="القطاعات الحية"
+            title={t('sectors.activeZones', 'Active Zones')}
+            subtitle="ACTIVE ZONES"
             value={activeSectors.length}
             icon={<Network className="w-3.5 h-3.5" />}
             color="blue"
           />
           <HeaderBentoCard
-            title="المقاعد الشاغرة"
-            subtitle="المخطط الهيكلي"
+            title={t('sectors.dormantSlots', 'Dormant Slots')}
+            subtitle="DORMANT SLOTS"
             value={availableSlots.length}
             icon={<Layers className="w-3.5 h-3.5" />}
             color="amber"
           />
           <HeaderBentoCard
-            title="الآلات النشطة"
-            subtitle="المعدات الحالية"
+            title={t('sectors.machines', 'Machines')}
+            subtitle="MACHINES"
             value={machines.length}
             icon={<Cpu className="w-3.5 h-3.5" />}
             color="cyan"
           />
           <HeaderBentoCard
-            title="التقنيين والمشغلين"
-            subtitle="الطاقم التشغيلي"
+            title={t('sectors.personnel', 'Personnel')}
+            subtitle="PERSONNEL"
             value={activeTechnicians.length}
             icon={<Users className="w-3.5 h-3.5" />}
             color="emerald"
           />
         </div>
       </PageHeader>
+      </div>
       
+      <div className="flex flex-col flex-1 px-6 md:px-8 mt-6 gap-6 min-h-0">
       <motion.div variants={itemVariants} className="flex-1 min-h-0 flex flex-col">
         <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl h-full flex flex-col bg-[#0a0a0f]/60 backdrop-blur-xl">
           <div className="p-6 md:p-8 border-b border-white/10 bg-white/[0.02] flex flex-col md:flex-row md:items-center justify-between gap-6 shrink-0 relative z-10">
@@ -280,32 +278,30 @@ export function SectorRegistryView() {
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
-                      className="titan-card overflow-hidden flex flex-col group relative shadow-2xl p-0 hover:border-indigo-500/40 transition-all duration-300 border-white/10 bg-[#0a0a0f]/60 backdrop-blur-xl"
+                      className="titan-card overflow-hidden flex flex-col group relative shadow-none p-0 hover:border-indigo-500 transition-all duration-300 border border-white/10 bg-[#0a0a0f] rounded-3xl"
                     >
-                      <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-3xl group-hover:bg-indigo-500/10 transition-colors pointer-events-none" />
-                      
                       <div className="p-6 relative z-10 flex-1">
                         <div className="flex justify-between items-start mb-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0">
+                            <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 text-slate-400 flex items-center justify-center shrink-0">
                               <Network className="w-5 h-5" />
                             </div>
                             <div>
-                              <h3 className="text-base font-bold text-white tracking-tight uppercase">{sector.name}</h3>
-                              <p className="text-[10px] text-slate-400 uppercase tracking-widest font-mono font-bold mt-0.5">ID: {sector.id.substring(0, 8)}</p>
+                              <h3 className="text-base font-bold text-slate-400 group-hover:text-white group-hover:font-black tracking-tight uppercase transition-all duration-300">{sector.name}</h3>
+                              <p className="text-[10px] text-slate-500 uppercase tracking-widest font-mono font-bold mt-0.5">ID: {sector.id.substring(0, 8)}</p>
                             </div>
                           </div>
-                          <div className="flex opacity-0 group-hover:opacity-100 transition-all duration-300 gap-1 bg-[#0a0a0f]/60 backdrop-blur-md border border-white/10 p-1 rounded-lg">
+                          <div className="flex opacity-0 group-hover:opacity-100 transition-all duration-300 gap-1 bg-white/5 backdrop-blur-md border border-white/10 p-1 rounded-lg">
                             <button 
                               onClick={() => handleEdit(sector)}
-                              className="p-1.5 rounded-md hover:bg-white/10 text-slate-400 hover:text-indigo-400 transition-colors"
+                              className="p-1.5 rounded-md hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
                               title="Edit Zone"
                             >
                               <Edit3 className="w-3.5 h-3.5" />
                             </button>
                             <button 
                               onClick={() => handleDelete(sector.id, sector.name)}
-                              className="p-1.5 rounded-md hover:bg-white/10 text-slate-400 hover:text-rose-400 transition-colors"
+                              className="p-1.5 rounded-md hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors"
                               title="Decommission Zone"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -313,44 +309,44 @@ export function SectorRegistryView() {
                           </div>
                         </div>
                         
-                        <p className="text-xs text-slate-300 font-medium line-clamp-2 h-8 leading-relaxed">
+                        <p className="text-xs text-slate-500 group-hover:text-slate-300 transition-colors duration-300 font-medium line-clamp-2 h-8 leading-relaxed">
                           {sector.description || t('sectors.noParams', 'No direct operational parameters defined. Following universal factory protocol.')}
                         </p>
                         
                         {sector.managerName && (
                           <div className="mt-4 flex flex-col gap-2">
-                             <div className="text-[10px] uppercase tracking-[0.2em] font-bold text-slate-400 mb-1 ml-1 opacity-80">{t('sectors.leadership', 'Sector Leadership')}</div>
-                             <div className="flex items-center gap-3 bg-indigo-500/10 border border-indigo-500/20 px-4 py-3 rounded-2xl group/manager hover:bg-indigo-500/20 transition-all duration-300">
-                               <div className="w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center border border-indigo-500/30 group-hover/manager:scale-110 transition-transform shrink-0">
-                                 <Users className="w-4 h-4 text-indigo-400" />
+                             <div className="text-[10px] uppercase tracking-[0.2em] font-bold text-slate-500 mb-1 ml-1 opacity-80">{t('sectors.leadership', 'Sector Leadership')}</div>
+                             <div className="flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-3 rounded-2xl group/manager hover:bg-white/10 transition-all duration-300">
+                               <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center border border-white/10 group-hover/manager:scale-110 transition-transform shrink-0">
+                                 <Users className="w-4 h-4 text-slate-400" />
                                </div>
                                <div className="flex flex-col">
-                                 <span className="text-[11px] font-bold text-white uppercase tracking-wider">{sector.managerName}</span>
-                                 <span className="text-[9px] text-indigo-400 font-bold uppercase tracking-widest opacity-90">{t('sectors.headTitle', 'Operational Head')}</span>
+                                 <span className="text-[11px] font-bold text-slate-300 group-hover:text-white uppercase tracking-wider transition-colors">{sector.managerName}</span>
+                                 <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest opacity-90">{t('sectors.headTitle', 'Operational Head')}</span>
                                </div>
                              </div>
                              {sector.preventiveTechId && (
-                               <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-lg">
-                                 <Activity className="w-3.5 h-3.5 text-emerald-400" />
-                                 <span className="text-[10px] uppercase tracking-widest font-bold text-emerald-400">{t('sectors.pmTechAssigned', 'PM Tech Assigned')}</span>
+                               <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-3 py-1.5 rounded-lg">
+                                 <Activity className="w-3.5 h-3.5 text-slate-400" />
+                                 <span className="text-[10px] uppercase tracking-widest font-bold text-slate-400">{t('sectors.pmTechAssigned', 'PM Tech Assigned')}</span>
                                </div>
                              )}
                           </div>
                         )}
                       </div>
 
-                      <div className="grid grid-cols-2 divide-x divide-white/10 bg-white/[0.02] border-t border-white/10 mt-auto relative z-10">
-                        <div className="p-4 flex flex-col items-center justify-center gap-1 group/stat hover:bg-white/[0.02] transition-colors">
-                          <div className="text-[10px] uppercase font-bold text-slate-400 tracking-widest flex items-center gap-1.5">
-                            <Users className="w-3.5 h-3.5 text-emerald-400 group-hover/stat:scale-110 transition-transform" /> {t('sectors.personnel', 'Staff')}
+                      <div className="grid grid-cols-2 divide-x divide-white/10 bg-white/[0.02] border-t border-white/10 mt-auto relative z-10 transition-colors duration-300">
+                        <div className="p-4 flex flex-col items-center justify-center gap-1 group/stat hover:bg-white/[0.05] transition-colors">
+                          <div className="text-[10px] uppercase font-bold text-slate-500 group-hover:text-slate-400 tracking-widest flex items-center gap-1.5 transition-colors">
+                            <Users className="w-3.5 h-3.5 text-slate-500 group-hover/stat:text-slate-300 group-hover/stat:scale-110 transition-all" /> {t('sectors.personnel', 'Staff')}
                           </div>
-                          <span className="text-lg font-bold font-mono text-white">{zoneTechs}</span>
+                          <span className="text-lg font-bold font-mono text-slate-400 group-hover:text-white transition-colors">{zoneTechs}</span>
                         </div>
-                        <div className="p-4 flex flex-col items-center justify-center gap-1 group/stat hover:bg-white/[0.02] transition-colors">
-                          <div className="text-[10px] uppercase font-bold text-slate-500 tracking-widest flex items-center gap-1.5">
-                             <Cpu className="w-3.5 h-3.5 text-cyan-400 group-hover/stat:scale-110 transition-transform" /> {t('sectors.machines', 'Machines')}
+                        <div className="p-4 flex flex-col items-center justify-center gap-1 group/stat hover:bg-white/[0.05] transition-colors">
+                          <div className="text-[10px] uppercase font-bold text-slate-500 group-hover:text-slate-400 tracking-widest flex items-center gap-1.5 transition-colors">
+                             <Cpu className="w-3.5 h-3.5 text-slate-500 group-hover/stat:text-slate-300 group-hover/stat:scale-110 transition-all" /> {t('sectors.machines', 'Machines')}
                           </div>
-                          <span className="text-lg font-bold font-mono text-white">{zoneMachines}</span>
+                          <span className="text-lg font-bold font-mono text-slate-400 group-hover:text-white transition-colors">{zoneMachines}</span>
                         </div>
                       </div>
                     </motion.div>
@@ -369,7 +365,8 @@ export function SectorRegistryView() {
           </div>
         </GlassCard>
       </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 }
 
