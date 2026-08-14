@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/shared/utils';
 import { toast } from 'sonner';
+import { UnifiedSearchFilter, type FilterGroup, type QuickTabOption } from '@/shared/components/UnifiedSearchFilter';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -134,6 +135,29 @@ export function StockHistoryView() {
       return matchesType && matchesMachine && matchesSearch;
     });
   }, [enrichedMovements, typeFilter, selectedMachineId, searchTerm]);
+
+  const quickTabs: QuickTabOption[] = useMemo(() => [
+    { id: 'ALL', label: 'جميع الحركات', count: enrichedMovements.length },
+    { id: 'IN', label: 'إيداع وتوريد', count: enrichedMovements.filter(m => m.type === 'IN').length },
+    { id: 'OUT', label: 'صرف واستهلاك', count: enrichedMovements.filter(m => m.type === 'OUT').length },
+    { id: 'ADJUST', label: 'تسوية وجرد', count: enrichedMovements.filter(m => m.type === 'ADJUST').length },
+  ], [enrichedMovements]);
+
+  const filterGroups: FilterGroup[] = useMemo(() => [
+    {
+      id: 'machine',
+      label: 'الآلة المستهدفة',
+      options: [
+        { value: 'ALL', label: 'جميع الآلات والمستودع' },
+        ...(machines || []).map(m => ({
+          value: m.id,
+          label: `${m.referenceCode} - ${m.serialNumber || 'Unit'}`
+        }))
+      ],
+      value: selectedMachineId,
+      onChange: (val) => setSelectedMachineId(val)
+    }
+  ], [machines, selectedMachineId]);
 
   // Calculate Machine Consumption and Smart recommendation suggestions
   const machineAnalysisList = useMemo(() => {
@@ -395,33 +419,45 @@ export function StockHistoryView() {
       </div>
 
       <div className="flex flex-col flex-1 px-6 md:px-8 mt-6 gap-6 min-h-0">
-        {/* Tabs Menu */}
-        <motion.div variants={itemVariants} className="flex items-center gap-1 bg-[#090d16] p-1 rounded-2xl border border-white/5 self-start max-w-md shrink-0">
-        <button
-          onClick={() => setActiveSubTab('ledger')}
-          className={cn(
-            "flex-1 px-5 py-2.5 rounded-xl text-xs font-bold tracking-wider transition-all duration-300 flex items-center justify-center gap-2 whitespace-nowrap",
-            activeSubTab === 'ledger'
-              ? "bg-cyan-500/15 text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.15)] border border-cyan-500/20"
-              : "text-slate-400 hover:text-white border border-transparent"
-          )}
-        >
-          <History className="w-4 h-4" />
-          Inventory Ledger
-        </button>
-        <button
-          onClick={() => setActiveSubTab('machine-consumption')}
-          className={cn(
-            "flex-1 px-5 py-2.5 rounded-xl text-xs font-bold tracking-wider transition-all duration-300 flex items-center justify-center gap-2 whitespace-nowrap",
-            activeSubTab === 'machine-consumption'
-              ? "bg-cyan-500/15 text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.15)] border border-cyan-500/20"
-              : "text-slate-400 hover:text-white border border-transparent"
-          )}
-        >
-          <Cpu className="w-4 h-4" />
-          Smart Machine Mapper
-        </button>
-      </motion.div>
+        {/* High-Contrast Sub-Tabs Menu */}
+        <motion.div variants={itemVariants} className="flex items-center gap-2 bg-[#0b0d14] p-1.5 rounded-2xl border border-white/15 self-start shrink-0 shadow-xl">
+          <button
+            onClick={() => setActiveSubTab('ledger')}
+            className={cn(
+              "px-5 py-2.5 rounded-xl text-xs font-black tracking-tight transition-all duration-300 flex items-center justify-center gap-2.5 whitespace-nowrap cursor-pointer",
+              activeSubTab === 'ledger'
+                ? "bg-white text-slate-950 shadow-lg shadow-white/10"
+                : "text-slate-300 hover:text-white hover:bg-white/[0.08] font-bold"
+            )}
+          >
+            <History className="w-4 h-4 text-current" />
+            <span>سجل حركات وتسويات المخزون</span>
+            <span className={cn(
+              "text-[10px] font-mono font-black px-2 py-0.5 rounded-md",
+              activeSubTab === 'ledger' ? "bg-slate-950 text-white" : "bg-white/10 text-slate-300"
+            )}>
+              {filteredMovements.length}
+            </span>
+          </button>
+          <button
+            onClick={() => setActiveSubTab('machine-consumption')}
+            className={cn(
+              "px-5 py-2.5 rounded-xl text-xs font-black tracking-tight transition-all duration-300 flex items-center justify-center gap-2.5 whitespace-nowrap cursor-pointer",
+              activeSubTab === 'machine-consumption'
+                ? "bg-white text-slate-950 shadow-lg shadow-white/10"
+                : "text-slate-300 hover:text-white hover:bg-white/[0.08] font-bold"
+            )}
+          >
+            <Cpu className="w-4 h-4 text-current" />
+            <span>مخطط ربط شجرة الآلات الذكي</span>
+            <span className={cn(
+              "text-[10px] font-mono font-black px-2 py-0.5 rounded-md",
+              activeSubTab === 'machine-consumption' ? "bg-slate-950 text-white" : "bg-white/10 text-slate-300"
+            )}>
+              {machineAnalysisList.length}
+            </span>
+          </button>
+        </motion.div>
 
       <AnimatePresence mode="wait">
         {activeSubTab === 'ledger' ? (
@@ -433,91 +469,82 @@ export function StockHistoryView() {
             transition={{ duration: 0.3 }}
             className="space-y-6"
           >
-            <GlassCard className="p-6 border-white/5 flex flex-col md:flex-row gap-4 items-center justify-between">
-              <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-                <div className="relative w-full sm:w-64 group">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-cyan-500 transition-colors" />
-                  <input 
-                    type="text" 
-                    placeholder="Search by code, part, recipient..." 
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="titan-input py-2.5 pl-11 pr-3 w-full shadow-none"
-                  />
+            <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl flex flex-col bg-[#0a0a0f]/60 backdrop-blur-xl">
+              {/* Universal Command Bar */}
+              <div className="p-4 md:p-6 border-b border-white/10 bg-white/[0.02] flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4 shrink-0 relative z-10">
+                <div className="flex items-center gap-3 shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0">
+                    <History className="w-5 h-5 text-cyan-400" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h2 className="text-base font-extrabold text-white uppercase tracking-tight font-sans">
+                        سجل حركات وتسويات المخزون
+                      </h2>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-cyan-500/15 border border-cyan-500/30 text-cyan-300">
+                        {filteredMovements.length} حركة
+                      </span>
+                    </div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono">
+                      INVENTORY MOVEMENTS & CONSUMPTION LEDGER
+                    </p>
+                  </div>
                 </div>
 
-                <select
-                  value={typeFilter}
-                  onChange={(e) => setTypeFilter(e.target.value as any)}
-                  className="titan-input py-2.5 appearance-none w-full sm:w-40"
-                >
-                  <option value="ALL" className="bg-[#0a0f18]">All Transactions</option>
-                  <option value="IN" className="bg-[#0a0f18]">Deposit (IN)</option>
-                  <option value="OUT" className="bg-[#0a0f18]">Withdrawal (OUT)</option>
-                  <option value="ADJUST" className="bg-[#0a0f18]">Adjustment (ADJUST)</option>
-                </select>
-
-                <select
-                  value={selectedMachineId}
-                  onChange={(e) => setSelectedMachineId(e.target.value)}
-                  className="titan-input py-2.5 appearance-none w-full sm:w-48"
-                >
-                  <option value="ALL" className="bg-[#0a0f18]">All Machines</option>
-                  {machines.map(m => (
-                    <option key={m.id} value={m.id} className="bg-[#0a0f18]">
-                      {m.referenceCode} - {m.serialNumber}
-                    </option>
-                  ))}
-                </select>
+                <div className="flex-1 max-w-3xl">
+                  <UnifiedSearchFilter
+                    searchTerm={searchTerm}
+                    onSearchChange={setSearchTerm}
+                    searchPlaceholder="بحث في الحركات برقم العملية، اسم القطعة، الفني، أو الآلة..."
+                    quickTabs={quickTabs}
+                    activeQuickTab={typeFilter}
+                    onQuickTabChange={(id) => setTypeFilter(id as any)}
+                    filterGroups={filterGroups}
+                    themeColor="cyan"
+                    fullWidth
+                  />
+                </div>
               </div>
 
-              <div className="text-xs font-mono text-slate-400 shrink-0 self-end md:self-auto">
-                Matching Movements: <span className="text-cyan-400 font-bold">{filteredMovements.length}</span>
-              </div>
-            </GlassCard>
-
-            {/* Ledger table */}
-            <div className="rounded-2xl border border-white/10 bg-[#0a0a0f]/60 backdrop-blur-xl overflow-hidden shadow-2xl flex flex-col h-[600px]">
-              <div className="flex-1 overflow-auto custom-scrollbar">
-                <table dir="ltr" className="w-full text-left border-collapse whitespace-nowrap">
-                  <thead className="sticky top-0 bg-[#0f172a] z-20 border-b border-white/10 text-left">
+              {/* Ledger Table */}
+              <div className="overflow-x-auto custom-scrollbar">
+                <table dir="rtl" className="w-full text-right border-collapse whitespace-nowrap">
+                  <thead className="bg-white/[0.04] border-b border-white/10 text-slate-300 font-bold uppercase tracking-wider font-mono text-[11px]">
                     <tr>
-                      <th className="px-6 py-3.5 font-sans font-bold text-slate-300 uppercase tracking-wider text-xs">Movement Type & Date</th>
-                      <th className="px-6 py-3.5 font-sans font-bold text-slate-300 uppercase tracking-wider text-xs">Spare Part</th>
-                      <th className="px-6 py-3.5 font-sans font-bold text-slate-300 text-center text-xs uppercase tracking-wider">Quantity</th>
-                      <th className="px-6 py-3.5 font-sans font-bold text-slate-300 uppercase tracking-wider text-xs">Performed By & Machine</th>
-                      <th className="px-6 py-3.5 font-sans font-bold text-slate-300 uppercase tracking-wider text-xs">Statement / Notes</th>
+                      <th className="px-6 py-4">نوع وتوقيت الحركة</th>
+                      <th className="px-6 py-4">قطعة الغيار</th>
+                      <th className="px-6 py-4 text-center">الكمية</th>
+                      <th className="px-6 py-4">المنفذ والوجهة</th>
+                      <th className="px-6 py-4">البيان والملاحظات</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/5">
+                  <tbody className="divide-y divide-white/5 bg-[#0a0a0f]/40">
                     {filteredMovements.map((mov) => (
-                      <tr key={mov.id} className="group hover:bg-white/[0.04] transition-colors text-right border-b border-white/5">
+                      <tr key={mov.id} className="group hover:bg-white/[0.04] transition-colors border-b border-white/5">
                         <td className="px-6 py-4">
-                          <div className="flex items-center gap-3 justify-end">
+                          <div className="flex items-center gap-3">
                             <span className="text-[10px] font-mono text-slate-500">
-                              {new Date(mov.timestamp).toLocaleString('en-US', { 
+                              {new Date(mov.timestamp).toLocaleString('ar-MA', { 
                                 year: 'numeric', month: 'numeric', day: 'numeric', 
                                 hour: '2-digit', minute: '2-digit' 
                               })}
                             </span>
-                            <div className="flex items-center gap-1.5">
-                              <span className={cn(
-                                "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border",
-                                mov.type === 'IN' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' :
-                                mov.type === 'OUT' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' :
-                                'bg-cyan-500/10 border-cyan-500/20 text-cyan-400'
-                              )}>
-                                {mov.type === 'IN' ? 'Deposit' : mov.type === 'OUT' ? 'Withdrawal' : 'Adjustment'}
-                              </span>
-                            </div>
+                            <span className={cn(
+                              "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border",
+                              mov.type === 'IN' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' :
+                              mov.type === 'OUT' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' :
+                              'bg-cyan-500/10 border-cyan-500/20 text-cyan-400'
+                            )}>
+                              {mov.type === 'IN' ? 'إيداع' : mov.type === 'OUT' ? 'صرف' : 'تسوية'}
+                            </span>
                           </div>
-                          <div className="text-[9px] font-mono text-slate-600 mt-1">ID: {mov.id.substring(0, 8)}</div>
+                          <div className="text-[9px] font-mono text-slate-600 mt-1">ID: #{mov.id.substring(0, 8).toUpperCase()}</div>
                         </td>
 
                         <td className="px-6 py-4">
                           <div className="font-sans font-bold text-slate-200 text-sm">{mov.partName}</div>
-                          <div className="flex items-center gap-2 justify-end mt-0.5">
-                            <span className="text-[10px] font-mono text-slate-500">Part Reference:</span>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-[10px] font-mono text-slate-500">المرجع:</span>
                             <span className="font-mono text-xs font-semibold text-cyan-400">{mov.partReference}</span>
                           </div>
                         </td>
@@ -525,7 +552,7 @@ export function StockHistoryView() {
                         <td className="px-6 py-4 text-center">
                           <div className="inline-flex items-baseline gap-1 bg-white/[0.02] border border-white/5 px-2.5 py-1 rounded-lg">
                             <span className="font-mono text-sm font-bold text-white">{mov.quantity}</span>
-                            <span className="text-[9px] font-mono text-slate-500">{mov.partUnit}</span>
+                            <span className="text-[9px] font-mono text-slate-400">{mov.partUnit}</span>
                           </div>
                         </td>
 
@@ -533,18 +560,18 @@ export function StockHistoryView() {
                           <div className="font-medium text-slate-200 text-xs">{mov.performedBy}</div>
                           {mov.machineCode ? (
                             <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-cyan-500/10 bg-cyan-500/5 text-[9px] font-mono text-cyan-400 mt-1">
-                              Machine: {mov.machineCode}
+                              الآلة: {mov.machineCode}
                             </div>
                           ) : mov.type === 'OUT' ? (
-                            <span className="text-[9px] text-rose-400 block mt-1">Direct withdrawal (no machine)</span>
+                            <span className="text-[9px] text-rose-400 block mt-1">صرف مباشر (دون تخصيص آلة)</span>
                           ) : (
-                            <span className="text-[9px] text-slate-600 block mt-1">Warehouse stock</span>
+                            <span className="text-[9px] text-slate-500 block mt-1">مستودع الأصول</span>
                           )}
                         </td>
 
-                        <td className="px-6 py-4 text-left">
+                        <td className="px-6 py-4 text-right">
                           <p className="text-xs text-slate-400 max-w-xs break-words font-sans">
-                            {mov.notes || <span className="text-slate-700 italic">No notes</span>}
+                            {mov.notes || <span className="text-slate-600 italic">بدون ملاحظات</span>}
                           </p>
                         </td>
                       </tr>
@@ -554,14 +581,14 @@ export function StockHistoryView() {
                       <tr>
                         <td colSpan={5} className="px-6 py-24 text-center">
                           <History className="w-12 h-12 mb-3 text-slate-700 mx-auto opacity-40" />
-                          <p className="text-xs text-slate-500">No stock movements found matching your search</p>
+                          <p className="text-xs text-slate-400 font-sans">لم يتم العثور على أي حركات مخزنية مطابقة لمعايير البحث</p>
                         </td>
                       </tr>
                     )}
                   </tbody>
                 </table>
               </div>
-            </div>
+            </GlassCard>
           </motion.div>
         ) : (
           <motion.div

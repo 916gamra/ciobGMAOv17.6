@@ -12,7 +12,7 @@ interface CrystalTableProps<T> {
   data: T[];
   columns: CrystalTableColumn<T>[];
   rowKey: (item: T) => string | number;
-  emptyMessage?: string;
+  emptyMessage?: React.ReactNode;
   className?: string;
   onRowClick?: (item: T) => void;
 }
@@ -43,7 +43,7 @@ export function CrystalTable<T>({
         <tbody className="divide-y divide-white/5">
           {data.length === 0 ? (
             <tr>
-              <td colSpan={columns.length} className="px-6 py-12 text-center text-slate-500 font-bold">
+              <td colSpan={columns.length} className="p-0">
                 {emptyMessage}
               </td>
             </tr>

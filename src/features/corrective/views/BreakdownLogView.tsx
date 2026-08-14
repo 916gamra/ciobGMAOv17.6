@@ -37,14 +37,16 @@ import {
   LayoutList,
   Grid,
   Eye,
-  X
+  X,
+  ShieldCheck,
+  CheckCircle as CheckCircleIcon
 } from 'lucide-react';
 import { GlassCard } from '@/shared/components/GlassCard';
 import { PageHeader } from '@/shared/components/PageHeader';
 import { HeaderBentoCard } from '@/shared/components/HeaderBentoCard';
 import { KpiCard } from '@/shared/components/KpiCard';
 import { BadgePill } from '@/shared/components/BadgePill';
-import { FilterBar } from '@/shared/components/FilterBar';
+import { UnifiedSearchFilter, FilterGroup } from '@/shared/components/UnifiedSearchFilter';
 import { Button } from '@/shared/components/Button';
 import { cn, EMPTY_ARRAY } from '@/shared/utils';
 import { toast } from 'sonner';
@@ -102,10 +104,68 @@ export function BreakdownLogView({ user }: { user: any }) {
 
   // Search & Filters
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterMachine, setFilterMachine] = useState('');
-  const [filterDomain, setFilterDomain] = useState('');
+  const [filterMachine, setFilterMachine] = useState('ALL');
+  const [filterDomain, setFilterDomain] = useState('ALL');
+  const [filterStatus, setFilterStatus] = useState('ALL');
+  const [filterReconcile, setFilterReconcile] = useState('ALL');
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
   const [selectedInspectExecution, setSelectedInspectExecution] = useState<TaskExecution | null>(null);
+
+  // Filter Groups for UnifiedSearchFilter
+  const filterGroups: FilterGroup[] = useMemo(() => [
+    {
+      id: 'domain',
+      label: 'المجال الفني (Domain)',
+      value: filterDomain,
+      onChange: setFilterDomain,
+      allLabel: 'جميع المجالات الفنية',
+      type: 'chips',
+      options: [
+        { value: 'MEC', label: 'ميكانيك (MEC)' },
+        { value: 'ELE', label: 'كهرباء (ELE)' },
+        { value: 'HYD', label: 'هيدروليك (HYD)' },
+        { value: 'PNU', label: 'بنيوماتيك (PNU)' },
+        { value: 'ELN', label: 'إلكترونيك (ELN)' }
+      ]
+    },
+    {
+      id: 'machine',
+      label: 'الآلة / خط الإنتاج',
+      value: filterMachine,
+      onChange: setFilterMachine,
+      allLabel: 'جميع الآلات والمعدات',
+      type: 'select',
+      options: machines.map(m => ({
+        value: m.id,
+        label: `${m.referenceCode} - ${m.name}`
+      }))
+    },
+    {
+      id: 'status',
+      label: 'حالة التدخل (Outcome)',
+      value: filterStatus,
+      onChange: setFilterStatus,
+      allLabel: 'جميع حالات التدخل',
+      type: 'chips',
+      options: [
+        { value: 'COMPLETED', label: 'منجز بالكامل (Completed)' },
+        { value: 'PENDING_PARTS', label: 'مؤجل لقطعة غيار (Pending)' },
+        { value: 'WORKSHOP_FABRICATION', label: 'ورشة التصنيع (Workshop)' }
+      ]
+    },
+    {
+      id: 'reconcile',
+      label: 'مطابقة قطع المخزن',
+      value: filterReconcile,
+      onChange: setFilterReconcile,
+      allLabel: 'جميع حالات المطابقة',
+      type: 'chips',
+      options: [
+        { value: 'RECONCILED', label: 'مطابق ومسوى' },
+        { value: 'PENDING_MATCH', label: 'في انتظار المخزن' }
+      ]
+    }
+  ], [filterDomain, filterMachine, filterStatus, filterReconcile, machines]);
 
   // WIZARD MODAL STATE
   const [isWizardOpen, setIsWizardOpen] = useState(false);
@@ -317,19 +377,25 @@ export function BreakdownLogView({ user }: { user: any }) {
     return taskExecutions.filter(ex => {
       const machine = machinesMap.get(ex.machineId);
       
-      const matchesSearch = searchTerm ? (
+      const matchesSearch = !searchTerm || (
         (ex.bonId || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (machine?.referenceCode || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (machine?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (ex.rootCause || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (ex.notes || '').toLowerCase().includes(searchTerm.toLowerCase())
-      ) : true;
+        (ex.notes || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (ex.operatorSymptom || '').toLowerCase().includes(searchTerm.toLowerCase())
+      );
 
-      const matchesMachine = filterMachine ? ex.machineId === filterMachine : true;
-      const matchesDomain = filterDomain ? ex.domainFamily === filterDomain : true;
+      const matchesMachine = filterMachine === 'ALL' || ex.machineId === filterMachine;
+      const matchesDomain = filterDomain === 'ALL' || ex.domainFamily === filterDomain;
+      const matchesStatus = filterStatus === 'ALL' || ex.outcomeStatus === filterStatus;
+      const matchesReconcile = filterReconcile === 'ALL' || 
+        (filterReconcile === 'RECONCILED' && ex.reconciliationStatus === 'RECONCILED') ||
+        (filterReconcile === 'PENDING_MATCH' && ex.reconciliationStatus === 'PENDING_MATCH');
 
-      return matchesSearch && matchesMachine && matchesDomain;
+      return matchesSearch && matchesMachine && matchesDomain && matchesStatus && matchesReconcile;
     });
-  }, [taskExecutions, searchTerm, filterMachine, filterDomain, machinesMap]);
+  }, [taskExecutions, searchTerm, filterMachine, filterDomain, filterStatus, filterReconcile, machinesMap]);
 
   return (
     <motion.div 
@@ -344,7 +410,7 @@ export function BreakdownLogView({ user }: { user: any }) {
         <PageHeader
           title={t('corrective.breakdownLog.title', 'سجل التدخلات والأعطال الطارئة')}
           subtitle={t('corrective.breakdownLog.subtitle', 'التوثيق اللحظي للتدخلات العلاجية ومتابعة حالة إصلاح الأصول والقطع المستهلكة')}
-          icon={<Wrench className="w-7 h-7 text-orange-400" />}
+          icon={<Wrench className="w-7 h-7 text-white" />}
           badgeText={t('corrective.breakdownLog.badge', 'العمليات العلاجية')}
           badgeColor="orange"
         >
@@ -384,118 +450,94 @@ export function BreakdownLogView({ user }: { user: any }) {
 
       {/* CORE TABLE CONTAINER (FACTORY ADMIN CRYSTAL HIGH-CONTRAST DESIGN) */}
       <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl flex-1 flex flex-col bg-[#0a0a0f]/60 backdrop-blur-xl mx-6 md:mx-8 mb-6 mt-6">
-        {/* Table Registry Header + FilterBar */}
-        <div className="p-6 md:p-8 border-b border-white/10 bg-white/[0.02] flex flex-col gap-6 shrink-0 relative z-10">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shrink-0">
-                <Activity className="w-6 h-6 text-orange-400" />
-              </div>
-              <div>
-                <h2 className="text-lg font-bold text-white uppercase tracking-tight font-sans">
-                  سجل البونات والتدخلات الإصلاحية
-                </h2>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono">
-                  Active Interventions & Breakdown Registry
-                </p>
-              </div>
+        {/* Table Registry Header + UnifiedSearchFilter */}
+        <div className="p-4 md:p-6 border-b border-white/10 bg-white/[0.02] flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4 shrink-0 relative z-10">
+          {/* Right Side (RTL): Context Count */}
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shrink-0">
+              <Activity className="w-5 h-5 text-orange-400" />
             </div>
-
-            <div className="flex items-center gap-2">
-              <BadgePill color="orange">
-                {filteredExecutions.length} تدخل مسجل
-              </BadgePill>
-              <button 
-                onClick={handleOpenWizard} 
-                className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
-              >
-                <Plus className="w-4 h-4 text-slate-950" />
-                <span>تسجيل تدخل طارئ</span>
-              </button>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm font-extrabold text-white uppercase tracking-tight font-sans">
+                  سجل التدخلات الإصلاحية
+                </h2>
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-orange-500/15 border border-orange-500/30 text-orange-300">
+                  {filteredExecutions.length} تدخل
+                </span>
+              </div>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono">
+                Interventions & Breakdown Registry
+              </p>
             </div>
           </div>
 
-          {/* SEARCH AND FILTERS */}
-          <FilterBar
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            searchPlaceholder="بحث برقم البون، كود الآلة، أو سبب العطل..."
-            extraControls={
-              <div className="flex items-center gap-2">
-                <select
-                  value={filterMachine}
-                  onChange={(e) => setFilterMachine(e.target.value)}
-                  className="py-1.5 px-3 bg-[#0a0a0f]/50 border border-white/10 rounded-xl text-xs text-slate-300 font-mono cursor-pointer focus:outline-none focus:border-orange-500/50"
-                >
-                  <option value="">جميع الآلات</option>
-                  {machines.map(m => (
-                    <option key={m.id} value={m.id}>{m.referenceCode}</option>
-                  ))}
-                </select>
+          {/* Center & Left: Unified Search, Filters & View Switcher */}
+          <div className="flex-1 max-w-3xl w-full">
+            <UnifiedSearchFilter
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              searchPlaceholder="بحث برقم البون، كود الآلة، الفني، أو تشخيص العطل..."
+              filterGroups={filterGroups}
+              themeColor="orange"
+              extraControls={
+                <div className="flex items-center gap-2 shrink-0">
+                  {/* VIEW SWITCHER */}
+                  <div className="flex items-center gap-1 p-1 bg-[#12131a] rounded-xl border border-white/10 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setViewMode('table')}
+                      className={cn(
+                        "p-1.5 rounded-lg transition-all cursor-pointer",
+                        viewMode === 'table' ? "bg-white text-slate-950 shadow-sm font-bold" : "text-slate-400 hover:text-white"
+                      )}
+                      title="عرض الجدول الكريستالي"
+                    >
+                      <LayoutList className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setViewMode('cards')}
+                      className={cn(
+                        "p-1.5 rounded-lg transition-all cursor-pointer",
+                        viewMode === 'cards' ? "bg-white text-slate-950 shadow-sm font-bold" : "text-slate-400 hover:text-white"
+                      )}
+                      title="عرض البطاقات"
+                    >
+                      <Grid className="w-4 h-4" />
+                    </button>
+                  </div>
 
-                <select
-                  value={filterDomain}
-                  onChange={(e) => setFilterDomain(e.target.value)}
-                  className="py-1.5 px-3 bg-[#0a0a0f]/50 border border-white/10 rounded-xl text-xs text-slate-300 font-mono cursor-pointer focus:outline-none focus:border-orange-500/50"
-                >
-                  <option value="">جميع المجالات</option>
-                  <option value="MEC">ميكانيك</option>
-                  <option value="ELE">كهرباء</option>
-                  <option value="HYD">هيدروليك</option>
-                  <option value="PNU">بنيوماتيك</option>
-                  <option value="ELN">إلكترونيك</option>
-                </select>
-
-                {/* VIEW SWITCHER */}
-                <div className="flex items-center bg-[#0a0a0f]/90 border border-white/10 rounded-xl p-0.5 gap-0.5">
-                  <button
-                    type="button"
-                    onClick={() => setViewMode('table')}
-                    className={cn(
-                      "p-1.5 rounded-lg transition-all text-xs flex items-center gap-1 font-bold cursor-pointer",
-                      viewMode === 'table' 
-                        ? "bg-white/10 text-white shadow-sm" 
-                        : "text-slate-400 hover:text-white"
-                    )}
-                    title="عرض جدول كريستالي"
+                  {/* ACTION BUTTON */}
+                  <button 
+                    onClick={handleOpenWizard} 
+                    className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 shrink-0 whitespace-nowrap"
                   >
-                    <LayoutList className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setViewMode('cards')}
-                    className={cn(
-                      "p-1.5 rounded-lg transition-all text-xs flex items-center gap-1 font-bold cursor-pointer",
-                      viewMode === 'cards' 
-                        ? "bg-white/10 text-white shadow-sm" 
-                        : "text-slate-400 hover:text-white"
-                    )}
-                    title="عرض بطاقات"
-                  >
-                    <Grid className="w-3.5 h-3.5" />
+                    <Plus className="w-4 h-4 text-slate-950" />
+                    <span>تسجيل تدخل طارئ</span>
                   </button>
                 </div>
-              </div>
-            }
-          />
+              }
+            />
+          </div>
         </div>
 
         {/* CONTENT AREA */}
-        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar bg-[#0a0a0f]/40 p-6 md:p-8">
+        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar bg-[#0a0a0f]/40 p-4 md:p-6">
           {viewMode === 'table' ? (
             /* CRYSTAL HIGH-CONTRAST TABLE VIEW */
             <div className="w-full overflow-x-auto rounded-2xl border border-white/10 bg-[#0a0a0f]/60 backdrop-blur-xl shadow-2xl">
-              <table dir="ltr" className="w-full text-left border-collapse text-xs">
+              <table dir="rtl" className="w-full text-right border-collapse text-xs">
                 <thead>
                   <tr className="bg-white/[0.04] border-b border-white/10 text-slate-300 font-bold uppercase tracking-wider font-mono text-[11px]">
-                    <th className="py-3.5 px-4">رقم البون</th>
-                    <th className="py-3.5 px-4">الآلة / المعدة</th>
-                    <th className="py-3.5 px-4">المجال والإجراء</th>
-                    <th className="py-3.5 px-4">سبب العطل / التشخيص</th>
-                    <th className="py-3.5 px-4">الفني المكلف</th>
-                    <th className="py-3.5 px-4">مدة التوقف</th>
+                    <th className="py-3.5 px-4 text-right">رقم البون</th>
+                    <th className="py-3.5 px-4 text-right">الآلة والمنطقة</th>
+                    <th className="py-3.5 px-4 text-right">المجال والإجراء</th>
+                    <th className="py-3.5 px-4 text-right">تشخيص العطل والسبب</th>
+                    <th className="py-3.5 px-4 text-right">الفني المكلف</th>
+                    <th className="py-3.5 px-4 text-right">مدة التوقف</th>
                     <th className="py-3.5 px-4 text-center">الحالة والمطابقة</th>
-                    <th className="py-3.5 px-4 text-center">التفاصيل</th>
+                    <th className="py-3.5 px-4 text-center">الإجراءات</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5 font-sans">
@@ -504,8 +546,8 @@ export function BreakdownLogView({ user }: { user: any }) {
                       <td colSpan={8} className="py-20 text-center">
                         <div className="flex flex-col items-center justify-center">
                           <Wrench className="w-16 h-16 text-slate-500 mb-4 opacity-50" />
-                          <p className="font-semibold text-slate-400">لا توجد تدخلات إصلاحية مسجلة</p>
-                          <p className="text-xs text-slate-500 mt-1">انقر فوق "تسجيل تدخل طارئ" لبدء إدخال بون جديد.</p>
+                          <p className="font-semibold text-slate-300">لا توجد تدخلات إصلاحية مطابقة لمعايير البحث</p>
+                          <p className="text-xs text-slate-500 mt-1">يمكنك تعديل خيارات الفلترة أو تسجيل تدخل جديد.</p>
                         </div>
                       </td>
                     </tr>
@@ -531,7 +573,7 @@ export function BreakdownLogView({ user }: { user: any }) {
                               {machine?.referenceCode || 'M-REG'}
                             </span>
                             <span className="text-[10px] text-slate-400 font-mono">
-                              {sector?.name || 'عام'}
+                              {sector?.name || machine?.name || 'عام'}
                             </span>
                           </div>
                         </td>
@@ -550,7 +592,7 @@ export function BreakdownLogView({ user }: { user: any }) {
 
                         {/* Root Cause */}
                         <td className="py-3.5 px-4 text-slate-100 font-semibold max-w-xs truncate">
-                          <div>{ex.rootCause || ex.notes}</div>
+                          <div className="truncate">{ex.rootCause || ex.notes}</div>
                           {ex.operatorSymptom && (
                             <span className="block text-[10px] text-slate-400 italic font-normal truncate">
                               "{ex.operatorSymptom}"
@@ -597,7 +639,7 @@ export function BreakdownLogView({ user }: { user: any }) {
                           <button
                             type="button"
                             onClick={() => setSelectedInspectExecution(ex)}
-                            className="p-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 transition-all font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer active:scale-95"
+                            className="p-1.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 transition-all font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer active:scale-95"
                             title="معاينة تفاصيل البون"
                           >
                             <Eye className="w-3.5 h-3.5 text-cyan-400" />
@@ -631,19 +673,19 @@ export function BreakdownLogView({ user }: { user: any }) {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.04 }}
-                    className="p-5 bg-[#0a0a0f]/60 hover:bg-[#0a0a0f]/90 border border-white/10 hover:border-orange-500/30 rounded-2xl flex flex-col justify-between gap-4 transition-all shadow-xl backdrop-blur-xl"
+                    className="p-5 bg-[#0a0a0f]/60 hover:bg-[#0a0a0f]/90 border border-white/10 hover:border-white/20 rounded-2xl flex flex-col justify-between gap-4 transition-all shadow-xl backdrop-blur-xl"
                   >
                     <div className="flex items-start gap-4">
                       <div className={cn(
                         "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border font-mono font-bold text-xs",
                         ex.componentCondition === 'CRITICAL' 
                           ? "bg-rose-500/10 border-rose-500/30 text-rose-400" 
-                          : "bg-orange-500/10 border-orange-500/20 text-orange-400"
+                          : "bg-white/10 border-white/20 text-white"
                       )}>
                         {ex.domainFamily || 'MEC'}
                       </div>
                       
-                      <div className="space-y-1.5 flex-1">
+                      <div className="space-y-1.5 flex-1 text-right">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span className="text-sm font-mono font-black text-cyan-400 bg-cyan-500/10 px-2.5 py-0.5 rounded-lg border border-cyan-500/30">
                             {ex.bonId || `BDC-${ex.id.slice(0, 6)}`}
@@ -665,8 +707,8 @@ export function BreakdownLogView({ user }: { user: any }) {
                         </div>
 
                         <div className="text-xs text-white font-bold flex items-center gap-2 pt-1">
-                          <span className="text-slate-400 font-mono">السبب الرئيسي:</span>
-                          <span className="text-orange-200">{ex.rootCause || ex.notes}</span>
+                          <span className="text-slate-400 font-mono">السبب:</span>
+                          <span className="text-slate-200">{ex.rootCause || ex.notes}</span>
                         </div>
 
                         {ex.operatorSymptom && (

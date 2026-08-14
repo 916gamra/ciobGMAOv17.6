@@ -26,7 +26,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { PageHeader } from '@/shared/components/PageHeader';
 import { HeaderBentoCard } from '@/shared/components/HeaderBentoCard';
 import { GlassCard } from '@/shared/components/GlassCard';
-import { FilterBar } from '@/shared/components/FilterBar';
+import { UnifiedSearchFilter, FilterGroup } from '@/shared/components/UnifiedSearchFilter';
 import { BadgePill } from '@/shared/components/BadgePill';
 import { cn } from '@/shared/utils';
 import { useTranslation } from 'react-i18next';
@@ -47,8 +47,42 @@ export function ComponentsCatalogView() {
   const pdrTemplates = data?.pdrTemplates ?? [];
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterFamily, setFilterFamily] = useState('');
+  const [filterFamily, setFilterFamily] = useState('ALL');
+  const [filterCriticality, setFilterCriticality] = useState('ALL');
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
+
+  // Filter Groups for UnifiedSearchFilter
+  const filterGroups: FilterGroup[] = useMemo(() => [
+    {
+      id: 'family',
+      label: 'العائلة الفنية (Domain)',
+      value: filterFamily,
+      onChange: setFilterFamily,
+      allLabel: 'جميع العائلات الفنية',
+      type: 'chips',
+      options: [
+        { value: 'MEC', label: 'ميكانيك (MEC)' },
+        { value: 'ELE', label: 'كهرباء (ELE)' },
+        { value: 'HYD', label: 'هيدروليك (HYD)' },
+        { value: 'PNU', label: 'بنيوماتيك (PNU)' },
+        { value: 'ELN', label: 'إلكترونيك (ELN)' }
+      ]
+    },
+    {
+      id: 'criticality',
+      label: 'مستوى الأهمية (Criticality)',
+      value: filterCriticality,
+      onChange: setFilterCriticality,
+      allLabel: 'جميع مستويات الأهمية',
+      type: 'chips',
+      options: [
+        { value: 'Critical', label: 'حرجة (Critical)' },
+        { value: 'High', label: 'عالية (High)' },
+        { value: 'Medium', label: 'متوسطة (Medium)' },
+        { value: 'Low', label: 'منخفضة (Low)' }
+      ]
+    }
+  ], [filterFamily, filterCriticality]);
 
   // Template Modal State
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
@@ -199,11 +233,16 @@ export function ComponentsCatalogView() {
 
   const filteredTemplates = useMemo(() => {
     return templates.filter(tmpl => {
-      const matchSearch = searchTerm ? tmpl.name.toLowerCase().includes(searchTerm.toLowerCase()) : true;
-      const matchFamily = filterFamily ? tmpl.family === filterFamily : true;
-      return matchSearch && matchFamily;
+      const matchSearch = !searchTerm || (
+        tmpl.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (tmpl.description || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (tmpl.id || '').toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      const matchFamily = filterFamily === 'ALL' || tmpl.family === filterFamily;
+      const matchCriticality = filterCriticality === 'ALL' || tmpl.criticality === filterCriticality;
+      return matchSearch && matchFamily && matchCriticality;
     });
-  }, [templates, searchTerm, filterFamily]);
+  }, [templates, searchTerm, filterFamily, filterCriticality]);
 
   const getCriticalityBadge = (crit?: string) => {
     switch (crit) {
@@ -225,18 +264,9 @@ export function ComponentsCatalogView() {
         <PageHeader
           title={t('corrective.componentsCatalog.title', 'كتالوج المكونات والأجزاء')}
           subtitle={t('corrective.componentsCatalog.subtitle', 'دليل المكونات الفنية وتجميعات الأجزاء المرتبطة بآلات ومعدات المعمل.')}
-          icon={<Cpu className="w-7 h-7 text-orange-400" />}
+          icon={<Cpu className="w-7 h-7 text-white" />}
           badgeText={t('corrective.componentsCatalog.badge', 'المكونات والتجميعات')}
           badgeColor="orange"
-          actions={
-            <button 
-              onClick={openNewTemplate}
-              className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
-            >
-              <Plus className="w-4 h-4 text-slate-950" /> 
-              <span>{t('corrective.componentsCatalog.newComponent', 'إضافة مكون جديد')}</span>
-            </button>
-          }
         >
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <HeaderBentoCard
@@ -277,106 +307,91 @@ export function ComponentsCatalogView() {
 
       {/* CORE TABLE CONTAINER (FACTORY ADMIN CRYSTAL HIGH-CONTRAST DESIGN) */}
       <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl flex-1 flex flex-col bg-[#0a0a0f]/60 backdrop-blur-xl mx-6 md:mx-8 mb-6 mt-6">
-        {/* Table Registry Header + FilterBar */}
-        <div className="p-6 md:p-8 border-b border-white/10 bg-white/[0.02] flex flex-col gap-6 shrink-0 relative z-10">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shrink-0">
-                <Cpu className="w-6 h-6 text-orange-400" />
-              </div>
-              <div>
-                <h2 className="text-lg font-bold text-white uppercase tracking-tight font-sans">
-                  كتالوج المكونات الفنية وتجميعات الآلات
-                </h2>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono">
-                  Machine Component Templates & Commercial Blueprints
-                </p>
-              </div>
+        {/* Table Registry Header + UnifiedSearchFilter */}
+        <div className="p-4 md:p-6 border-b border-white/10 bg-white/[0.02] flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4 shrink-0 relative z-10">
+          {/* Right Side (RTL): Context Count */}
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shrink-0">
+              <Cpu className="w-5 h-5 text-orange-400" />
             </div>
-
-            <div className="flex items-center gap-2">
-              <BadgePill color="orange">
-                {filteredTemplates.length} مكون مسجل
-              </BadgePill>
-              <button
-                type="button"
-                onClick={openNewTemplate}
-                className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
-              >
-                <Plus className="w-4 h-4 text-slate-950" />
-                <span>إضافة مكون جديد</span>
-              </button>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-sm font-extrabold text-white uppercase tracking-tight font-sans">
+                  كتالوج المكونات الفنية
+                </h2>
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-orange-500/15 border border-orange-500/30 text-orange-300">
+                  {filteredTemplates.length} قالب
+                </span>
+              </div>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono">
+                Component Templates & Commercial Blueprints
+              </p>
             </div>
           </div>
 
-          {/* SEARCH AND FILTERS */}
-          <FilterBar
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            searchPlaceholder="بحث باسم المكون، القالب، أو العائلة..."
-            extraControls={
-              <div className="flex items-center gap-2 flex-row-reverse">
-                <select
-                  value={filterFamily}
-                  onChange={(e) => setFilterFamily(e.target.value)}
-                  className="py-1.5 px-3 bg-[#0a0a0f]/50 border border-white/10 rounded-xl text-xs text-slate-300 font-mono cursor-pointer focus:outline-none focus:border-orange-500/50 appearance-none pr-8 pl-3 rtl:pr-3 rtl:pl-8 text-right"
-                  dir="rtl"
-                >
-                  <option value="">جميع العائلات الفنية</option>
-                  <option value="MEC">ميكانيك (MEC)</option>
-                  <option value="ELE">كهرباء (ELE)</option>
-                  <option value="HYD">هيدروليك (HYD)</option>
-                  <option value="PNU">بنيوماتيك (PNU)</option>
-                  <option value="ELN">إلكترونيك (ELN)</option>
-                </select>
+          {/* Center & Left: Unified Search, Filters & View Switcher */}
+          <div className="flex-1 max-w-3xl w-full">
+            <UnifiedSearchFilter
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              searchPlaceholder="بحث باسم المكون، القالب، أو العائلة..."
+              filterGroups={filterGroups}
+              themeColor="orange"
+              extraControls={
+                <div className="flex items-center gap-2 shrink-0">
+                  {/* VIEW SWITCHER */}
+                  <div className="flex items-center gap-1 p-1 bg-[#12131a] rounded-xl border border-white/10 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setViewMode('table')}
+                      className={cn(
+                        "p-1.5 rounded-lg transition-all cursor-pointer",
+                        viewMode === 'table' ? "bg-white text-slate-950 shadow-sm font-bold" : "text-slate-400 hover:text-white"
+                      )}
+                      title="عرض الجدول الكريستالي"
+                    >
+                      <LayoutList className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setViewMode('cards')}
+                      className={cn(
+                        "p-1.5 rounded-lg transition-all cursor-pointer",
+                        viewMode === 'cards' ? "bg-white text-slate-950 shadow-sm font-bold" : "text-slate-400 hover:text-white"
+                      )}
+                      title="عرض البطاقات"
+                    >
+                      <Grid className="w-4 h-4" />
+                    </button>
+                  </div>
 
-                {/* VIEW SWITCHER */}
-                <div className="flex items-center bg-[#0a0a0f]/90 border border-white/10 rounded-xl p-0.5 gap-0.5 flex-row-reverse">
-                  <button
-                    type="button"
-                    onClick={() => setViewMode('table')}
-                    className={cn(
-                      "p-1.5 rounded-lg transition-all text-xs flex items-center gap-1 font-bold cursor-pointer",
-                      viewMode === 'table' 
-                        ? "bg-white/10 text-white shadow-sm" 
-                        : "text-slate-400 hover:text-white"
-                    )}
-                    title="عرض جدول كريستالي"
+                  {/* ACTION BUTTON */}
+                  <button 
+                    onClick={openNewTemplate} 
+                    className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 shrink-0 whitespace-nowrap"
                   >
-                    <LayoutList className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setViewMode('cards')}
-                    className={cn(
-                      "p-1.5 rounded-lg transition-all text-xs flex items-center gap-1 font-bold cursor-pointer",
-                      viewMode === 'cards' 
-                        ? "bg-white/10 text-white shadow-sm" 
-                        : "text-slate-400 hover:text-white"
-                    )}
-                    title="عرض بطاقات"
-                  >
-                    <Grid className="w-3.5 h-3.5" />
+                    <Plus className="w-4 h-4 text-slate-950" />
+                    <span>إضافة قالب مكون جديد</span>
                   </button>
                 </div>
-              </div>
-            }
-          />
+              }
+            />
+          </div>
         </div>
 
         {/* CONTENT DISPLAY */}
-        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar bg-[#0a0a0f]/40 p-6 md:p-8">
+        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar bg-[#0a0a0f]/40 p-4 md:p-6">
           {viewMode === 'table' ? (
             /* CRYSTAL HIGH-CONTRAST TABLE VIEW */
             <div className="w-full overflow-x-auto rounded-2xl border border-white/10 bg-[#0a0a0f]/60 backdrop-blur-xl shadow-2xl">
-              <table dir="ltr" className="w-full text-left border-collapse text-xs">
+              <table dir="rtl" className="w-full text-right border-collapse text-xs">
                 <thead>
                   <tr className="bg-white/[0.04] border-b border-white/10 text-slate-300 font-bold uppercase tracking-wider font-mono text-[11px]">
-                    <th className="py-3.5 px-4">العائلة الفنية</th>
-                    <th className="py-3.5 px-4">اسم المكون (Template)</th>
-                    <th className="py-3.5 px-4">مستوى الأهمية</th>
-                    <th className="py-3.5 px-4">البصمات التجارية (Blueprints)</th>
-                    <th className="py-3.5 px-4">قطع الغيار المرتبطة (PDRs)</th>
+                    <th className="py-3.5 px-4 text-right">العائلة الفنية</th>
+                    <th className="py-3.5 px-4 text-right">اسم المكون (Template)</th>
+                    <th className="py-3.5 px-4 text-right">مستوى الأهمية</th>
+                    <th className="py-3.5 px-4 text-right">البصمات التجارية (Blueprints)</th>
+                    <th className="py-3.5 px-4 text-right">قطع الغيار المرتبطة (PDRs)</th>
                     <th className="py-3.5 px-4 text-center">الإجراءات والتحكم</th>
                   </tr>
                 </thead>

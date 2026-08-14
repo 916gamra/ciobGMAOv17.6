@@ -1,10 +1,11 @@
 import { PageHeader } from "@/shared/components/PageHeader";
 import { HeaderBentoCard } from "@/shared/components/HeaderBentoCard";
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence, Variants } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { GlassCard } from '@/shared/components/GlassCard';
 import { ShoppingCart, Clock, CheckCircle2, AlertCircle, Search, Filter, Loader2, ArrowRightCircle, PackagePlus, Zap, TrendingUp, DollarSign, Package } from 'lucide-react';
+import { UnifiedSearchFilter, FilterGroup, QuickTabOption } from '@/shared/components/UnifiedSearchFilter';
 import { useProcurementEngine } from '@/features/pdr-engine/hooks/useProcurementEngine';
 import { useNotifications } from '@/shared/hooks/useNotifications';
 import { cn } from '@/shared/utils';
@@ -24,6 +25,8 @@ export function ProcurementView() {
   const { orders, isLoading, confirmOrder, fulfillOrder } = useProcurementEngine();
   const { showSuccess, showError } = useNotifications();
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [vendorFilter, setVendorFilter] = useState('ALL');
   const [processingId, setProcessingId] = useState<string | null>(null);
 
   const getStatusStyle = (status: string) => {
@@ -53,16 +56,57 @@ export function ProcurementView() {
     }
   };
 
-  const filteredOrders = React.useMemo(() => {
-    return orders.filter(order => 
-      order.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      order.supplierName.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [orders, searchTerm]);
+  const uniqueVendors = useMemo(() => {
+    return Array.from(new Set(orders.map(o => o.supplierName))).filter(Boolean).sort();
+  }, [orders]);
 
   const orderedCount = orders.filter(o => o.status === 'ORDERED').length;
   const fulfilledCount = orders.filter(o => o.status === 'FULFILLED').length;
+  const pendingCount = orders.filter(o => o.status === 'PENDING').length;
   const totalSpend = orders.reduce((sum, order) => sum + order.totalAmount, 0);
+
+  const quickTabs: QuickTabOption[] = useMemo(() => [
+    { id: 'ALL', label: 'All Orders', count: orders.length },
+    { id: 'ORDERED', label: 'On Route', count: orderedCount, color: 'amber' },
+    { id: 'FULFILLED', label: 'Stocked', count: fulfilledCount, color: 'emerald' },
+    { id: 'PENDING', label: 'Draft', count: pendingCount, color: 'cyan' },
+  ], [orders.length, orderedCount, fulfilledCount, pendingCount]);
+
+  const filterGroups: FilterGroup[] = useMemo(() => [
+    {
+      id: 'status',
+      label: 'Order Status',
+      value: statusFilter,
+      onChange: setStatusFilter,
+      allLabel: 'All Statuses',
+      type: 'chips',
+      options: [
+        { value: 'ORDERED', label: 'On Route', count: orderedCount },
+        { value: 'FULFILLED', label: 'Stocked', count: fulfilledCount },
+        { value: 'PENDING', label: 'Draft', count: pendingCount },
+        { value: 'CANCELLED', label: 'Voided' },
+      ]
+    },
+    {
+      id: 'vendor',
+      label: 'Supplier / Vendor',
+      value: vendorFilter,
+      onChange: setVendorFilter,
+      allLabel: 'All Suppliers',
+      options: uniqueVendors.map(v => ({ value: v, label: v }))
+    }
+  ], [statusFilter, vendorFilter, orderedCount, fulfilledCount, pendingCount, uniqueVendors]);
+
+  const filteredOrders = useMemo(() => {
+    return orders.filter(order => {
+      const matchSearch = !searchTerm || 
+        order.id.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        order.supplierName.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchStatus = statusFilter === 'ALL' || order.status === statusFilter;
+      const matchVendor = vendorFilter === 'ALL' || order.supplierName === vendorFilter;
+      return matchSearch && matchStatus && matchVendor;
+    });
+  }, [orders, searchTerm, statusFilter, vendorFilter]);
 
   if (isLoading) {
     return (
@@ -133,49 +177,57 @@ export function ProcurementView() {
 
       <div className="flex flex-col flex-1 px-6 md:px-8 mt-6 gap-6 min-h-0">
         <motion.div variants={itemVariants}>
-        <GlassCard className="!p-0 border-white/5 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-3xl">
-        <div className="p-8 border-b border-white/5 bg-white/[0.01] flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
-              <Zap className="w-6 h-6 text-cyan-400" />
+        <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl flex flex-col bg-[#0a0a0f]/60 backdrop-blur-xl">
+        {/* Universal Command Bar */}
+        <div className="p-4 md:p-6 border-b border-white/10 bg-white/[0.02] flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4 shrink-0 relative z-10">
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0">
+              <ShoppingCart className="w-5 h-5 text-cyan-400" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white uppercase tracking-tight">Purchase Orders</h2>
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Real-time procurement tracking</p>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-extrabold text-white uppercase tracking-tight font-sans">
+                  سجل أوامر التوريد والشراء
+                </h2>
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-cyan-500/15 border border-cyan-500/30 text-cyan-300">
+                  {filteredOrders.length} طلب
+                </span>
+              </div>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono">
+                PURCHASE ORDERS & VENDOR TRACKING
+              </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="relative group">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-cyan-400 transition-colors" />
-              <input 
-                type="text" 
-                placeholder="Find orders or vendors..." 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="titan-input pl-11 w-80 shadow-none"
-              />
-            </div>
-            <button className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-400 hover:text-white hover:bg-white/10 transition-all">
-              <Filter className="w-5 h-5" />
-            </button>
+          <div className="flex-1 max-w-3xl">
+            <UnifiedSearchFilter
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              searchPlaceholder="بحث في الأوامر برقم الطلب، اسم المورد، أو المواد..."
+              quickTabs={quickTabs}
+              activeQuickTab={statusFilter}
+              onQuickTabChange={setStatusFilter}
+              filterGroups={filterGroups}
+              themeColor="cyan"
+              fullWidth
+            />
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table dir="ltr" className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-[#1a1c23]/50">
-                <th className="px-8 py-5 font-bold text-slate-500 text-[10px] uppercase tracking-widest">Order ID</th>
-                <th className="px-8 py-5 font-bold text-slate-500 text-[10px] uppercase tracking-widest">Vendor</th>
-                <th className="px-8 py-5 font-bold text-slate-500 text-[10px] uppercase tracking-widest">Date</th>
-                <th className="px-8 py-5 font-bold text-slate-500 text-[10px] uppercase tracking-widest">BOM Lines</th>
-                <th className="px-8 py-5 font-bold text-slate-500 text-[10px] uppercase tracking-widest">Status</th>
-                <th className="px-8 py-5 font-bold text-slate-500 text-[10px] uppercase tracking-widest text-left">Value</th>
-                <th className="px-8 py-5 font-bold text-slate-500 text-[10px] uppercase tracking-widest text-left">Actions</th>
+        <div className="overflow-x-auto custom-scrollbar">
+          <table dir="rtl" className="w-full text-right border-collapse whitespace-nowrap">
+            <thead className="bg-white/[0.04] border-b border-white/10 text-slate-300 font-bold uppercase tracking-wider font-mono text-[11px]">
+              <tr>
+                <th className="px-6 py-4">رقم الطلب</th>
+                <th className="px-6 py-4">المورد والجهة</th>
+                <th className="px-6 py-4">التاريخ</th>
+                <th className="px-6 py-4">بنود الطلبية</th>
+                <th className="px-6 py-4 text-center">الحالة</th>
+                <th className="px-6 py-4 text-center">القيمة التقديرية</th>
+                <th className="px-6 py-4 text-left">الإجراءات</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/[0.03] bg-[#0a0a0f]/5">
+            <tbody className="divide-y divide-white/5 bg-[#0a0a0f]/40">
               <AnimatePresence mode="popLayout">
                 {filteredOrders.map((order, idx) => {
                   const style = getStatusStyle(order.status);
@@ -187,51 +239,55 @@ export function ProcurementView() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: idx * 0.02 }}
-                      className="group hover:bg-white/[0.02] transition-colors border-b border-white/[0.03] last:border-0"
+                      className="group hover:bg-white/[0.04] transition-colors border-b border-white/5"
                     >
-                      <td className="px-8 py-6 text-xs font-mono font-bold text-cyan-500">
+                      <td className="px-6 py-4 text-xs font-mono font-bold text-cyan-400">
                         #{order.id.substring(0, 8).toUpperCase()}
                       </td>
-                      <td className="px-8 py-6">
+                      <td className="px-6 py-4">
                         <div className="flex flex-col">
                           <span className="text-sm font-semibold text-white tracking-tight">{order.supplierName}</span>
                           {order.supplierName === 'SYSTEM_AUTO_GENERATED' && (
-                            <span className="text-[9px] font-bold text-indigo-400 uppercase tracking-widest mt-0.5">Automated System</span>
+                            <span className="text-[9px] font-bold text-cyan-400/80 uppercase tracking-widest mt-0.5">طلب آلي من النظام</span>
                           ) }
                         </div>
                       </td>
-                      <td className="px-8 py-6 text-xs font-medium text-slate-400">{new Date(order.orderDate).toLocaleDateString()}</td>
-                      <td className="px-8 py-6">
-                        <span className="px-2 py-1 rounded bg-white/5 text-[10px] font-bold text-slate-400 uppercase tracking-widest border border-white/10">
-                          {order.lines.length} Items
+                      <td className="px-6 py-4 text-xs font-medium text-slate-400">
+                        {new Date(order.orderDate).toLocaleDateString('ar-MA')}
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="px-2 py-1 rounded bg-white/5 text-[10px] font-bold text-slate-300 font-mono border border-white/10">
+                          {order.lines.length} قطع
                         </span>
                       </td>
-                      <td className="px-8 py-6">
+                      <td className="px-6 py-4 text-center">
                         <motion.div 
                           layout
                           className={cn(
-                            "inline-flex items-center gap-2 px-3 py-1 rounded-md text-[9px] font-bold uppercase tracking-widest border transition-all shadow-sm",
+                            "inline-flex items-center gap-2 px-3 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border transition-all shadow-sm",
                             order.status === 'ORDERED' && "shadow-cyan-500/5"
                           )}
                           style={{ backgroundColor: style.bg, borderColor: style.border, color: style.color }}
                         >
                           <div className="w-1.5 h-1.5 rounded-full bg-current" />
-                          {style.label}
+                          {order.status === 'PENDING' ? 'مسودة قيد المعالجة' :
+                           order.status === 'ORDERED' ? 'في طريق التوريد' :
+                           order.status === 'FULFILLED' ? 'تم الاستلام والإيداع' : 'ملغي'}
                         </motion.div>
                       </td>
-                      <td className="px-8 py-6 text-sm font-mono font-medium text-white text-left">
+                      <td className="px-6 py-4 text-sm font-mono font-medium text-white text-center">
                         ${order.totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                       </td>
-                      <td className="px-8 py-6 text-left">
+                      <td className="px-6 py-4 text-left">
                         <div className="flex justify-end gap-2">
                           {order.status === 'PENDING' && (
                             <button
                               onClick={() => handleAction(order.id, 'CONFIRM')}
                               disabled={isProcessing}
-                              className="titan-button titan-button-primary !px-4 !py-2 !text-[9px]"
+                              className="px-3 py-1.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 text-xs font-bold transition-all flex items-center gap-1.5"
                             >
-                              {isProcessing ? <Loader2 className="w-3 h-3 animate-spin"/> : <ArrowRightCircle className="w-3 h-3"/>}
-                              Transmit
+                              {isProcessing ? <Loader2 className="w-3.5 h-3.5 animate-spin"/> : <ArrowRightCircle className="w-3.5 h-3.5"/>}
+                              إرسال للمورد
                             </button>
                           )}
                           
@@ -239,16 +295,16 @@ export function ProcurementView() {
                             <button
                               onClick={() => handleAction(order.id, 'FULFILL')}
                               disabled={isProcessing}
-                              className="titan-button titan-button-success !px-4 !py-2 !text-[9px]"
+                              className="px-3 py-1.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold transition-all flex items-center gap-1.5"
                             >
-                              {isProcessing ? <Loader2 className="w-3 h-3 animate-spin"/> : <PackagePlus className="w-3 h-3"/>}
-                              Receive
+                              {isProcessing ? <Loader2 className="w-3.5 h-3.5 animate-spin"/> : <PackagePlus className="w-3.5 h-3.5"/>}
+                              استلام وإدخال للمخزن
                             </button>
                           )}
 
                           {order.status === 'FULFILLED' && (
-                            <div className="w-8 h-8 rounded-full border border-emerald-500/30 flex items-center justify-center bg-emerald-500/5">
-                              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                            <div className="w-8 h-8 rounded-full border border-emerald-500/30 flex items-center justify-center bg-emerald-500/10">
+                              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                             </div>
                           )}
                         </div>
@@ -260,9 +316,9 @@ export function ProcurementView() {
               {filteredOrders.length === 0 && (
                 <tr className="bg-[#0a0a0f]/20">
                   <td colSpan={7} className="py-24 text-center">
-                    <div className="flex flex-col items-center opacity-20">
-                      <AlertCircle className="w-16 h-16 mb-4 text-white" />
-                      <p className="text-lg font-bold uppercase tracking-widest text-white">No active purchase orders found</p>
+                    <div className="flex flex-col items-center opacity-40">
+                      <AlertCircle className="w-12 h-12 mb-3 text-slate-500" />
+                      <p className="text-sm font-bold text-slate-400 font-sans">لا توجد أوامر توريد مطابقة لمعايير البحث</p>
                     </div>
                   </td>
                 </tr>
@@ -271,7 +327,7 @@ export function ProcurementView() {
           </table>
         </div>
         </GlassCard>
-      </motion.div>
+        </motion.div>
       </div>
     </motion.div>
   );

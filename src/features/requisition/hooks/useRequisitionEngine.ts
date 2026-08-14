@@ -15,11 +15,15 @@ export function useRequisitionEngine() {
   const machines = useLiveQuery(() => db.machines.toArray(), []);
   const blueprints = useLiveQuery(() => db.pdrBlueprints.toArray(), []);
   const inventory = useLiveQuery(() => db.inventory.toArray(), []);
+  const templates = useLiveQuery(() => db.pdrTemplates.toArray(), []);
+  const families = useLiveQuery(() => db.pdrFamilies.toArray(), []);
 
   const isLoading = 
     machines === undefined || 
     blueprints === undefined || 
-    inventory === undefined;
+    inventory === undefined ||
+    templates === undefined ||
+    families === undefined;
 
   const submitRequisition = async (
     technicianId: string, 
@@ -123,6 +127,8 @@ export function useRequisitionEngine() {
     machines: machines || [],
     blueprints: blueprints || [],
     inventory: inventory || [],
+    templates: templates || [],
+    families: families || [],
     isLoading,
     submitRequisition
   };

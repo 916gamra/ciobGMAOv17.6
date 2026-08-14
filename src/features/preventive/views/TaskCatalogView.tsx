@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/shared/utils';
+import { EmptyState } from '@/shared/components/EmptyState';
 
 export function TaskCatalogView() {
   const { t } = useTranslation();
@@ -35,8 +36,8 @@ export function TaskCatalogView() {
   const [searchTerm, setSearchTerm] = useState('');
   
   // Selection States for Sidebar Navigation
-  const [selectedFamilyFilter, setSelectedFamilyFilter] = useState<string>('ALL');
-  const [selectedActionTypeFilter, setSelectedActionTypeFilter] = useState<'ALL' | 'PREV' | 'CORR' | 'BOTH'>('ALL');
+  const [selectedFamilyFilter, setSelectedFamilyFilter] = useState<string | null>(null);
+  const [selectedActionTypeFilter, setSelectedActionTypeFilter] = useState<'ALL' | 'PREV' | 'CORR' | 'BOTH' | null>(null);
   
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
   
@@ -69,7 +70,7 @@ export function TaskCatalogView() {
     return tasks.filter(task => {
       const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
                             (task.description && task.description.toLowerCase().includes(searchTerm.toLowerCase()));
-      const matchesFamily = selectedFamilyFilter === 'ALL' || task.pdrFamilyId === selectedFamilyFilter;
+      const matchesFamily = !selectedFamilyFilter || selectedFamilyFilter === 'ALL' || task.pdrFamilyId === selectedFamilyFilter;
       return matchesSearch && matchesFamily;
     });
   }, [tasks, searchTerm, selectedFamilyFilter]);
@@ -81,7 +82,7 @@ export function TaskCatalogView() {
       const matchesSearch = act.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                             (act.code && act.code.toLowerCase().includes(searchTerm.toLowerCase())) ||
                             (act.description && act.description.toLowerCase().includes(searchTerm.toLowerCase()));
-      const matchesType = selectedActionTypeFilter === 'ALL' || act.type === selectedActionTypeFilter;
+      const matchesType = !selectedActionTypeFilter || selectedActionTypeFilter === 'ALL' || act.type === selectedActionTypeFilter;
       return matchesSearch && matchesType;
     });
   }, [standardActions, searchTerm, selectedActionTypeFilter]);
@@ -269,6 +270,8 @@ export function TaskCatalogView() {
                     onClick={() => {
                       setActiveTab('tasks');
                       setSearchTerm('');
+                      setSelectedFamilyFilter(null);
+                      setSelectedActionTypeFilter(null);
                     }}
                     className={cn(
                       "py-2 rounded-xl text-xs font-bold transition-all text-center cursor-pointer",
@@ -283,6 +286,8 @@ export function TaskCatalogView() {
                     onClick={() => {
                       setActiveTab('actions');
                       setSearchTerm('');
+                      setSelectedFamilyFilter(null);
+                      setSelectedActionTypeFilter(null);
                     }}
                     className={cn(
                       "py-2 rounded-xl text-xs font-bold transition-all text-center cursor-pointer",
@@ -553,26 +558,35 @@ export function TaskCatalogView() {
                   exit={{ opacity: 0, y: -15 }}
                   className="flex flex-col h-full min-h-0 p-6 md:p-8"
                 >
-                  
-                  {/* Dynamic Header */}
+                  {((activeTab === 'tasks' && selectedFamilyFilter !== null) || (activeTab === 'actions' && selectedActionTypeFilter !== null)) ? (
+                    <>
+                      {/* Dynamic Header */}
                   <div className="flex flex-col sm:flex-row justify-between items-start border-b border-white/10 pb-6 mb-6 gap-4 text-start">
                     <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-2xl bg-[#0a0a0f]/50 border border-white/10 flex items-center justify-center shadow-inner shrink-0">
+                      <div className={cn(
+                        "w-12 h-12 rounded-2xl border flex items-center justify-center shadow-inner shrink-0",
+                        activeTab === 'tasks' ? "bg-emerald-500/10 border-emerald-500/20" : "bg-purple-500/10 border-purple-500/20"
+                      )}>
                         {activeTab === 'tasks' ? <Settings2 className="w-6 h-6 text-emerald-400" /> : <Activity className="w-6 h-6 text-purple-400" />}
                       </div>
                       <div className="text-start">
-                        <h3 className="text-lg font-bold text-white tracking-tight">
-                          {activeTab === 'tasks' 
-                            ? (selectedFamilyFilter === 'ALL' ? t('preventive.catalog.allFamilies', 'جميع العائلات الهندسية') : pdrFamilies?.find(f => f.id === selectedFamilyFilter)?.name || 'عائلة غير معروفة')
-                            : (selectedActionTypeFilter === 'ALL' ? t('preventive.catalog.allActions', 'جميع أفعال الصيانة') : 
-                               selectedActionTypeFilter === 'PREV' ? t('preventive.catalog.prevActions', 'أفعال وقائية') :
-                               selectedActionTypeFilter === 'CORR' ? t('preventive.catalog.corrActions', 'أفعال علاجية') : t('preventive.catalog.bothActions', 'أفعال مشتركة'))
-                          }
-                        </h3>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-mono font-bold bg-white/10 text-white px-1.5 py-0.5 rounded border border-white/15">
+                            {activeTab === 'tasks' ? 'مهمات' : 'أفعال'}
+                          </span>
+                          <h3 className="text-lg font-bold text-white tracking-tight">
+                            {activeTab === 'tasks' 
+                              ? (selectedFamilyFilter === 'ALL' ? t('preventive.catalog.allFamilies', 'جميع العائلات الهندسية') : pdrFamilies?.find(f => f.id === selectedFamilyFilter)?.name || 'عائلة غير معروفة')
+                              : (selectedActionTypeFilter === 'ALL' ? t('preventive.catalog.allActions', 'جميع أفعال الصيانة') : 
+                                 selectedActionTypeFilter === 'PREV' ? t('preventive.catalog.prevActions', 'أفعال وقائية') :
+                                 selectedActionTypeFilter === 'CORR' ? t('preventive.catalog.corrActions', 'أفعال علاجية') : t('preventive.catalog.bothActions', 'أفعال مشتركة'))
+                            }
+                          </h3>
+                        </div>
                         <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider">
                           {activeTab === 'tasks' 
-                            ? `${filteredTasks.length} ${t('common.records', 'سجل')}`
-                            : `${filteredActions.length} ${t('common.records', 'سجل')}`}
+                            ? 'نطاق توجيه الصيانة الوقائية'
+                            : 'قاموس مصطلحات الصيانة القياسية'}
                         </p>
                       </div>
                     </div>
@@ -582,7 +596,7 @@ export function TaskCatalogView() {
                         <button
                           onClick={() => setViewMode('table')}
                           className={cn(
-                            "p-1.5 rounded-lg transition-all",
+                            "p-1.5 rounded-lg transition-all cursor-pointer",
                             viewMode === 'table' ? "bg-white text-slate-950 shadow-sm" : "text-slate-400 hover:text-white"
                           )}
                           title={t('common.tableView', 'عرض الجدول')}
@@ -592,7 +606,7 @@ export function TaskCatalogView() {
                         <button
                           onClick={() => setViewMode('cards')}
                           className={cn(
-                            "p-1.5 rounded-lg transition-all",
+                            "p-1.5 rounded-lg transition-all cursor-pointer",
                             viewMode === 'cards' ? "bg-white text-slate-950 shadow-sm" : "text-slate-400 hover:text-white"
                           )}
                           title={t('common.cardsView', 'عرض البطاقات')}
@@ -604,7 +618,7 @@ export function TaskCatalogView() {
                       {activeTab === 'tasks' ? (
                         <button 
                           onClick={() => setIsModalOpen(true)}
-                          className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center gap-1.5"
+                          className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center gap-1.5 cursor-pointer"
                         >
                           <Plus className="w-3.5 h-3.5" />
                           <span>{t('preventive.catalog.newTask', 'مهمة وقائية جديدة')}</span>
@@ -619,7 +633,7 @@ export function TaskCatalogView() {
                             setActionDesc('');
                             setIsActionModalOpen(true);
                           }}
-                          className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center gap-1.5"
+                          className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center gap-1.5 cursor-pointer"
                         >
                           <Plus className="w-3.5 h-3.5" />
                           <span>{t('preventive.catalog.newAction', 'فعل صيانة جديد')}</span>
@@ -629,10 +643,19 @@ export function TaskCatalogView() {
                   </div>
 
                   {/* Main Data Content */}
-                  <div className="flex-1 overflow-y-auto custom-scrollbar text-start">
-                    {activeTab === 'tasks' ? (
-                      /* Tasks Content */
-                      viewMode === 'table' ? (
+                  <div className="flex-1 flex flex-col min-h-0 text-start">
+                    <div className="flex items-center justify-between mb-4 flex-row">
+                      <div className="text-sm font-bold text-slate-200">
+                        {activeTab === 'tasks' 
+                          ? `${filteredTasks.length} المهمات المسجلة تحت هذا النطاق`
+                          : `${filteredActions.length} أفعال الصيانة المسجلة`}
+                      </div>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto custom-scrollbar">
+                      {activeTab === 'tasks' ? (
+                        /* Tasks Content */
+                        viewMode === 'table' ? (
                         <div className="rounded-2xl border border-white/10 bg-[#0a0b10]/90 backdrop-blur-xl shadow-2xl overflow-hidden">
                           <table className="w-full text-start border-collapse">
                             <thead className="bg-white/[0.04] border-b border-white/10 text-slate-300 font-bold text-xs uppercase tracking-wider text-start">
@@ -648,8 +671,14 @@ export function TaskCatalogView() {
                             <tbody className="divide-y divide-white/5 text-xs">
                               {filteredTasks.length === 0 ? (
                                 <tr>
-                                  <td colSpan={6} className="p-8 text-center text-slate-500 italic">
-                                    لا توجد مهام مطابقة للبحث أو التصفية.
+                                  <td colSpan={6} className="p-0">
+                                    <EmptyState 
+                                      icon={Settings2}
+                                      title={t('preventive.catalog.noTasks', 'لا توجد مهام مطابقة')}
+                                      description={t('preventive.catalog.noTasksDesc', 'لا توجد مهام مطابقة للبحث أو التصفية.')}
+                                      color="emerald"
+                                      className="py-16 opacity-80"
+                                    />
                                   </td>
                                 </tr>
                               ) : (
@@ -716,9 +745,14 @@ export function TaskCatalogView() {
                       ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4">
                           {filteredTasks.length === 0 ? (
-                            <div className="col-span-full py-16 text-center text-slate-500 flex flex-col items-center glass-panel rounded-2xl border-dashed border-white/10">
-                              <Settings2 className="w-12 h-12 mb-4 opacity-20" />
-                              <p>لا توجد مهام مدرجة بعد.</p>
+                            <div className="col-span-full">
+                              <EmptyState 
+                                icon={Settings2}
+                                title={t('preventive.catalog.noTasks', 'لا توجد مهام مطابقة')}
+                                description={t('preventive.catalog.noTasksDesc', 'لا توجد مهام مطابقة للبحث أو التصفية.')}
+                                color="emerald"
+                                className="py-16 opacity-80 glass-panel rounded-2xl border-dashed border-white/10"
+                              />
                             </div>
                           ) : (
                             filteredTasks.map(task => {
@@ -813,8 +847,14 @@ export function TaskCatalogView() {
                             <tbody className="divide-y divide-white/5 text-xs">
                               {filteredActions.length === 0 ? (
                                 <tr>
-                                  <td colSpan={5} className="p-8 text-center text-slate-500 italic">
-                                    لا توجد أفعال صيانة مطابقة للبحث أو التصفية.
+                                  <td colSpan={5} className="p-0">
+                                    <EmptyState 
+                                      icon={Activity}
+                                      title={t('preventive.catalog.noActions', 'لا توجد أفعال مطابقة')}
+                                      description={t('preventive.catalog.noActionsDesc', 'لا توجد أفعال صيانة مطابقة للبحث أو التصفية.')}
+                                      color="purple"
+                                      className="py-16 opacity-80"
+                                    />
                                   </td>
                                 </tr>
                               ) : (
@@ -869,9 +909,14 @@ export function TaskCatalogView() {
                       ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pb-4">
                           {filteredActions.length === 0 ? (
-                            <div className="col-span-full py-16 text-center text-slate-500 flex flex-col items-center glass-panel rounded-2xl border-dashed border-white/10">
-                              <Activity className="w-12 h-12 mb-4 opacity-20" />
-                              <p>لا توجد أفعال صيانة مدرجة.</p>
+                            <div className="col-span-full">
+                              <EmptyState 
+                                icon={Activity}
+                                title={t('preventive.catalog.noActions', 'لا توجد أفعال مطابقة')}
+                                description={t('preventive.catalog.noActionsDesc', 'لا توجد أفعال صيانة مطابقة للبحث أو التصفية.')}
+                                color="purple"
+                                className="py-16 opacity-80 glass-panel rounded-2xl border-dashed border-white/10"
+                              />
                             </div>
                           ) : (
                             filteredActions.map(act => {
@@ -933,7 +978,96 @@ export function TaskCatalogView() {
                         </div>
                       )
                     )}
+                    </div>
                   </div>
+                </>
+              ) : (
+                    /* Gorgeous Welcome / Greeting state */
+                    <div className="p-8 md:p-12 flex flex-col items-center justify-center text-center h-full flex-1 my-auto">
+                      <div className={cn(
+                        "w-16 h-16 rounded-3xl border flex items-center justify-center mb-6 shadow-lg transition-all duration-500",
+                        activeTab === 'tasks'
+                          ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400 shadow-emerald-500/5 animate-pulse"
+                          : "bg-purple-500/10 border-purple-500/20 text-purple-400 shadow-purple-500/5 animate-pulse"
+                      )}>
+                        {activeTab === 'tasks' ? <Settings2 className="w-8 h-8" /> : <Activity className="w-8 h-8" />}
+                      </div>
+
+                      <h3 className="text-xl font-extrabold text-white uppercase tracking-wider mb-2">
+                        {activeTab === 'tasks'
+                          ? t('preventive.catalog.welcomeTasksTitle', 'مكتبة المهمات الوقائية القياسية')
+                          : t('preventive.catalog.welcomeActionsTitle', 'كتالوج أفعال الصيانة القياسية')}
+                      </h3>
+                      <p className="text-xs text-slate-400 max-w-md leading-relaxed">
+                        {activeTab === 'tasks'
+                          ? t('preventive.catalog.welcomeTasksDesc', 'مرحباً بك في كتالوج المهام الوقائية. يرجى تصفح أو اختيار عائلة هندسية من القائمة اليسرى لعرض وإدارة قوالب المهام الوقائية الدورية.')
+                          : t('preventive.catalog.welcomeActionsDesc', 'مرحباً بك في كتالوج أفعال الصيانة القياسية. يرجى تحديد نوع فعل صيانة من القائمة اليسرى لعرض أو تعديل أكواد وأوصاف الأفعال.')}
+                      </p>
+
+                      <div className="flex gap-3 flex-row-reverse mt-6">
+                        {activeTab === 'tasks' ? (
+                          <button
+                            onClick={() => setIsModalOpen(true)}
+                            className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center gap-1.5 cursor-pointer"
+                          >
+                            <Plus className="w-4 h-4" /> {t('preventive.catalog.newTask', 'مهمة وقائية جديدة')}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => {
+                              setEditingActionId(null);
+                              setActionName('');
+                              setActionCode('');
+                              setActionType('PREV');
+                              setActionDesc('');
+                              setIsActionModalOpen(true);
+                            }}
+                            className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center gap-1.5 cursor-pointer"
+                          >
+                            <Plus className="w-4 h-4" /> {t('preventive.catalog.newAction', 'فعل صيانة جديد')}
+                          </button>
+                        )}
+                        <button
+                          onClick={() => {
+                            if (activeTab === 'tasks') {
+                              setSelectedFamilyFilter('ALL');
+                            } else {
+                              setSelectedActionTypeFilter('ALL');
+                            }
+                          }}
+                          className="bg-white/[0.04] text-slate-300 hover:bg-white/[0.08] hover:text-white border border-white/10 font-bold rounded-xl px-4 py-2.5 text-xs transition-all flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <Database className="w-4 h-4 text-slate-400" /> {t('common.browseAll', 'تصفح جميع السجلات')}
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mt-8 text-start">
+                        <div className="p-5 rounded-2xl bg-[#08080c]/80 border border-white/10 shadow-lg">
+                          <div className="flex items-center gap-2 mb-2 justify-start">
+                            <Wrench className={cn("w-4 h-4", activeTab === 'tasks' ? "text-emerald-400" : "text-purple-400")} />
+                            <span className="text-xs font-extrabold text-white">
+                              {activeTab === 'tasks' ? 'توحيد صياغة المهام' : 'هيكلة أفعال الصيانة'}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-slate-400 leading-relaxed">
+                            {activeTab === 'tasks'
+                              ? 'تربط المهام بين العائلات الهندسية وأفعال الصيانة القياسية لتشغيل خطط وقائية معيارية متكاملة.'
+                              : 'توفر الأفعال مصطلحات موحدة (مثل: فحص، تنظيف، معايرة) لتسهيل التحليل الفني لخطط الصيانة وأوامر العمل.'}
+                          </p>
+                        </div>
+
+                        <div className="p-5 rounded-2xl bg-[#08080c]/80 border border-white/10 shadow-lg">
+                          <div className="flex items-center gap-2 mb-2 justify-start">
+                            <Clock className="w-4 h-4 text-amber-400" />
+                            <span className="text-xs font-extrabold text-white">التكرارية والجدولة الزمنية</span>
+                          </div>
+                          <p className="text-[11px] text-slate-400 leading-relaxed">
+                            يتم جدولة المهام القياسية بناءً على دورة تكرار محددة بالأيام لضمان صيانة وقائية دورية وموثوقية عالية للأصول الصناعية.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </motion.div>
               </AnimatePresence>
 

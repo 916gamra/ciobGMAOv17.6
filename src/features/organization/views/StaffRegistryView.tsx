@@ -1,13 +1,15 @@
 import { PageHeader } from "@/shared/components/PageHeader";
 import { HeaderBentoCard } from "@/shared/components/HeaderBentoCard";
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence, Variants } from 'motion/react';
-import { Users, Search, UserCircle2, Pocket, Fingerprint, Lock, Edit3, X, Save, Activity } from 'lucide-react';
+import { Users, UserCircle2, Pocket, Fingerprint, Lock, Edit3, X, Save, Activity, Eye, LayoutGrid, CheckCircle2, XCircle, ShieldCheck } from 'lucide-react';
 import { GlassCard } from '@/shared/components/GlassCard';
+import { UnifiedSearchFilter, FilterGroup } from '@/shared/components/UnifiedSearchFilter';
 import { useAuthSlots } from '@/features/auth/hooks/useAuthSlots';
 import { useNotifications } from '@/shared/hooks/useNotifications';
 import { db } from '@/core/db';
 import { useTranslation } from 'react-i18next';
+import { cn } from '@/shared/utils';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -23,6 +25,9 @@ export function StaffRegistryView() {
   const { t } = useTranslation();
   const { showSuccess, showError } = useNotifications();
   const [searchTerm, setSearchTerm] = useState('');
+  const [roleFilter, setRoleFilter] = useState('ALL');
+  const [statusFilter, setStatusFilter] = useState('ALL');
+  const [displayMode, setDisplayMode] = useState<'table' | 'cards'>('table');
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const [formName, setFormName] = useState('');
@@ -31,14 +36,53 @@ export function StaffRegistryView() {
   
   const allSlots = useAuthSlots();
   // Filter for Staff (Exclude System Admin, or include OP and TC?)
-  const staffSlots = allSlots.filter(s => s.id.startsWith('TC') || s.id.startsWith('OP'));
-  const activeStaff = staffSlots.filter(s => s.isActive);
+  const staffSlots = useMemo(() => allSlots.filter(s => s.id.startsWith('TC') || s.id.startsWith('OP')), [allSlots]);
+  const activeStaff = useMemo(() => staffSlots.filter(s => s.isActive), [staffSlots]);
+  const tcSlotsCount = useMemo(() => staffSlots.filter(s => s.id.startsWith('TC')).length, [staffSlots]);
+  const opSlotsCount = useMemo(() => staffSlots.filter(s => s.id.startsWith('OP')).length, [staffSlots]);
 
-  const filteredStaff = staffSlots.filter(t => 
-    t.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    t.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (t.realBadgeId || '').toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filterGroups: FilterGroup[] = useMemo(() => [
+    {
+      id: 'role',
+      label: 'الدور الوظيفي (Role)',
+      value: roleFilter,
+      onChange: setRoleFilter,
+      allLabel: 'جميع الأدوار الوظيفية',
+      type: 'chips',
+      options: [
+        { value: 'TC', label: 'فني صيانة (Technician)', count: tcSlotsCount },
+        { value: 'OP', label: 'مشغل إنتاج (Operator)', count: opSlotsCount }
+      ]
+    },
+    {
+      id: 'status',
+      label: 'حالة التفعيل (Status)',
+      value: statusFilter,
+      onChange: setStatusFilter,
+      allLabel: 'جميع الحالات',
+      type: 'chips',
+      options: [
+        { value: 'ACTIVE', label: 'نشط (Active)', count: activeStaff.length },
+        { value: 'SPARE', label: 'شاغر / غير مفعل (Spare)', count: staffSlots.length - activeStaff.length }
+      ]
+    }
+  ], [roleFilter, statusFilter, tcSlotsCount, opSlotsCount, activeStaff.length, staffSlots.length]);
+
+  const filteredStaff = useMemo(() => {
+    return staffSlots.filter(t => {
+      const matchSearch = !searchTerm || 
+        t.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        t.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (t.realBadgeId || '').toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchRole = roleFilter === 'ALL' || t.id.startsWith(roleFilter);
+      const matchStatus = statusFilter === 'ALL' || 
+        (statusFilter === 'ACTIVE' && t.isActive) || 
+        (statusFilter === 'SPARE' && !t.isActive);
+
+      return matchSearch && matchRole && matchStatus;
+    });
+  }, [staffSlots, searchTerm, roleFilter, statusFilter]);
 
   const handleEdit = (staff: any) => {
       setEditingId(staff.id);
@@ -114,30 +158,59 @@ export function StaffRegistryView() {
       <div className="flex flex-col flex-1 px-6 md:px-8 mt-6 gap-6 min-h-0">
       <motion.div variants={itemVariants} className="flex-1 min-h-0 flex flex-col">
         <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl h-full flex flex-col bg-[#0a0a0f]/60 backdrop-blur-xl">
-          <div className="p-6 md:p-8 border-b border-white/10 bg-white/[0.02] flex flex-col md:flex-row md:items-center justify-between gap-6 shrink-0 relative z-10">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0">
-                <Users className="w-6 h-6 text-indigo-400" />
+          {/* Universal Crystal Command Bar */}
+          <div className="p-4 md:p-6 border-b border-white/10 bg-white/[0.02] flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4 shrink-0 relative z-10">
+            {/* Right Side (RTL): Context Count */}
+            <div className="flex items-center gap-3 shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0">
+                <Users className="w-5 h-5 text-indigo-400" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-white uppercase tracking-tight">{t('staff.directoryTitle', 'Active Staff Directory')}</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-sm font-black text-white uppercase tracking-tight">{t('staff.directoryTitle', 'Active Staff Directory')}</h2>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-indigo-500/15 border border-indigo-500/30 text-indigo-300">
+                    {filteredStaff.length} {t('staff.totalSlots', 'Slots')}
+                  </span>
+                </div>
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('staff.directorySubtitle', 'Global Personnel Registry')}</p>
               </div>
             </div>
-            <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
-              <div className="relative group flex-1 md:w-64">
-                <Search className="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-indigo-400 transition-colors" />
-                <input 
-                  type="text" 
-                  placeholder={t('staff.searchPlaceholder', 'Search personnel...')} 
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="titan-input py-2.5 pl-11 pr-3 rtl:pr-11 rtl:pl-3 w-full shadow-none"
-                />
-              </div>
-              <div className="px-4 py-2.5 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 shrink-0">
-                <Lock className="w-3.5 h-3.5" /> {t('staff.matrixLocked', 'Matrix Locked')}
-              </div>
+
+            {/* Center & Left: Unified Search & Filter with View Switcher */}
+            <div className="flex-1 max-w-2xl w-full">
+              <UnifiedSearchFilter
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                searchPlaceholder={t('staff.searchPlaceholder', 'بحث في الكادر، الأسماء، المعرفات، أو بطاقات الدخول...')}
+                filterGroups={filterGroups}
+                themeColor="indigo"
+                extraControls={
+                  <div className="flex items-center gap-1 p-1 bg-[#12131a] rounded-xl border border-white/10 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setDisplayMode('table')}
+                      className={cn(
+                        "p-1.5 rounded-lg transition-all cursor-pointer",
+                        displayMode === 'table' ? "bg-white text-slate-950 shadow-sm font-bold" : "text-slate-400 hover:text-white"
+                      )}
+                      title="عرض الجدول (Crystal Table)"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDisplayMode('cards')}
+                      className={cn(
+                        "p-1.5 rounded-lg transition-all cursor-pointer",
+                        displayMode === 'cards' ? "bg-white text-slate-950 shadow-sm font-bold" : "text-slate-400 hover:text-white"
+                      )}
+                      title="عرض البطاقات (Cards Grid)"
+                    >
+                      <LayoutGrid className="w-4 h-4" />
+                    </button>
+                  </div>
+                }
+              />
             </div>
           </div>
 
@@ -191,13 +264,13 @@ export function StaffRegistryView() {
                     <button 
                       type="button" 
                       onClick={handleCancel}
-                      className="bg-white/[0.04] text-slate-300 hover:bg-white/[0.08] hover:text-white border border-white/10 font-bold rounded-xl px-5 py-2.5 text-xs transition-all"
+                      className="bg-white/[0.04] text-slate-300 hover:bg-white/[0.08] hover:text-white border border-white/10 font-bold rounded-xl px-5 py-2.5 text-xs transition-all cursor-pointer"
                     >
                       {t('staff.abortBtn', 'Abort')}
                     </button>
                     <button 
                       type="submit" 
-                      className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-6 py-2.5 text-xs shadow-lg transition-all flex items-center gap-2"
+                      className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-6 py-2.5 text-xs shadow-lg transition-all flex items-center gap-2 cursor-pointer"
                     >
                       <Save className="w-4 h-4" /> {t('staff.saveBtn', 'Save Configuration')}
                     </button>
@@ -207,67 +280,163 @@ export function StaffRegistryView() {
             </motion.div>
           )}
 
-          <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar bg-[#0a0a0f]/40 p-6 md:p-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              <AnimatePresence mode="popLayout">
-                {filteredStaff.map((tech) => (
-                    <motion.div 
-                      key={tech.id}
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      className="titan-card overflow-hidden flex flex-col group relative shadow-none p-0 hover:border-indigo-500 transition-all duration-300 border border-white/10 bg-[#0a0a0f] rounded-3xl"
-                    >
-                      {/* ID Header Plaque */}
-                      <div className="flex justify-between items-center bg-white/[0.02] p-4 border-b border-white/5 relative z-10 transition-colors duration-300 group-hover:bg-white/[0.04]">
-                        <div className="flex items-center gap-2">
-                           <div className={`w-1.5 h-1.5 rounded-full ${tech.isActive ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)] animate-pulse' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]'}`} />
-                           <span className={`text-[10px] font-mono tracking-widest uppercase font-bold transition-colors ${tech.isActive ? 'text-slate-400 group-hover:text-slate-200' : 'text-slate-600'}`}>{tech.id}</span>
-                        </div>
-                        <div className="flex opacity-0 group-hover:opacity-100 transition-all duration-300 gap-1 bg-white/5 backdrop-blur-md border border-white/10 p-1 rounded-lg">
-                           <button 
-                             onClick={() => handleEdit(tech)}
-                             className="p-1.5 rounded-md hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
-                             title="Configure Slot"
-                           >
-                             <Edit3 className="w-3.5 h-3.5" />
-                           </button>
-                        </div>
-                      </div>
+          <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar bg-[#0a0a0f]/40 p-4 md:p-6">
+            {displayMode === 'table' ? (
+              /* Crystal Table View */
+              <div className="rounded-2xl border border-white/10 overflow-hidden bg-slate-900/60 backdrop-blur-xl shadow-2xl">
+                <div className="overflow-x-auto custom-scrollbar">
+                  <table className="w-full text-start border-collapse">
+                    <thead>
+                      <tr className="bg-white/[0.04] border-b border-white/10 text-slate-300 font-bold uppercase tracking-wider text-[11px]">
+                        <th className="py-3.5 px-4 text-start font-bold">معرف المقعد</th>
+                        <th className="py-3.5 px-4 text-start font-bold">الاسم والصفة</th>
+                        <th className="py-3.5 px-4 text-start font-bold">شارة الدخول المادية</th>
+                        <th className="py-3.5 px-4 text-start font-bold">الرتبة والمسؤولية</th>
+                        <th className="py-3.5 px-4 text-center font-bold">حالة التفعيل</th>
+                        <th className="py-3.5 px-4 text-center font-bold">الإجراءات</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5 text-xs">
+                      {filteredStaff.map((tech) => (
+                        <tr key={tech.id} className="hover:bg-white/[0.04] transition-colors group">
+                          {/* Slot ID */}
+                          <td className="py-3.5 px-4 font-mono font-bold">
+                            <span className="px-2.5 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[11px] inline-flex items-center gap-1.5">
+                              <span className={`w-1.5 h-1.5 rounded-full ${tech.isActive ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'}`} />
+                              {tech.id}
+                            </span>
+                          </td>
 
-                      <div className={`p-6 flex flex-col items-center text-center relative z-10 flex-1 ${!tech.isActive && 'opacity-60 grayscale'}`}>
-                        <div className={`w-20 h-20 rounded-2xl flex items-center justify-center text-3xl font-semibold group-hover:scale-105 transition-transform duration-500 text-slate-300 group-hover:text-white bg-white/5 border border-white/10 mb-5`}>
-                          {tech.initials}
-                        </div>
-                        
-                        <h3 className="text-xl font-bold text-slate-400 group-hover:text-white group-hover:font-black tracking-wide mb-2 uppercase transition-all duration-300">{tech.name}</h3>
-                        
-                        <div className="flex items-center gap-1.5 text-[10px] text-slate-400 mb-5 bg-white/5 px-3 py-1.5 rounded-md border border-white/10 uppercase tracking-widest font-bold">
-                          <Pocket className="w-3.5 h-3.5" />
-                          <span>{tech.role}</span>
-                        </div>
-                        
-                        <div className="w-full bg-[#0a0a0f] rounded-xl p-4 border border-white/5 flex flex-col gap-2 mt-auto text-left group-hover:bg-white/5 transition-colors">
-                          <span className="text-[10px] uppercase tracking-widest font-bold text-slate-500 flex items-center gap-1.5 group-hover:text-slate-400 transition-colors">
-                            <Fingerprint className="w-3.5 h-3.5 text-slate-500 group-hover:text-slate-400" /> Physical Badge ID
-                          </span>
-                          <div className="text-sm font-bold text-slate-400 group-hover:text-slate-200 font-mono uppercase tracking-tight transition-colors">
-                             {tech.realBadgeId || 'NOT CONFIGURED'}
+                          {/* Staff Name & Initials */}
+                          <td className="py-3.5 px-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center font-bold text-xs text-white shrink-0">
+                                {tech.initials}
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="font-extrabold text-white text-xs tracking-tight group-hover:text-indigo-300 transition-colors uppercase">
+                                  {tech.name}
+                                </span>
+                                <span className="text-[10px] text-slate-400 font-medium">
+                                  {tech.role || 'فني صيانة معتمد'}
+                                </span>
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* Physical Badge ID */}
+                          <td className="py-3.5 px-4">
+                            <div className="flex items-center gap-2">
+                              <Fingerprint className="w-3.5 h-3.5 text-slate-400" />
+                              <span className="font-mono text-xs font-bold text-slate-300 bg-white/5 px-2.5 py-1 rounded-md border border-white/10">
+                                {tech.realBadgeId || 'غير معرّف'}
+                              </span>
+                            </div>
+                          </td>
+
+                          {/* Role / Responsibility */}
+                          <td className="py-3.5 px-4">
+                            <span className="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-slate-300 text-[11px] font-bold inline-flex items-center gap-1">
+                              <Pocket className="w-3 h-3 text-slate-400" />
+                              {tech.role}
+                            </span>
+                          </td>
+
+                          {/* Active Status */}
+                          <td className="py-3.5 px-4 text-center">
+                            {tech.isActive ? (
+                              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 inline-flex items-center gap-1">
+                                <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                                نشط ميدانياً
+                              </span>
+                            ) : (
+                              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20 inline-flex items-center gap-1">
+                                <XCircle className="w-3 h-3 text-rose-400" />
+                                مقعد مخدر
+                              </span>
+                            )}
+                          </td>
+
+                          {/* Actions */}
+                          <td className="py-3.5 px-4 text-center">
+                            <button 
+                              onClick={() => handleEdit(tech)}
+                              className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/15 text-slate-300 hover:text-white border border-white/10 transition-colors inline-flex items-center gap-1.5 text-xs font-bold cursor-pointer"
+                              title="تهيئة المقعد"
+                            >
+                              <Edit3 className="w-3.5 h-3.5" />
+                              <span>تهيئة</span>
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : (
+              /* Cards View */
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <AnimatePresence mode="popLayout">
+                  {filteredStaff.map((tech) => (
+                      <motion.div 
+                        key={tech.id}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        className="titan-card overflow-hidden flex flex-col group relative shadow-none p-0 hover:border-indigo-500 transition-all duration-300 border border-white/10 bg-[#0a0a0f] rounded-3xl"
+                      >
+                        {/* ID Header Plaque */}
+                        <div className="flex justify-between items-center bg-white/[0.02] p-4 border-b border-white/5 relative z-10 transition-colors duration-300 group-hover:bg-white/[0.04]">
+                          <div className="flex items-center gap-2">
+                             <div className={`w-1.5 h-1.5 rounded-full ${tech.isActive ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)] animate-pulse' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]'}`} />
+                             <span className={`text-[10px] font-mono tracking-widest uppercase font-bold transition-colors ${tech.isActive ? 'text-slate-400 group-hover:text-slate-200' : 'text-slate-600'}`}>{tech.id}</span>
+                          </div>
+                          <div className="flex opacity-0 group-hover:opacity-100 transition-all duration-300 gap-1 bg-white/5 backdrop-blur-md border border-white/10 p-1 rounded-lg">
+                             <button 
+                               onClick={() => handleEdit(tech)}
+                               className="p-1.5 rounded-md hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                               title="Configure Slot"
+                             >
+                               <Edit3 className="w-3.5 h-3.5" />
+                             </button>
                           </div>
                         </div>
-                      </div>
-                    </motion.div>
-                  )
+
+                        <div className={`p-6 flex flex-col items-center text-center relative z-10 flex-1 ${!tech.isActive && 'opacity-60 grayscale'}`}>
+                          <div className={`w-20 h-20 rounded-2xl flex items-center justify-center text-3xl font-semibold group-hover:scale-105 transition-transform duration-500 text-slate-300 group-hover:text-white bg-white/5 border border-white/10 mb-5`}>
+                            {tech.initials}
+                          </div>
+                          
+                          <h3 className="text-xl font-bold text-slate-400 group-hover:text-white group-hover:font-black tracking-wide mb-2 uppercase transition-all duration-300">{tech.name}</h3>
+                          
+                          <div className="flex items-center gap-1.5 text-[10px] text-slate-400 mb-5 bg-white/5 px-3 py-1.5 rounded-md border border-white/10 uppercase tracking-widest font-bold">
+                            <Pocket className="w-3.5 h-3.5" />
+                            <span>{tech.role}</span>
+                          </div>
+                          
+                          <div className="w-full bg-[#0a0a0f] rounded-xl p-4 border border-white/5 flex flex-col gap-2 mt-auto text-left group-hover:bg-white/5 transition-colors">
+                            <span className="text-[10px] uppercase tracking-widest font-bold text-slate-500 flex items-center gap-1.5 group-hover:text-slate-400 transition-colors">
+                              <Fingerprint className="w-3.5 h-3.5 text-slate-500 group-hover:text-slate-400" /> Physical Badge ID
+                            </span>
+                            <div className="text-sm font-bold text-slate-400 group-hover:text-slate-200 font-mono uppercase tracking-tight transition-colors">
+                               {tech.realBadgeId || 'NOT CONFIGURED'}
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )
+                  )}
+                </AnimatePresence>
+                {filteredStaff.length === 0 && (
+                  <div className="col-span-full py-20 flex flex-col items-center justify-center border border-dashed border-white/10 rounded-3xl bg-white/[0.02]">
+                    <Users className="w-12 h-12 text-slate-600 mb-4" />
+                    <p className="text-sm text-slate-400 font-bold uppercase tracking-widest">No Active Personnel</p>
+                    <p className="text-xs text-slate-500 mt-2">Active slots list is currently empty.</p>
+                  </div>
                 )}
-              </AnimatePresence>
-              {filteredStaff.length === 0 && (
-                <div className="col-span-full py-20 flex flex-col items-center justify-center border border-dashed border-white/10 rounded-3xl bg-white/[0.02]">
-                  <Users className="w-12 h-12 text-slate-600 mb-4" />
-                  <p className="text-sm text-slate-400 font-bold uppercase tracking-widest">No Active Personnel</p>
-                  <p className="text-xs text-slate-500 mt-2">Active slots list is currently empty.</p>
-                </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </GlassCard>
       </motion.div>

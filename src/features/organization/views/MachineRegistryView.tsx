@@ -4,7 +4,7 @@ import { GlassCard } from '@/shared/components/GlassCard';
 import { getAssetMatrixForBlueprint, MAX_ASSETS_PER_BLUEPRINT, AssetSlot } from '@/core/config/assetMatrix';
 import { 
   Factory, Cpu, Plus, X, Search, Activity, Box, Tag, Trash2, Edit3, 
-  Save, Wrench, QrCode, Upload, Link2, AlertTriangle 
+  Save, Wrench, QrCode, Upload, Link2, AlertTriangle, Eye, LayoutGrid, CheckCircle2 
 } from 'lucide-react';
 import { useOrganizationEngine } from '../hooks/useOrganizationEngine';
 import { useMachineLibrary } from '../hooks/useMachineLibrary';
@@ -17,6 +17,7 @@ import { MachineDetailsModal } from '../components/MachineDetailsModal';
 import { MachinePdrLinkModal } from '../components/MachinePdrLinkModal';
 import { PageHeader } from '@/shared/components/PageHeader';
 import { HeaderBentoCard } from '@/shared/components/HeaderBentoCard';
+import { UnifiedSearchFilter, FilterGroup } from '@/shared/components/UnifiedSearchFilter';
 import { cn } from '@/shared/utils';
 import { useTranslation } from 'react-i18next';
 
@@ -38,6 +39,7 @@ export function MachineRegistryView() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterSector, setFilterSector] = useState('ALL');
   const [filterTemplate, setFilterTemplate] = useState('ALL');
+  const [displayMode, setDisplayMode] = useState<'table' | 'cards'>('table');
   
   // Importer & Sub-Modals
   const [isImporterOpen, setIsImporterOpen] = useState(false);
@@ -65,6 +67,25 @@ export function MachineRegistryView() {
   const [referenceCode, setReferenceCode] = useState('');
 
   const uniqueTemplates = useMemo(() => Array.from(new Set(machines.map(m => m.templateName))).sort(), [machines]);
+
+  const filterGroups: FilterGroup[] = useMemo(() => [
+    {
+      id: 'sector',
+      label: 'منطقة التشغيل (Sector)',
+      value: filterSector,
+      onChange: setFilterSector,
+      allLabel: 'جميع قطاعات المعمل',
+      options: sectors.map(s => ({ value: s.id, label: s.name }))
+    },
+    {
+      id: 'template',
+      label: 'القالب المرجعي (Template)',
+      value: filterTemplate,
+      onChange: setFilterTemplate,
+      allLabel: 'جميع القوالب الهندسية',
+      options: uniqueTemplates.map(t => ({ value: t, label: t }))
+    }
+  ], [filterSector, filterTemplate, sectors, uniqueTemplates]);
 
   const filteredMachines = useMemo(() => {
     return machines.filter(m => {
@@ -153,6 +174,22 @@ export function MachineRegistryView() {
         icon={<Factory className="w-7 h-7 text-indigo-400" />}
         badgeText={t('machines.badge', 'Machine Registry')}
         badgeColor="indigo"
+        actions={
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setIsImporterOpen(true)}
+              className="bg-white/[0.04] text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/30 font-bold rounded-xl px-4 py-2.5 text-xs transition-all shrink-0 flex items-center justify-center gap-2 cursor-pointer"
+            >
+               <Upload className="w-4 h-4" /> {t('machines.smartImport', 'Smart Import')}
+            </button>
+            <button 
+              onClick={handleTriggerNewAssetWizard}
+              className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all shrink-0 flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <Plus className="w-4 h-4 shrink-0" /> {t('machines.newAsset', 'New Asset')}
+            </button>
+          </div>
+        }
       >
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <HeaderBentoCard
@@ -190,63 +227,63 @@ export function MachineRegistryView() {
       <div className="flex flex-col flex-1 px-6 md:px-8 mt-6 gap-6 min-h-0">
       <motion.div variants={itemVariants} className="flex-1 min-h-0 flex flex-col">
         <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl h-full flex flex-col bg-[#0a0a0f]/60 backdrop-blur-xl">
-          <div className="p-6 md:p-8 border-b border-white/10 bg-white/[0.02] flex flex-col lg:flex-row lg:items-center justify-between gap-6 shrink-0 relative z-10">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0">
-                <Cpu className="w-6 h-6 text-indigo-400" />
+          {/* Universal Crystal Command Bar */}
+          <div className="p-4 md:p-6 border-b border-white/10 bg-white/[0.02] flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 shrink-0 relative z-10">
+            {/* Right Side (RTL): Context Count */}
+            <div className="flex items-center gap-3 shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0">
+                <Cpu className="w-5 h-5 text-indigo-400" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-white uppercase tracking-tight">{t('machines.directoryTitle', 'Active Machinery Directory')}</h2>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-sm font-black text-white uppercase tracking-tight">{t('machines.directoryTitle', 'Active Machinery Directory')}</h2>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-indigo-500/15 border border-indigo-500/30 text-indigo-300">
+                    {filteredMachines.length} {t('machines.total', 'Assets')}
+                  </span>
+                </div>
                 <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{t('machines.directorySubtitle', 'Global Asset Overview')}</p>
               </div>
             </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="relative group flex-1 lg:flex-none">
-                <Search className="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-indigo-400 transition-colors" />
-                <input 
-                  type="text" 
-                  placeholder={t('machines.searchPlaceholder', 'Search assets...')} 
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="titan-input py-2.5 pl-11 pr-3 rtl:pr-11 rtl:pl-3 w-full lg:w-64 shadow-none"
-                />
-              </div>
-              <select 
-                value={filterSector}
-                onChange={e => setFilterSector(e.target.value)}
-                className="titan-input py-2.5 px-4 bg-white/[0.03] border-white/10 text-sm font-medium w-36 lg:w-40"
-              >
-                <option value="ALL">{t('machines.allSectors', 'All Sectors')}</option>
-                {sectors.map(s => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
-                ))}
-              </select>
-              <select 
-                value={filterTemplate}
-                onChange={e => setFilterTemplate(e.target.value)}
-                className="titan-input py-2.5 px-4 bg-white/[0.03] border-white/10 text-sm font-medium w-36 lg:w-40"
-              >
-                <option value="ALL">{t('machines.allTemplates', 'All Templates')}</option>
-                {uniqueTemplates.map(t => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </select>
-              <button 
-                onClick={() => setIsImporterOpen(true)}
-                className="bg-white/[0.04] text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/30 font-bold rounded-xl px-4 py-2.5 text-xs transition-all shrink-0 flex items-center justify-center gap-2"
-              >
-                 <Upload className="w-4 h-4" /> {t('machines.smartImport', 'Smart Import')}
-              </button>
-              <button 
-                onClick={handleTriggerNewAssetWizard}
-                className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all shrink-0 flex items-center justify-center gap-2"
-              >
-                <Plus className="w-4 h-4 shrink-0" /> {t('machines.newAsset', 'New Asset')}
-              </button>
+
+            {/* Center & Left: Unified Search & Filter with View Switcher */}
+            <div className="flex-1 max-w-3xl">
+              <UnifiedSearchFilter
+                searchTerm={searchTerm}
+                onSearchChange={setSearchTerm}
+                searchPlaceholder={t('machines.searchPlaceholder', 'بحث في الآلات، الأكواد، القطاعات، أو الموديلات...')}
+                filterGroups={filterGroups}
+                themeColor="indigo"
+                extraControls={
+                  <div className="flex items-center gap-1 p-1 bg-[#161821] rounded-xl border border-white/10 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setDisplayMode('table')}
+                      className={cn(
+                        "p-1.5 rounded-lg transition-all cursor-pointer",
+                        displayMode === 'table' ? "bg-white text-slate-950 shadow-sm" : "text-slate-500 hover:text-white"
+                      )}
+                      title="عرض الجدول (Crystal Table)"
+                    >
+                      <Eye className="w-4 h-4" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDisplayMode('cards')}
+                      className={cn(
+                        "p-1.5 rounded-lg transition-all cursor-pointer",
+                        displayMode === 'cards' ? "bg-white text-slate-950 shadow-sm" : "text-slate-500 hover:text-white"
+                      )}
+                      title="عرض البطاقات (Cards Grid)"
+                    >
+                      <LayoutGrid className="w-4 h-4" />
+                    </button>
+                  </div>
+                }
+              />
             </div>
           </div>
 
-          <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar bg-[#0a0a0f]/40 p-6 md:p-8">
+          <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar bg-[#0a0a0f]/40 p-4 md:p-6">
             {filteredMachines.length === 0 ? (
               <div className="py-20 text-center border border-dashed border-white/10 rounded-3xl bg-white/[0.02]">
                 <Cpu className="w-16 h-16 text-slate-500 mx-auto mb-4 opacity-50" />
@@ -254,12 +291,143 @@ export function MachineRegistryView() {
                 <p className="text-slate-400 text-sm font-medium">{t('machines.nullResultsDesc', 'No assets matching your query or registry is empty.')}</p>
                 <button
                   onClick={handleTriggerNewAssetWizard}
-                  className="mt-8 px-6 py-2.5 rounded-xl border border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10 transition-colors uppercase tracking-widest text-xs font-bold"
+                  className="mt-8 px-6 py-2.5 rounded-xl border border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10 transition-colors uppercase tracking-widest text-xs font-bold cursor-pointer"
                 >
                   + {t('machines.syncFirst', 'Sync First Machine')}
                 </button>
               </div>
+            ) : displayMode === 'table' ? (
+              /* Crystal Table View */
+              <div className="rounded-2xl border border-white/10 overflow-hidden bg-slate-900/60 backdrop-blur-xl shadow-2xl">
+                <div className="overflow-x-auto custom-scrollbar">
+                  <table className="w-full text-start border-collapse">
+                    <thead>
+                      <tr className="bg-white/[0.04] border-b border-white/10 text-slate-300 font-bold uppercase tracking-wider text-[11px]">
+                        <th className="py-3.5 px-4 text-start font-bold">معرف الآلة (Asset ID)</th>
+                        <th className="py-3.5 px-4 text-start font-bold">اسم الآلة والموديل</th>
+                        <th className="py-3.5 px-4 text-start font-bold">منطقة التشغيل</th>
+                        <th className="py-3.5 px-4 text-start font-bold">المسؤول والفني</th>
+                        <th className="py-3.5 px-4 text-start font-bold">العائلة والقالب</th>
+                        <th className="py-3.5 px-4 text-center font-bold">الإجراءات والربط</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5 text-xs">
+                      {filteredMachines.map((machine) => (
+                        <tr key={machine.id} className="hover:bg-white/[0.04] transition-colors group">
+                          {/* Reference Code */}
+                          <td className="py-3.5 px-4 font-mono font-bold">
+                            <span 
+                              onClick={() => setSelectedMachineForDetails(machine)}
+                              className="px-2.5 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[11px] inline-flex items-center gap-1.5 cursor-pointer hover:bg-indigo-500/20 transition-colors"
+                            >
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.8)] animate-pulse" />
+                              {machine.referenceCode}
+                            </span>
+                          </td>
+
+                          {/* Machine Name & Blueprint */}
+                          <td className="py-3.5 px-4">
+                            <div 
+                              onClick={() => setSelectedMachineForDetails(machine)}
+                              className="flex flex-col cursor-pointer"
+                            >
+                              <span className="font-extrabold text-white text-xs tracking-tight group-hover:text-indigo-300 transition-colors uppercase">
+                                {machine.name}
+                              </span>
+                              <span className="text-[10px] text-slate-400 font-medium">
+                                {machine.blueprintReference || 'غير مسند لموديل تجاري'}
+                              </span>
+                            </div>
+                          </td>
+
+                          {/* Sector */}
+                          <td className="py-3.5 px-4">
+                            <div className="flex items-center gap-2">
+                              <Activity className="w-3.5 h-3.5 text-indigo-400" />
+                              <span className="font-bold text-slate-200 text-xs">
+                                {machine.sectorName}
+                              </span>
+                            </div>
+                          </td>
+
+                          {/* Tech / Manager */}
+                          <td className="py-3.5 px-4">
+                            <span className="text-[11px] text-slate-300 font-medium">
+                              {machine.managerName || 'مسؤول القطاع'}
+                            </span>
+                          </td>
+
+                          {/* Family & Template */}
+                          <td className="py-3.5 px-4">
+                            <div className="flex items-center gap-2">
+                              <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[10px] text-slate-400 font-mono">
+                                {machine.familyName}
+                              </span>
+                              <span className="text-slate-500 text-xs">/</span>
+                              <span className="text-[10px] text-slate-300 font-bold">
+                                {machine.templateName}
+                              </span>
+                            </div>
+                          </td>
+
+                          {/* Actions */}
+                          <td className="py-3.5 px-4 text-center">
+                            <div className="flex items-center justify-center gap-1.5">
+                              {/* Link Spare Part Quick Trigger */}
+                              <button
+                                type="button"
+                                onClick={() => setSelectedMachineForPdrLink(machine)}
+                                className="p-1.5 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 transition-colors cursor-pointer"
+                                title="ربط قطعة غيار PDR"
+                              >
+                                <Link2 className="w-3.5 h-3.5" />
+                              </button>
+
+                              {/* QR Code */}
+                              <button 
+                                onClick={() => setSelectedMachineForQr(machine)}
+                                className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 text-slate-300 hover:text-white border border-white/10 transition-colors cursor-pointer"
+                                title="Digital ID & QR Card"
+                              >
+                                <QrCode className="w-3.5 h-3.5" />
+                              </button>
+
+                              {/* BOM */}
+                              <button 
+                                onClick={() => setSelectedMachineForBom({ id: machine.id, name: machine.name })}
+                                className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 text-slate-300 hover:text-white border border-white/10 transition-colors cursor-pointer"
+                                title="BOM Configuration"
+                              >
+                                <Wrench className="w-3.5 h-3.5" />
+                              </button>
+
+                              {/* Edit */}
+                              <button 
+                                onClick={() => handleEdit(machine)}
+                                className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 text-slate-300 hover:text-white border border-white/10 transition-colors cursor-pointer"
+                                title="تعديل البيانات"
+                              >
+                                <Edit3 className="w-3.5 h-3.5" />
+                              </button>
+
+                              {/* Delete */}
+                              <button 
+                                onClick={() => handleDelete(machine.id, machine.name)}
+                                className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition-colors cursor-pointer"
+                                title="إخراج من الخدمة"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             ) : (
+              /* Cards View */
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 <AnimatePresence>
                   {filteredMachines.map((machine, idx) => (
@@ -273,7 +441,6 @@ export function MachineRegistryView() {
                       <div 
                         className="!p-0 relative overflow-hidden group h-full flex flex-col hover:border-indigo-500 transition-all duration-300 border border-white/10 bg-[#0a0a0f] rounded-3xl"
                       >
-                        
                         {/* Make body card clickable to open MachineDetailsModal */}
                         <div 
                           onClick={() => setSelectedMachineForDetails(machine)}
@@ -291,35 +458,35 @@ export function MachineRegistryView() {
                                   setWizardInitialStep(3); // Blueprint selection
                                   setIsWizardOpen(true);
                                 }}
-                                className="p-1.5 rounded-md hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
+                                className="p-1.5 rounded-md hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer"
                                 title="Link to Blueprint"
                               >
                                 <Link2 className="w-3.5 h-3.5" />
                               </button>
                               <button 
                                 onClick={(e) => { e.stopPropagation(); setSelectedMachineForQr(machine); }}
-                                className="p-1.5 rounded-md hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
+                                className="p-1.5 rounded-md hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer"
                                 title="Digital ID & QR Card"
                               >
                                 <QrCode className="w-3.5 h-3.5" />
                               </button>
                               <button 
                                 onClick={(e) => { e.stopPropagation(); setSelectedMachineForBom({ id: machine.id, name: machine.name }); }}
-                                className="p-1.5 rounded-md hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
+                                className="p-1.5 rounded-md hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer"
                                 title="BOM Configuration"
                               >
                                 <Wrench className="w-3.5 h-3.5" />
                               </button>
                               <button 
                                 onClick={(e) => { e.stopPropagation(); handleEdit(machine); }}
-                                className="p-1.5 rounded-md hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
+                                className="p-1.5 rounded-md hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer"
                                 title="Edit Physical Details"
                               >
                                 <Edit3 className="w-3.5 h-3.5" />
                               </button>
                               <button 
                                 onClick={(e) => { e.stopPropagation(); handleDelete(machine.id, machine.name); }}
-                                className="p-1.5 rounded-md hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors"
+                                className="p-1.5 rounded-md hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors cursor-pointer"
                                 title="Decommission Machine"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
@@ -351,7 +518,7 @@ export function MachineRegistryView() {
                               e.stopPropagation();
                               setSelectedMachineForPdrLink(machine);
                             }}
-                            className="mt-4 w-full py-2 px-3.5 rounded-xl border border-white/10 hover:border-white/30 text-slate-400 hover:text-white hover:bg-white/5 text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all relative z-20 group/btn"
+                            className="mt-4 w-full py-2 px-3.5 rounded-xl border border-white/10 hover:border-white/30 text-slate-400 hover:text-white hover:bg-white/5 text-[10px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition-all relative z-20 group/btn cursor-pointer"
                           >
                             <Link2 className="w-4 h-4 text-slate-500 group-hover/btn:text-white" /> {t('machines.linkSparePart', 'Link Spare Part')}
                           </button>
@@ -508,10 +675,10 @@ export function MachineRegistryView() {
                   </div>
 
                   <div className="pt-6 flex justify-end gap-3">
-                    <button type="button" onClick={handleEditClose} className="bg-white/[0.04] text-slate-300 hover:bg-white/[0.08] hover:text-white border border-white/10 font-bold rounded-xl px-5 py-2.5 text-xs transition-all">
+                    <button type="button" onClick={handleEditClose} className="bg-white/[0.04] text-slate-300 hover:bg-white/[0.08] hover:text-white border border-white/10 font-bold rounded-xl px-5 py-2.5 text-xs transition-all cursor-pointer">
                       {t('machines.abortBtn', 'Abort')}
                     </button>
-                    <button type="submit" className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-6 py-2.5 text-xs shadow-lg transition-all flex items-center gap-2">
+                    <button type="submit" className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-6 py-2.5 text-xs shadow-lg transition-all flex items-center gap-2 cursor-pointer">
                        <Save className="w-4 h-4"/> {t('machines.pushUpdate', 'Push Update')}
                     </button>
                   </div>

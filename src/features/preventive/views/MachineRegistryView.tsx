@@ -8,6 +8,7 @@ import { cn } from '@/shared/utils';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
+import { EmptyState } from '@/shared/components/EmptyState';
 import { 
   FileStack, 
   Activity, 
@@ -382,6 +383,42 @@ export function MachineRegistryView() {
           icon={<Layers className="w-6 h-6 text-emerald-400" />}
           badgeColor="emerald"
           badgeText={t("preventive.plans.badge", "Maintenance Schemes")}
+          actions={
+            <div className="flex items-center gap-3">
+              {/* Global View Switcher */}
+              <div className="flex items-center gap-1.5 p-1 bg-[#08080c] rounded-xl border border-white/10">
+                <button
+                  onClick={() => setViewMode('table')}
+                  className={cn(
+                    "p-1.5 rounded-lg transition-all cursor-pointer",
+                    viewMode === 'table' ? "bg-white text-slate-950 shadow-sm" : "text-slate-400 hover:text-white"
+                  )}
+                  title={t('common.tableView', 'عرض الجدول')}
+                >
+                  <Eye className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setViewMode('cards')}
+                  className={cn(
+                    "p-1.5 rounded-lg transition-all cursor-pointer",
+                    viewMode === 'cards' ? "bg-white text-slate-950 shadow-sm" : "text-slate-400 hover:text-white"
+                  )}
+                  title={t('common.cardsView', 'عرض البطاقات')}
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Action Buttons */}
+              <button
+                onClick={() => setIsTemplateModalOpen(true)}
+                className="bg-white/10 hover:bg-white/20 text-white border border-white/10 font-extrabold rounded-xl px-4 py-2 text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>{t("preventive.plans.addTemplate", "إضافة قالب آلة جديد")}</span>
+              </button>
+            </div>
+          }
         >
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <HeaderBentoCard
@@ -671,86 +708,77 @@ export function MachineRegistryView() {
               <AnimatePresence mode="wait">
                 {selectedTemplate ? (
                   <motion.div
-                    key={`template-${selectedTemplate.id}`}
+                    key={`template-${selectedTemplate.id}-${selectedBlueprintId || 'none'}`}
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -15 }}
                     className="flex flex-col h-full min-h-0 p-6 md:p-8 text-start overflow-y-auto custom-scrollbar space-y-6"
                   >
-                    {/* Header Bar */}
+                    {/* Header Bar - Crystal Glass High-Contrast Header */}
                     <div className="flex flex-col sm:flex-row justify-between items-start border-b border-white/10 pb-6 mb-2 gap-4 text-start">
                       <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 rounded-2xl bg-[#08080c] border border-white/10 flex items-center justify-center shadow-inner shrink-0">
-                          <Layers className="w-6 h-6 text-emerald-400" />
+                        <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center shadow-inner shrink-0 text-emerald-400">
+                          {selectedBlueprint ? <Boxes className="w-6 h-6 text-cyan-400" /> : <Layers className="w-6 h-6 text-emerald-400" />}
                         </div>
-                        <div className="text-start">
+                        <div className="text-start space-y-1">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-[9px] font-mono font-bold text-white bg-white/10 px-2 py-0.5 rounded-lg border border-white/15 uppercase">
+                            <span className="text-[10px] font-mono font-extrabold text-white bg-white/10 px-2.5 py-0.5 rounded-lg border border-white/15 uppercase tracking-wider">
                               SKU: {selectedTemplate.skuBase}
                             </span>
-                            <span className="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-lg border border-emerald-500/20">
+                            <span className="text-[10px] font-extrabold text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-lg border border-emerald-500/20">
                               {selectedTemplate.type === 'A' ? 'آلي (Automatic)' : selectedTemplate.type === 'I' ? 'كهربائي (Electric)' : 'يدوي/ميكانيكي'}
                             </span>
+                            {selectedBlueprint && (
+                              <span className="text-[10px] font-mono font-extrabold text-cyan-400 bg-cyan-500/10 px-2.5 py-0.5 rounded-lg border border-cyan-500/20 uppercase tracking-wider">
+                                REF: {selectedBlueprint.reference}
+                              </span>
+                            )}
                           </div>
-                          <h3 className="text-xl font-bold text-white tracking-tight mt-1">{selectedTemplate.name}</h3>
-                          <p className="text-xs text-slate-400 mt-1">
-                            الآلات المادية التابعة: <strong className="text-white font-mono">{templateMachines.length} آلة</strong> • المجموعات الوقائية المصممة: <strong className="text-emerald-400 font-mono">{cardsForSelectedTemplate.length} مجموعة</strong>
+                          
+                          <h3 className="text-2xl font-extrabold text-white tracking-tight">
+                            {selectedBlueprint ? `${selectedBlueprint.brand} ${selectedBlueprint.model} (${selectedBlueprint.reference})` : selectedTemplate.name}
+                          </h3>
+                          
+                          <p className="text-xs text-slate-300">
+                            {selectedBlueprint ? (
+                              <>الماركة: <strong className="text-white font-bold">{selectedBlueprint.brand}</strong> • الموديل: <strong className="text-white font-mono">{selectedBlueprint.model}</strong> • القوة: <strong className="text-cyan-400 font-mono">{selectedBlueprint.powerOrForce || 'N/A'}</strong></>
+                            ) : (
+                              <>الآلات المادية التابعة: <strong className="text-white font-mono">{templateMachines.length} آلة</strong> • المجموعات الوقائية المصممة: <strong className="text-emerald-400 font-mono">{cardsForSelectedTemplate.length} مجموعة</strong></>
+                            )}
                           </p>
                         </div>
                       </div>
 
-                      {/* Action Buttons & View Switcher */}
+                      {/* Action Buttons - Unified Hierarchy */}
                       <div className="flex items-center gap-2 flex-wrap">
-                        {/* View Switcher Toggle */}
-                        <div className="flex items-center gap-1.5 p-1 bg-[#08080c] rounded-xl border border-white/10">
-                          <button
-                            onClick={() => setViewMode('table')}
-                            className={cn(
-                              "p-1.5 rounded-lg transition-all cursor-pointer",
-                              viewMode === 'table' ? "bg-white text-slate-950 shadow-sm" : "text-slate-400 hover:text-white"
-                            )}
-                            title={t('common.tableView', 'عرض الجدول')}
-                          >
-                            <Eye className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => setViewMode('cards')}
-                            className={cn(
-                              "p-1.5 rounded-lg transition-all cursor-pointer",
-                              viewMode === 'cards' ? "bg-white text-slate-950 shadow-sm" : "text-slate-400 hover:text-white"
-                            )}
-                            title={t('common.cardsView', 'عرض البطاقات')}
-                          >
-                            <LayoutGrid className="w-4 h-4" />
-                          </button>
-                        </div>
-
                         <button
                           onClick={() => setIsCardModalOpen(true)}
-                          className="bg-white/10 hover:bg-white/20 border border-white/15 text-white font-extrabold rounded-xl px-3.5 py-2 text-xs transition-all flex items-center gap-1.5 cursor-pointer"
+                          className="bg-white/10 hover:bg-white/20 border border-white/15 text-white font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-sm transition-all flex items-center gap-2 cursor-pointer active:scale-95"
                         >
-                          <Plus className="w-3.5 h-3.5 text-emerald-400" />
+                          <Plus className="w-4 h-4 text-emerald-400" />
                           <span>إنشاء مجموعة وقائية</span>
                         </button>
 
                         <button
                           onClick={() => setIsDeployModalOpen(true)}
                           disabled={cardsForSelectedTemplate.length === 0 || templateMachines.length === 0}
-                          className="bg-white hover:bg-slate-200 text-slate-950 font-extrabold rounded-xl px-4 py-2 text-xs shadow-lg transition-all flex items-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                          className="bg-white hover:bg-slate-200 text-slate-950 font-extrabold rounded-xl px-5 py-2.5 text-xs shadow-lg transition-all flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer active:scale-95"
                         >
-                          <Play className="w-3.5 h-3.5" />
+                          <Play className="w-4 h-4" />
                           <span>جدولة وتفعيل الخطة</span>
                         </button>
                       </div>
                     </div>
 
                     {/* Architectural Notice */}
-                    <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-start gap-3 text-start">
-                      <Sparkles className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+                    <div className="p-4 bg-white/[0.02] border border-emerald-500/30 rounded-2xl flex items-start gap-3.5 text-start backdrop-blur-xl relative overflow-hidden group">
+                      <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 shrink-0 mt-0.5">
+                        <Sparkles className="w-4 h-4" />
+                      </div>
                       <div>
-                        <h4 className="text-xs font-bold text-emerald-300">استقلالية القوالب والخطط الوقائية</h4>
+                        <h4 className="text-xs font-bold text-emerald-300 uppercase tracking-wider">استقلالية القوالب والخطط الوقائية</h4>
                         <p className="text-[11px] leading-relaxed text-slate-300 mt-1">
-                          ترتبط الخطط والبطاقات الوقائية بـ <strong>قالب الآلة (Template)</strong>. يمكنك تصميم مجموعات متعددة وتفعيلها بضغطة زر واحدة لتصل تلقائياً لجميع الآلات المادية التابعة له ولجدول التقني المسؤول.
+                          ترتبط الخطط والبطاقات الوقائية بـ <strong className="text-white">قالب الآلة (Template)</strong>. يمكنك تصميم مجموعات متعددة وتفعيلها بضغطة زر واحدة لتصل تلقائياً لجميع الآلات المادية التابعة له ولجدول التقني المسؤول.
                         </p>
                       </div>
                     </div>
@@ -758,28 +786,36 @@ export function MachineRegistryView() {
                     {/* Section 1: Preventive Cards */}
                     <div className="space-y-4">
                       <div className="flex justify-between items-center">
-                        <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                        <h4 className="text-sm font-extrabold text-white flex items-center gap-2 uppercase tracking-wider">
                           <ClipboardList className="w-4 h-4 text-emerald-400" />
                           المجموعات والخطط الوقائية المصممة ({cardsForSelectedTemplate.length})
                         </h4>
                       </div>
 
                       {cardsForSelectedTemplate.length === 0 ? (
-                        <div className="p-8 border border-dashed border-white/10 rounded-2xl text-center bg-white/[0.01]">
-                          <ClipboardList className="w-8 h-8 text-slate-600 mx-auto mb-2" />
-                          <p className="text-xs text-slate-400">لا توجد مجموعات وقائية مصممة لهذا القالب بعد.</p>
-                          <button
-                            onClick={() => setIsCardModalOpen(true)}
-                            className="mt-3 text-xs px-4 py-2 bg-white text-slate-950 font-extrabold rounded-xl hover:bg-slate-200 shadow-md transition-all inline-block cursor-pointer"
-                          >
-                            إنشاء أول مجموعة وقائية
-                          </button>
+                        <div className="w-full">
+                          <EmptyState 
+                            icon={ClipboardList}
+                            title={t('preventive.registry.noCards', 'لا توجد مجموعات وقائية')}
+                            description={t('preventive.registry.noCardsDesc', 'لا توجد مجموعات وقائية مصممة لهذا القالب بعد.')}
+                            color="purple"
+                            className="border border-dashed border-white/10 rounded-2xl bg-white/[0.01]"
+                            action={
+                              <button
+                                onClick={() => setIsCardModalOpen(true)}
+                                className="text-xs px-4 py-2.5 bg-white text-slate-950 font-extrabold rounded-xl hover:bg-slate-200 shadow-md transition-all inline-flex items-center gap-1.5 cursor-pointer"
+                              >
+                                <Plus className="w-3.5 h-3.5" />
+                                <span>{t('preventive.registry.createFirstCard', 'إنشاء أول مجموعة وقائية')}</span>
+                              </button>
+                            }
+                          />
                         </div>
                       ) : viewMode === 'table' ? (
                         /* Crystal High-Contrast Table View for Cards */
                         <div className="rounded-2xl border border-white/10 bg-[#0a0b10]/90 backdrop-blur-xl shadow-2xl overflow-hidden">
                           <table className="w-full text-start border-collapse">
-                            <thead className="bg-white/[0.04] border-b border-white/10 text-slate-300 font-bold uppercase tracking-wider text-xs text-start">
+                            <thead className="bg-white/[0.04] border-b border-white/10 text-slate-300 font-extrabold uppercase tracking-wider text-xs text-start">
                               <tr>
                                 <th className="p-4 text-start">اسم المجموعة الوقائية</th>
                                 <th className="p-4 text-start">عدد المهام</th>
@@ -796,18 +832,18 @@ export function MachineRegistryView() {
                                     onClick={() => setSelectedCardId(card.id)}
                                     className={cn(
                                       "hover:bg-white/[0.04] cursor-pointer transition-colors",
-                                      isSelected && "bg-white/[0.06] text-white font-semibold"
+                                      isSelected && "bg-white/[0.08] text-white font-bold"
                                     )}
                                   >
                                     <td className="p-4 text-start">
-                                      <span className="font-bold text-white">{card.name}</span>
+                                      <span className="font-extrabold text-white">{card.name}</span>
                                     </td>
                                     <td className="p-4 text-start font-mono">
-                                      <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-md text-[11px]">
+                                      <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-lg text-xs font-bold">
                                         {card.taskIds.length} مهمة
                                       </span>
                                     </td>
-                                    <td className="p-4 text-start font-mono text-slate-400">
+                                    <td className="p-4 text-start font-mono text-slate-300 font-bold">
                                       {new Date(card.createdAt).toLocaleDateString('ar-EG')}
                                     </td>
                                     <td className="p-4 text-end" onClick={e => e.stopPropagation()}>
@@ -824,7 +860,7 @@ export function MachineRegistryView() {
                                         </button>
                                         <button
                                           onClick={() => handleDeleteCard(card.id)}
-                                          className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors cursor-pointer"
+                                          className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 transition-colors cursor-pointer"
                                           title="حذف البطاقة"
                                         >
                                           <Trash2 className="w-3.5 h-3.5" />
@@ -838,7 +874,7 @@ export function MachineRegistryView() {
                           </table>
                         </div>
                       ) : (
-                        /* Cards View */
+                        /* Cards View - Crystal Cards */
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                           {cardsForSelectedTemplate.map(card => {
                             const isSelected = card.id === selectedCardId;
@@ -849,10 +885,10 @@ export function MachineRegistryView() {
                                 key={card.id}
                                 onClick={() => setSelectedCardId(card.id)}
                                 className={cn(
-                                  "p-5 rounded-2xl border transition-all duration-500 cursor-pointer flex flex-col justify-between text-start relative overflow-hidden",
+                                  "p-5 rounded-2xl border transition-all duration-300 cursor-pointer flex flex-col justify-between text-start relative overflow-hidden bg-[#0a0a0f]",
                                   isSelected
-                                    ? "border-2 border-emerald-500 bg-[#0a0a0f] scale-[1.03] shadow-[0_0_25px_rgba(16,185,129,0.25)]"
-                                    : "bg-[#0a0a0f] border-white/10 text-slate-300 hover:bg-white/[0.05] hover:scale-[1.01]"
+                                    ? "border-2 border-emerald-500 scale-[1.02] shadow-[0_0_25px_rgba(16,185,129,0.3)]"
+                                    : "border-white/10 text-slate-300 hover:border-white/25 hover:bg-white/[0.03]"
                                 )}
                               >
                                 {/* Ambient Bottom Ray */}
@@ -863,20 +899,20 @@ export function MachineRegistryView() {
                                 <div className="relative z-10 w-full h-full flex flex-col justify-between">
                                   <div>
                                     <div className="flex items-start justify-between mb-3">
-                                      <h5 className="font-bold text-white text-sm truncate max-w-[200px]">{card.name}</h5>
+                                      <h5 className="font-extrabold text-white text-sm truncate max-w-[200px]">{card.name}</h5>
                                       <button
                                         onClick={(e) => {
                                           e.stopPropagation();
                                           handleDeleteCard(card.id);
                                         }}
-                                        className="p-1.5 text-slate-500 hover:text-red-400 transition-colors cursor-pointer"
+                                        className="p-1.5 text-slate-400 hover:text-rose-400 transition-colors cursor-pointer"
                                         title="حذف المجموعة"
                                       >
                                         <Trash2 className="w-3.5 h-3.5" />
                                       </button>
                                     </div>
                                     
-                                    <div className="text-xs text-slate-400 mb-3 font-mono">
+                                    <div className="text-xs text-slate-400 mb-3 font-mono font-bold">
                                       تاريخ الإنشاء: {new Date(card.createdAt).toLocaleDateString('ar-EG')}
                                     </div>
 
@@ -886,13 +922,13 @@ export function MachineRegistryView() {
                                         المهام المرتبطة ({cardTasks.length})
                                       </div>
                                       {cardTasks.slice(0, 3).map(tk => (
-                                        <div key={tk.id} className="text-xs text-slate-200 bg-white/5 p-2 rounded-lg flex items-center justify-between">
-                                          <span className="truncate">{tk.title}</span>
-                                          <span className="text-[10px] font-mono text-emerald-400 shrink-0 ml-2">{tk.frequencyValue} يوم</span>
+                                        <div key={tk.id} className="text-xs text-slate-200 bg-white/5 p-2 rounded-xl flex items-center justify-between border border-white/5">
+                                          <span className="truncate font-bold">{tk.title}</span>
+                                          <span className="text-[10px] font-mono text-emerald-400 shrink-0 ml-2 font-bold">{tk.frequencyValue} يوم</span>
                                         </div>
                                       ))}
                                       {cardTasks.length > 3 && (
-                                        <p className="text-[10px] text-slate-500 text-center font-mono pt-1">+ {cardTasks.length - 3} مهام أخرى...</p>
+                                        <p className="text-[10px] text-slate-400 text-center font-mono pt-1">+ {cardTasks.length - 3} مهام أخرى...</p>
                                       )}
                                     </div>
                                   </div>
@@ -904,9 +940,9 @@ export function MachineRegistryView() {
                                         setSelectedCardId(card.id);
                                         setIsLinkTaskModalOpen(true);
                                       }}
-                                      className="text-[11px] font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 cursor-pointer"
+                                      className="text-xs font-extrabold text-emerald-400 hover:text-emerald-300 flex items-center gap-1 cursor-pointer"
                                     >
-                                      <Plus className="w-3 h-3" /> ربط مهام
+                                      <Plus className="w-3.5 h-3.5" /> ربط مهام
                                     </button>
                                     
                                     <button
@@ -915,9 +951,9 @@ export function MachineRegistryView() {
                                         setSelectedCardId(card.id);
                                         setIsDeployModalOpen(true);
                                       }}
-                                      className="text-[11px] font-bold text-white bg-white/10 px-2.5 py-1 rounded-lg border border-white/15 hover:bg-white/20 flex items-center gap-1 cursor-pointer"
+                                      className="text-xs font-extrabold text-slate-950 bg-white hover:bg-slate-200 px-3 py-1.5 rounded-xl shadow-md flex items-center gap-1 cursor-pointer active:scale-95"
                                     >
-                                      <Play className="w-3 h-3 text-emerald-400" /> تفعيل الخطة
+                                      <Play className="w-3.5 h-3.5" /> تفعيل الخطة
                                     </button>
                                   </div>
                                 </div>
@@ -930,33 +966,33 @@ export function MachineRegistryView() {
 
                     {/* Selected Card Tasks Detail Section */}
                     {selectedCard && (
-                      <div className="p-5 bg-[#08080c]/80 border border-white/10 rounded-2xl text-start">
-                        <div className="flex flex-col sm:flex-row justify-between items-start gap-3 mb-4 pb-3 border-b border-white/10">
+                      <div className="p-5 bg-[#0a0a0f]/90 border border-white/10 rounded-2xl text-start shadow-xl space-y-4">
+                        <div className="flex flex-col sm:flex-row justify-between items-start gap-3 pb-3 border-b border-white/10">
                           <div>
                             <h5 className="text-sm font-extrabold text-white">تفاصيل المهام في المجموعة: {selectedCard.name}</h5>
-                            <p className="text-[11px] text-slate-400 mt-0.5">يمكنك إضافة وإزالة المهام الوقائية الفردية من هذه البطاقة</p>
+                            <p className="text-xs text-slate-300 mt-0.5">يمكنك إضافة وإزالة المهام الوقائية الفردية من هذه البطاقة</p>
                           </div>
                           <button
                             onClick={() => setIsLinkTaskModalOpen(true)}
-                            className="px-3 py-1.5 bg-white/10 hover:bg-white/20 border border-white/15 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                            className="px-3.5 py-2 bg-white text-slate-950 hover:bg-slate-200 rounded-xl text-xs font-extrabold shadow-md transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
                           >
-                            <Plus className="w-3.5 h-3.5 text-emerald-400" /> إضافة مهام للمجموعة
+                            <Plus className="w-3.5 h-3.5" /> إضافة مهام للمجموعة
                           </button>
                         </div>
 
                         {linkedTasksInCard.length === 0 ? (
-                          <p className="text-xs text-slate-500 py-4 text-center">لم يتم ربط أي مهمة وقائية بهذه البطاقة بعد. اضغط على زر ربط المهام بالأعلى.</p>
+                          <p className="text-xs text-slate-400 py-4 text-center">لم يتم ربط أي مهمة وقائية بهذه البطاقة بعد. اضغط على زر ربط المهام بالأعلى.</p>
                         ) : (
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             {linkedTasksInCard.map(task => (
-                              <div key={task.id} className="p-3.5 bg-white/[0.03] border border-white/10 rounded-xl flex justify-between items-start text-start">
+                              <div key={task.id} className="p-3.5 bg-white/[0.03] border border-white/10 hover:border-white/20 rounded-xl flex justify-between items-start text-start transition-all">
                                 <div>
-                                  <h6 className="font-bold text-white text-xs">{task.title}</h6>
-                                  <p className="text-[10px] text-slate-400 font-mono mt-1">الوتيرة: {task.frequencyValue} يوم</p>
+                                  <h6 className="font-extrabold text-white text-xs">{task.title}</h6>
+                                  <p className="text-[11px] text-emerald-400 font-mono font-bold mt-1">الوتيرة: {task.frequencyValue} يوم</p>
                                 </div>
                                 <button
                                   onClick={() => handleUnlinkTaskFromCard(task.id)}
-                                  className="p-1 text-slate-500 hover:text-red-400 transition-colors cursor-pointer"
+                                  className="p-1.5 text-slate-400 hover:text-rose-400 transition-colors cursor-pointer"
                                   title="إزالة المهمة من المجموعة"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
@@ -971,7 +1007,7 @@ export function MachineRegistryView() {
                     {/* Section 2: Physical Machines Registered */}
                     <div className="pt-4 border-t border-white/10">
                       <div className="flex justify-between items-center mb-4">
-                        <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                        <h4 className="text-sm font-extrabold text-white flex items-center gap-2 uppercase tracking-wider">
                           <Factory className="w-4 h-4 text-emerald-400" />
                           الآلات المادية المسجلة تحت هذا النوع في المصنع ({templateMachines.length})
                         </h4>
@@ -983,16 +1019,16 @@ export function MachineRegistryView() {
                           <p className="text-xs text-slate-400">لا توجد آلات مادية مفعّلة تحت هذا القالب بعد.</p>
                         </div>
                       ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
                           {templateMachines.map(m => (
-                            <div key={m.id} className="p-3.5 bg-white/[0.03] border border-white/10 rounded-2xl hover:bg-white/[0.06] transition-colors text-start">
+                            <div key={m.id} className="p-4 bg-white/[0.03] border border-white/10 hover:border-white/20 rounded-2xl transition-all text-start group">
                               <div className="flex justify-between items-center">
-                                <strong className="text-xs text-emerald-400 font-mono tracking-wider">{m.referenceCode}</strong>
-                                <span className={`text-[9px] font-bold px-2 py-0.5 rounded ${m.status === 'Active' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/15 text-amber-400 border border-amber-500/30'}`}>
+                                <strong className="text-xs text-emerald-400 font-mono font-extrabold tracking-wider group-hover:text-emerald-300">{m.referenceCode}</strong>
+                                <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-lg ${m.status === 'Active' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' : 'bg-amber-500/15 text-amber-400 border border-amber-500/30'}`}>
                                   {m.status === 'Active' ? 'نشطة' : 'صيانة'}
                                 </span>
                               </div>
-                              <p className="text-[10px] text-slate-400 mt-1 font-mono">SN: {m.serialNumber}</p>
+                              <p className="text-[11px] text-slate-300 mt-1.5 font-mono font-bold">SN: {m.serialNumber}</p>
                             </div>
                           ))}
                         </div>
@@ -1007,42 +1043,42 @@ export function MachineRegistryView() {
                     initial={{ opacity: 0, scale: 0.98 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.98 }}
-                    className="p-8 md:p-12 flex flex-col items-center justify-center text-center h-full flex-1"
+                    className="p-8 md:p-14 flex flex-col items-center justify-center text-center h-full flex-1"
                   >
-                    <div className="w-16 h-16 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center mb-6 shadow-inner">
-                      <Layers className="w-8 h-8 text-emerald-400" />
+                    <div className="w-16 h-16 rounded-3xl bg-white/10 border border-white/20 flex items-center justify-center mb-6 shadow-inner text-emerald-400">
+                      <Layers className="w-8 h-8" />
                     </div>
 
-                    <h3 className="text-xl font-extrabold text-white tracking-tight">
+                    <h3 className="text-2xl font-extrabold text-white tracking-tight">
                       مركز سجل الآلات والخطط الوقائية
                     </h3>
-                    <p className="text-xs text-slate-400 mt-2 max-w-md leading-relaxed">
+                    <p className="text-xs text-slate-300 mt-2 max-w-lg leading-relaxed font-medium">
                       اختر قالب آلة أو طراز تجاري من القائمة الجانبية لتصفح الهيكلية، تصميم المجموعات الوقائية المؤثثة، وجدولتها مباشرة على طاقم التقنيين.
                     </p>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 w-full max-w-2xl text-start">
-                      <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-1">
+                      <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-1 hover:border-white/20 transition-all">
                         <div className="flex items-center gap-2 text-emerald-400 text-xs font-bold">
                           <Layers className="w-4 h-4" />
                           <span>قوالب الآلات</span>
                         </div>
-                        <p className="text-[11px] text-slate-400">المعرفة الهندسية الفنية المجرّدة ونوع التشغيل.</p>
+                        <p className="text-[11px] text-slate-300">المعرفة الهندسية الفنية المجرّدة ونوع التشغيل.</p>
                       </div>
 
-                      <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-1">
+                      <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-1 hover:border-white/20 transition-all">
                         <div className="flex items-center gap-2 text-cyan-400 text-xs font-bold">
                           <Boxes className="w-4 h-4" />
                           <span>الطرازات المادية</span>
                         </div>
-                        <p className="text-[11px] text-slate-400">البصمات التجارية المصنعة بالماركات والمواصفات.</p>
+                        <p className="text-[11px] text-slate-300">البصمات التجارية المصنعة بالماركات والمواصفات.</p>
                       </div>
 
-                      <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 space-y-1">
+                      <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-1 hover:border-white/20 transition-all">
                         <div className="flex items-center gap-2 text-purple-400 text-xs font-bold">
                           <ClipboardList className="w-4 h-4" />
                           <span>الخطط الوقائية</span>
                         </div>
-                        <p className="text-[11px] text-slate-400">بطاقات المجموعات الوقائية المجدولة دورياً للتقنيين.</p>
+                        <p className="text-[11px] text-slate-300">بطاقات المجموعات الوقائية المجدولة دورياً للتقنيين.</p>
                       </div>
                     </div>
                   </motion.div>

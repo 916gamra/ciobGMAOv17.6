@@ -3,7 +3,7 @@ import { motion, AnimatePresence, Variants } from 'motion/react';
 import { 
   Search, Folder, Layers, Hash, Plus, Trash2, Database, 
   RefreshCw, Component, ChevronDown, ChevronRight, Eye, LayoutGrid,
-  Wrench, Droplet, Wind, Zap, Box, Cpu
+  Wrench, Droplet, Wind, Zap, Box, Cpu, BookOpen
 } from 'lucide-react';
 import { useMachineLibrary } from '../hooks/useMachineLibrary';
 import { GlassCard } from '@/shared/components/GlassCard';
@@ -195,6 +195,56 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
           icon={<Database className="w-7 h-7 text-indigo-400" />}
           badgeText={t('lab.badge', 'Engineering Lab')}
           badgeColor="indigo"
+          actions={
+            <div className="flex items-center gap-3">
+              {/* Global View Switcher */}
+              <div className="flex items-center bg-[#08080c] border border-white/10 rounded-xl p-1 gap-1">
+                <button
+                  type="button"
+                  onClick={() => setViewMode('table')}
+                  className={cn(
+                    "p-1.5 rounded-lg transition-all text-xs flex items-center gap-1 font-bold cursor-pointer",
+                    viewMode === 'table' 
+                      ? "bg-white text-slate-950 shadow-sm" 
+                      : "text-slate-400 hover:text-white"
+                  )}
+                  title={t('common.tableView', 'عرض الجدول')}
+                >
+                  <Eye className="w-4 h-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('cards')}
+                  className={cn(
+                    "p-1.5 rounded-lg transition-all text-xs flex items-center gap-1 font-bold cursor-pointer",
+                    viewMode === 'cards' 
+                      ? "bg-white text-slate-950 shadow-sm" 
+                      : "text-slate-400 hover:text-white"
+                  )}
+                  title={t('common.cardsView', 'عرض البطاقات')}
+                >
+                  <LayoutGrid className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Action Buttons */}
+              <button 
+                onClick={() => setShowSyncModal(true)}
+                className="bg-white/[0.04] text-indigo-400 hover:bg-indigo-500/10 border border-indigo-500/30 font-bold rounded-xl px-4 py-2 text-xs transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+              >
+                <Database className="w-4 h-4" />
+                <span>{t('lab.syncDb', 'حقن وتحديث المختبر')}</span>
+              </button>
+              
+              <button 
+                onClick={() => setActiveModal('family')}
+                className="bg-white/10 hover:bg-white/20 text-white border border-white/10 font-extrabold rounded-xl px-4 py-2 text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+              >
+                <Plus className="w-4 h-4 text-white" />
+                <span>{t('lab.newFamily', 'إضافة عائلة جديدة')}</span>
+              </button>
+            </div>
+          }
         >
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <HeaderBentoCard
@@ -467,8 +517,8 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
                         {/* Blueprint Header info */}
                         <div className="flex flex-col md:flex-row justify-between items-start border-b border-white/10 pb-6 mb-6 gap-4">
                           <div className="flex items-start gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-[#08080c] border border-white/10 flex items-center justify-center shadow-inner shrink-0">
-                              <Hash className="w-6 h-6 text-white" />
+                            <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shadow-inner shrink-0">
+                              <Hash className="w-6 h-6 text-indigo-400" />
                             </div>
                             <div className="text-start">
                               <div className="flex items-center gap-2">
@@ -493,7 +543,7 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
                             </button>
                             <button 
                               onClick={(e) => handleDelete('blueprint', bp.id, e)}
-                              className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500/20 transition-all"
+                              className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500/20 transition-all cursor-pointer"
                               title={t('common.delete', 'حذف')}
                             >
                               <Trash2 className="w-4 h-4" />
@@ -588,8 +638,8 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
                         {/* Template Header info */}
                         <div className="flex flex-col sm:flex-row justify-between items-start border-b border-white/10 pb-6 mb-6 gap-4 text-start">
                           <div className="flex items-start gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-[#08080c] border border-white/10 flex items-center justify-center shadow-inner shrink-0">
-                              <Layers className="w-6 h-6 text-white" />
+                            <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shadow-inner shrink-0">
+                              <Layers className="w-6 h-6 text-indigo-400" />
                             </div>
                             <div className="text-start">
                               <div className="flex items-center gap-2">
@@ -799,8 +849,8 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
                         {/* Family Header info */}
                         <div className="flex flex-col sm:flex-row justify-between items-start border-b border-white/10 pb-6 mb-6 gap-4 text-start">
                           <div className="flex items-start gap-4">
-                            <div className="w-12 h-12 rounded-2xl bg-[#08080c] border border-white/10 flex items-center justify-center shadow-inner shrink-0">
-                              <Folder className="w-6 h-6 text-white" />
+                            <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shadow-inner shrink-0">
+                              <Folder className="w-6 h-6 text-indigo-400" />
                             </div>
                             <div className="text-start">
                               <div className="flex items-center gap-2">
@@ -816,16 +866,39 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
                           </div>
 
                           <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-1.5 p-1 bg-[#0a0a0f]/60 rounded-xl border border-white/5 mr-2">
+                              <button
+                                onClick={() => setViewMode('table')}
+                                className={cn(
+                                  "p-1.5 rounded-lg transition-all cursor-pointer",
+                                  viewMode === 'table' ? "bg-white text-slate-950 shadow-sm" : "text-slate-400 hover:text-white"
+                                )}
+                                title={t('common.tableView', 'عرض الجدول')}
+                              >
+                                <Eye className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => setViewMode('cards')}
+                                className={cn(
+                                  "p-1.5 rounded-lg transition-all cursor-pointer",
+                                  viewMode === 'cards' ? "bg-white text-slate-950 shadow-sm" : "text-slate-400 hover:text-white"
+                                )}
+                                title={t('common.cardsView', 'عرض البطاقات')}
+                              >
+                                <LayoutGrid className="w-4 h-4" />
+                              </button>
+                            </div>
+
                             <button 
                               onClick={() => setActiveModal('template')}
-                              className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center gap-1.5"
+                              className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center gap-1.5 cursor-pointer"
                             >
                               <Plus className="w-3.5 h-3.5" />
                               <span>{t('lab.newTemplateBtn', 'قالب مواصفات فني جديد')}</span>
                             </button>
                             <button 
                               onClick={(e) => handleDelete('family', fam.id, e)}
-                              className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500/20 transition-all"
+                              className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500/20 transition-all cursor-pointer"
                               title={t('common.delete', 'حذف')}
                             >
                               <Trash2 className="w-4 h-4" />
@@ -838,30 +911,6 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
                           <div className="flex items-center justify-between mb-4 flex-row">
                             <div className="text-sm font-bold text-slate-200">
                               {t('lab.templatesUnderFamilyTitle', 'قوالب المواصفات المسجلة تحت هذه العائلة')} ({famTemplates.length})
-                            </div>
-                            
-                            {/* View Switcher */}
-                            <div className="flex items-center gap-1.5 p-1 bg-[#08080c] rounded-xl border border-white/10">
-                              <button
-                                onClick={() => setViewMode('table')}
-                                className={cn(
-                                  "p-1.5 rounded-lg transition-all",
-                                  viewMode === 'table' ? "bg-white text-slate-950 shadow-sm" : "text-slate-400 hover:text-white"
-                                )}
-                                title={t('common.tableView', 'عرض الجدول')}
-                              >
-                                <Eye className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => setViewMode('cards')}
-                                className={cn(
-                                  "p-1.5 rounded-lg transition-all",
-                                  viewMode === 'cards' ? "bg-white text-slate-950 shadow-sm" : "text-slate-400 hover:text-white"
-                                )}
-                                title={t('common.cardsView', 'عرض البطاقات')}
-                              >
-                                <LayoutGrid className="w-4 h-4" />
-                              </button>
                             </div>
                           </div>
 
@@ -989,6 +1038,29 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
                     <p className="text-xs text-slate-400 max-w-md leading-relaxed">
                       {t('lab.welcomeDesc', 'مرحباً بك في لوحة تحكم مختبر الهندسة الصناعية. استخدم القائمة الجانبية للتنقل بين العائلات الهندسية والمواصفات المعيارية والأصول المادية.')}
                     </p>
+
+                    <div className="flex gap-3 mt-6 flex-row-reverse">
+                      <button
+                        onClick={() => setActiveModal('family')}
+                        className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <Plus className="w-4 h-4" /> {t('lab.newFamilyBtn', 'إضافة عائلة هندسية جديدة')}
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (blueprints.length > 0) {
+                            setSelectedBlueprintId(blueprints[0].id);
+                          } else if (families.length > 0) {
+                            setSelectedFamilyId(families[0].id);
+                          } else {
+                            setActiveModal('family');
+                          }
+                        }}
+                        className="bg-white/[0.04] text-slate-300 hover:bg-white/[0.08] hover:text-white border border-white/10 font-bold rounded-xl px-4 py-2.5 text-xs transition-all flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <BookOpen className="w-4 h-4 text-slate-400" /> {t('lab.browseFirstAssetBtn', 'تصفح أول أصل هندسي')}
+                      </button>
+                    </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mt-8 text-start">
                       <div className="p-5 rounded-2xl bg-[#08080c]/80 border border-white/10 shadow-lg">
