@@ -31,6 +31,7 @@ import { Button } from '@/shared/components/Button';
 import { PdrPageSkeleton } from '../components/PdrPageSkeleton';
 import { toast } from 'sonner';
 import { UnifiedSearchFilter } from '@/shared/components/UnifiedSearchFilter';
+import { EmptyState } from '@/shared/components/EmptyState';
 
 export function StockReconciliationView({ user }: { user: any }) {
   const { t } = useTranslation();
@@ -357,9 +358,14 @@ export function StockReconciliationView({ user }: { user: any }) {
               <tbody className="divide-y divide-white/5 font-medium bg-[#0a0a0f]/40">
                 {filteredClaims.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="py-16 text-center text-slate-500 font-bold">
-                      <PackageCheck className="w-12 h-12 text-slate-600 mx-auto mb-3 opacity-60" />
-                      لا توجد طلبات سحب قطع مطابقة للشروط الحالية
+                    <td colSpan={8} className="p-0">
+                      <EmptyState 
+                        icon={PackageCheck}
+                        title={t('pdr.reconciliation.noClaims', 'لا توجد طلبات سحب قطع')}
+                        description={t('pdr.reconciliation.noClaimsDesc', 'لا توجد طلبات سحب قطع مطابقة للشروط الحالية للمراجعة والتسوية.')}
+                        color="cyan"
+                        className="py-16 opacity-80"
+                      />
                     </td>
                   </tr>
                 ) : (

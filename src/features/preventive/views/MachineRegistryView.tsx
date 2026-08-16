@@ -531,20 +531,20 @@ export function MachineRegistryView() {
 
                 {/* Search Bar - Crystal White */}
                 <div className="relative w-full">
-                  <Search className="w-4 h-4 absolute right-3 rtl:right-3 left-auto rtl:left-auto left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                   <input 
                     type="text"
-                    placeholder={activeSidebarTab === 'templates' ? "بحث في قوالب الآلات..." : "بحث في الطرازات التجارية..."}
+                    placeholder={activeSidebarTab === 'templates' ? t('machine.searchTemplates', "Search machine templates...") : t('machine.searchModels', "Search commercial models...")}
                     value={searchTerm}
                     onChange={e => setSearchTerm(e.target.value)}
-                    className="w-full bg-white border border-slate-300 rounded-xl pr-9 pl-3 rtl:pr-9 rtl:pl-3 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all text-start font-bold shadow-sm"
+                    className="w-full bg-white border border-slate-300 rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all text-left font-bold shadow-sm"
                   />
                 </div>
 
               </div>
 
               {/* Scrollable Items List */}
-              <div className="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-2.5 text-start relative z-10">
+              <div className="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-2.5 text-left relative z-10">
                 
                 {/* List Header Row with Count */}
                 <div className="flex items-center justify-between mb-1 px-1">

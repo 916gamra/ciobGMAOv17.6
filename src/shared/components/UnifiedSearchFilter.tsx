@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, Filter, X, Check, RotateCcw, ChevronDown, SlidersHorizontal } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useTranslation } from 'react-i18next';
 import { cn } from '@/shared/utils';
 
 export interface FilterOption {
@@ -49,7 +50,7 @@ export interface UnifiedSearchFilterProps {
 export function UnifiedSearchFilter({
   searchTerm,
   onSearchChange,
-  searchPlaceholder = 'بحث...',
+  searchPlaceholder,
   filterGroups = [],
   quickTabs,
   activeQuickTab,
@@ -61,8 +62,11 @@ export function UnifiedSearchFilter({
   onResetAll,
   fullWidth = false
 }: UnifiedSearchFilterProps) {
+  const { t } = useTranslation();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const filterDropdownRef = useRef<HTMLDivElement>(null);
+
+  const effectivePlaceholder = searchPlaceholder || t('action.search', 'Search...');
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -214,17 +218,17 @@ export function UnifiedSearchFilter({
             isFilterOpen && "border-white/40 ring-1 ring-white/20"
           )}>
             {/* Search Icon */}
-            <div className="absolute right-3 rtl:right-3 rtl:left-auto ltr:left-3 ltr:right-auto pointer-events-none text-slate-400 group-focus-within:text-white transition-colors">
+            <div className="absolute left-3 pointer-events-none text-slate-400 group-focus-within:text-white transition-colors">
               <Search className="w-4 h-4" />
             </div>
 
             {/* Input Field */}
             <input
               type="text"
-              placeholder={searchPlaceholder}
+              placeholder={effectivePlaceholder}
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full bg-transparent py-2.5 text-xs text-white placeholder-slate-400 focus:outline-none transition-colors pr-9 pl-9 rtl:pr-9 rtl:pl-9 ltr:pl-9 ltr:pr-9 text-start font-medium"
+              className="w-full bg-transparent py-2.5 text-xs text-white placeholder-slate-400 focus:outline-none transition-colors pl-9 pr-9 text-left font-medium"
             />
 
             {/* Clear Search Button (shows when searchTerm has text) */}
@@ -232,8 +236,8 @@ export function UnifiedSearchFilter({
               <button
                 type="button"
                 onClick={() => onSearchChange('')}
-                className="absolute left-3 rtl:left-3 rtl:right-auto ltr:right-3 ltr:left-auto p-1 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition-colors cursor-pointer"
-                title="مسح البحث"
+                className="absolute right-3 p-1 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition-colors cursor-pointer"
+                title={t('action.clear', 'Clear')}
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -252,11 +256,11 @@ export function UnifiedSearchFilter({
                     ? themeStyles.activeBtn
                     : "bg-[#0e1018]/90 hover:bg-[#181a28] border-white/15 hover:border-white/30 text-white font-extrabold"
                 )}
-                title="تصفية النتائج"
+                title={t('action.filter', 'Filter')}
                 aria-expanded={isFilterOpen}
               >
                 <Filter className={cn("w-4 h-4 transition-transform", isFilterOpen && "scale-110", (isFilterOpen || activeCount > 0) && "text-current")} />
-                <span className="hidden sm:inline">فلاتر</span>
+                <span className="hidden sm:inline">{t('action.filter', 'Filters')}</span>
 
                 {activeCount > 0 && (
                   <span className={cn(
@@ -276,13 +280,13 @@ export function UnifiedSearchFilter({
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 8, scale: 0.96 }}
                     transition={{ duration: 0.15, ease: 'easeOut' }}
-                    className="absolute left-0 rtl:left-0 rtl:right-auto ltr:right-0 ltr:left-auto top-full mt-2 w-72 sm:w-88 bg-[#0c0e17]/98 border border-white/20 backdrop-blur-2xl rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] p-4 z-50 text-start"
+                    className="absolute left-0 top-full mt-2 w-72 sm:w-88 bg-[#0c0e17]/98 border border-white/20 backdrop-blur-2xl rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] p-4 z-50 text-left"
                   >
                     {/* Header: Title & Clear All */}
                     <div className="flex items-center justify-between pb-3 mb-3 border-b border-white/10">
                       <div className="flex items-center gap-2">
                         <SlidersHorizontal className="w-4 h-4 text-white" />
-                        <span className="text-xs font-black text-white uppercase tracking-wider">خيارات التصفية</span>
+                        <span className="text-xs font-black text-white uppercase tracking-wider">{t('filter.options', 'Filter Options')}</span>
                       </div>
 
                       {activeCount > 0 && (
@@ -292,7 +296,7 @@ export function UnifiedSearchFilter({
                           className="text-[11px] font-bold text-rose-400 hover:text-rose-300 flex items-center gap-1 hover:underline cursor-pointer"
                         >
                           <RotateCcw className="w-3 h-3" />
-                          <span>إعادة ضبط</span>
+                          <span>{t('action.reset', 'Reset')}</span>
                         </button>
                       )}
                     </div>
@@ -317,7 +321,7 @@ export function UnifiedSearchFilter({
                                   onClick={() => group.onChange(defaultVal)}
                                   className="text-[10px] text-slate-400 hover:text-white"
                                 >
-                                  إلغاء
+                                  {t('action.cancel', 'Clear')}
                                 </button>
                               )}
                             </div>
@@ -335,7 +339,7 @@ export function UnifiedSearchFilter({
                                       : "bg-white/[0.04] text-slate-300 border-white/10 hover:border-white/30 hover:text-white"
                                   )}
                                 >
-                                  {group.allLabel || 'الكل'}
+                                  {group.allLabel || t('general.all', 'All')}
                                 </button>
                                 {group.options.map(opt => {
                                   const isSelected = group.value === opt.value;
@@ -368,7 +372,7 @@ export function UnifiedSearchFilter({
                                   className="w-full bg-[#141624] hover:bg-[#1a1d30] border border-white/15 focus:border-white/40 focus:ring-1 focus:ring-white/20 rounded-xl py-2 px-3 text-xs text-white appearance-none cursor-pointer focus:outline-none transition-colors font-medium"
                                 >
                                   <option value={defaultVal} className="bg-[#0e1018] text-slate-300">
-                                    {group.allLabel || `جميع ${group.label}`}
+                                    {group.allLabel || `${t('general.all', 'All')} ${group.label}`}
                                   </option>
                                   {group.options.map(opt => (
                                     <option key={opt.value} value={opt.value} className="bg-[#0e1018] text-white font-medium">
@@ -376,7 +380,7 @@ export function UnifiedSearchFilter({
                                     </option>
                                   ))}
                                 </select>
-                                <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute left-3 rtl:left-3 rtl:right-auto ltr:right-3 ltr:left-auto top-1/2 -translate-y-1/2 pointer-events-none" />
+                                <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                               </div>
                             )}
                           </div>
@@ -392,7 +396,7 @@ export function UnifiedSearchFilter({
                         className="w-full bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl py-2 text-xs shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                       >
                         <Check className="w-4 h-4" />
-                        <span>تطبيق الفلاتر</span>
+                        <span>{t('filter.apply', 'Apply Filters')}</span>
                       </button>
                     </div>
                   </motion.div>
@@ -413,16 +417,16 @@ export function UnifiedSearchFilter({
       {/* Active Filter Tags (Removable Pills) */}
       {showActiveTags && (activeCount > 0 || (searchTerm && searchTerm.length > 0)) && (
         <div className="flex flex-wrap items-center gap-1.5 pt-1">
-          <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest ml-1">الفلاتر النشطة:</span>
+          <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-widest ml-1">{t('filter.active', 'Active Filters:')}</span>
           
           {searchTerm && (
             <span className="px-2.5 py-1 rounded-lg bg-white/10 border border-white/20 text-white text-[11px] font-mono font-bold inline-flex items-center gap-1.5">
-              <span>البحث: "{searchTerm}"</span>
+              <span>{t('action.search', 'Search')}: "{searchTerm}"</span>
               <button
                 type="button"
                 onClick={() => onSearchChange('')}
                 className="hover:text-rose-400 text-slate-300 p-0.5 cursor-pointer"
-                title="حذف"
+                title={t('action.delete', 'Delete')}
               >
                 <X className="w-3 h-3" />
               </button>
@@ -444,7 +448,7 @@ export function UnifiedSearchFilter({
                   type="button"
                   onClick={() => group.onChange(defaultVal)}
                   className="hover:text-rose-400 text-slate-300 p-0.5 cursor-pointer"
-                  title="حذف الفلتر"
+                  title={t('action.delete', 'Delete')}
                 >
                   <X className="w-3 h-3" />
                 </button>
@@ -457,7 +461,7 @@ export function UnifiedSearchFilter({
             onClick={handleResetFilters}
             className="text-[11px] text-slate-400 hover:text-rose-400 underline font-extrabold px-1.5 cursor-pointer"
           >
-            مسح الكل
+            {t('action.clearAll', 'Clear All')}
           </button>
         </div>
       )}

@@ -49,29 +49,29 @@ export function SectorRegistryView() {
   const filterGroups: FilterGroup[] = useMemo(() => [
     {
       id: 'status',
-      label: 'حالة القطاع (Zone Status)',
+      label: t('sectors.statusFilterLabel', 'Zone Status'),
       value: statusFilter,
       onChange: setStatusFilter,
-      allLabel: 'جميع القطاعات (نشطة ومخدرة)',
+      allLabel: t('sectors.allStatuses', 'All Zones (Active & Dormant)'),
       type: 'chips',
       options: [
-        { value: 'Active', label: 'القطاعات النشطة (Active)', count: activeSectors.length },
-        { value: 'Dormant', label: 'المقاعد الشاغرة (Dormant Slots)', count: availableSlots.length }
+        { value: 'Active', label: t('sectors.filterActive', 'Active Zones'), count: activeSectors.length },
+        { value: 'Dormant', label: t('sectors.filterDormant', 'Dormant Slots'), count: availableSlots.length }
       ]
     },
     {
       id: 'tech',
-      label: 'فني الصيانة الوقائية (PM Tech)',
+      label: t('sectors.techFilterLabel', 'PM Technician'),
       value: techFilter,
       onChange: setTechFilter,
-      allLabel: 'جميع التكليفات',
+      allLabel: t('sectors.allTechs', 'All Assignments'),
       type: 'chips',
       options: [
-        { value: 'ASSIGNED', label: 'مسند لفني وقائي' },
-        { value: 'UNASSIGNED', label: 'غير مسند' }
+        { value: 'ASSIGNED', label: t('sectors.filterAssigned', 'Assigned to PM Tech') },
+        { value: 'UNASSIGNED', label: t('sectors.filterUnassigned', 'Unassigned') }
       ]
     }
-  ], [statusFilter, techFilter, activeSectors.length, availableSlots.length]);
+  ], [statusFilter, techFilter, activeSectors.length, availableSlots.length, t]);
 
   const filteredSectors = useMemo(() => {
     return sectors.filter(s => {
@@ -214,7 +214,7 @@ export function SectorRegistryView() {
               <UnifiedSearchFilter
                 searchTerm={searchTerm}
                 onSearchChange={setSearchTerm}
-                searchPlaceholder={t('sectors.searchPlaceholder', 'بحث في المناطق، المسؤولين، أو الوصف...')}
+                searchPlaceholder={t('sectors.searchPlaceholder', 'Search zones...')}
                 filterGroups={filterGroups}
                 themeColor="indigo"
                 extraControls={
@@ -227,7 +227,7 @@ export function SectorRegistryView() {
                           "p-1.5 rounded-lg transition-all cursor-pointer",
                           displayMode === 'table' ? "bg-white text-slate-950 shadow-sm font-bold" : "text-slate-400 hover:text-white"
                         )}
-                        title="عرض الجدول (Crystal Table)"
+                        title={t('sectors.tableTooltip', 'Crystal Table View')}
                       >
                         <Eye className="w-4 h-4" />
                       </button>
@@ -238,7 +238,7 @@ export function SectorRegistryView() {
                           "p-1.5 rounded-lg transition-all cursor-pointer",
                           displayMode === 'cards' ? "bg-white text-slate-950 shadow-sm font-bold" : "text-slate-400 hover:text-white"
                         )}
-                        title="عرض البطاقات (Cards Grid)"
+                        title={t('sectors.cardsTooltip', 'Cards Grid View')}
                       >
                         <LayoutGrid className="w-4 h-4" />
                       </button>
@@ -344,29 +344,36 @@ export function SectorRegistryView() {
           <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar bg-[#0a0a0f]/40 p-4 md:p-6">
             {displayMode === 'table' ? (
               /* Crystal Table View */
-              <div className="rounded-2xl border border-white/10 overflow-hidden bg-slate-900/60 backdrop-blur-xl shadow-2xl">
-                <div className="overflow-x-auto custom-scrollbar">
+              <div className="rounded-2xl border border-white/10 overflow-hidden bg-slate-900/60 backdrop-blur-xl shadow-2xl flex flex-col max-h-[600px]">
+                <div className="overflow-x-auto overflow-y-auto custom-scrollbar flex-1">
                   <table className="w-full text-start border-collapse">
-                    <thead>
-                      <tr className="bg-white/[0.04] border-b border-white/10 text-slate-300 font-bold uppercase tracking-wider text-[11px]">
-                        <th className="py-3.5 px-4 text-start font-bold">كود المنطقة</th>
-                        <th className="py-3.5 px-4 text-start font-bold">تسمية وتفاصيل القطاع</th>
-                        <th className="py-3.5 px-4 text-start font-bold">مسؤول القطاع</th>
-                        <th className="py-3.5 px-4 text-start font-bold">الفني الوقائي المعتمد</th>
-                        <th className="py-3.5 px-4 text-center font-bold">الآلات</th>
-                        <th className="py-3.5 px-4 text-center font-bold">الكوادر</th>
-                        <th className="py-3.5 px-4 text-center font-bold">الحالة</th>
-                        <th className="py-3.5 px-4 text-center font-bold">الإجراءات</th>
+                    <thead className="bg-[#12141d] border-b-2 border-white/15 text-slate-200 font-extrabold uppercase tracking-wider text-[11px] sticky top-0 z-20 backdrop-blur-md shadow-sm">
+                      <tr>
+                        <th className="py-3.5 px-4 text-start font-bold">{t('sectors.thCode', 'Zone Code')}</th>
+                        <th className="py-3.5 px-4 text-start font-bold">{t('sectors.thDesignation', 'Designation & Details')}</th>
+                        <th className="py-3.5 px-4 text-start font-bold">{t('sectors.thManager', 'Sector Manager')}</th>
+                        <th className="py-3.5 px-4 text-start font-bold">{t('sectors.thPmTech', 'Preventive Tech')}</th>
+                        <th className="py-3.5 px-4 text-center font-bold">{t('sectors.thMachines', 'Machines')}</th>
+                        <th className="py-3.5 px-4 text-center font-bold">{t('sectors.thPersonnel', 'Staff')}</th>
+                        <th className="py-3.5 px-4 text-center font-bold">{t('sectors.thStatus', 'Status')}</th>
+                        <th className="py-3.5 px-4 text-center font-bold">{t('sectors.thActions', 'Actions')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5 text-xs">
-                      {filteredSectors.map((sector) => {
+                      {filteredSectors.map((sector, idx) => {
                         const zoneTechs = activeTechnicians.filter(t => t.id === sector.preventiveTechId).length;
                         const zoneMachines = machines.filter(m => m.sectorId === sector.id).length;
                         const assignedTech = activeTechnicians.find(t => t.id === sector.preventiveTechId);
 
                         return (
-                          <tr key={sector.id} className="hover:bg-white/[0.04] transition-colors group">
+                          <tr 
+                            key={sector.id} 
+                            className={cn(
+                              "transition-colors duration-150 group text-start",
+                              idx % 2 === 0 ? "bg-white/[0.015]" : "bg-white/[0.05]",
+                              "hover:bg-indigo-500/15"
+                            )}
+                          >
                             {/* Code / ID */}
                             <td className="py-3.5 px-4 font-mono font-bold">
                               <span className="px-2.5 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[11px] inline-flex items-center gap-1">
@@ -382,7 +389,7 @@ export function SectorRegistryView() {
                                   {sector.name}
                                 </span>
                                 <span className="text-[10px] text-slate-400 line-clamp-1 mt-0.5 font-medium">
-                                  {sector.description || 'بروتوكول تشغيلي موحد'}
+                                  {sector.description || t('sectors.defaultProtocol', 'Standard Operational Protocol')}
                                 </span>
                               </div>
                             </td>
@@ -397,7 +404,7 @@ export function SectorRegistryView() {
                                   <span className="font-bold text-slate-200 text-xs">{sector.managerName}</span>
                                 </div>
                               ) : (
-                                <span className="text-[11px] text-slate-500 italic">غير محدد</span>
+                                <span className="text-[11px] text-slate-500 italic">{t('sectors.unassignedManager', 'Unassigned')}</span>
                               )}
                             </td>
 
@@ -414,7 +421,7 @@ export function SectorRegistryView() {
                                   </div>
                                 </div>
                               ) : (
-                                <span className="text-[11px] text-slate-500 italic">طاقم صيانة عام</span>
+                                <span className="text-[11px] text-slate-500 italic">{t('sectors.generalistPool', 'Generalist Pool')}</span>
                               )}
                             </td>
 
@@ -436,7 +443,7 @@ export function SectorRegistryView() {
                             <td className="py-3.5 px-4 text-center">
                               <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 inline-flex items-center gap-1">
                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                                نشط
+                                {t('sectors.statusActive', 'Active')}
                               </span>
                             </td>
 
@@ -446,14 +453,14 @@ export function SectorRegistryView() {
                                 <button 
                                   onClick={() => handleEdit(sector)}
                                   className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 text-slate-300 hover:text-white border border-white/10 transition-colors cursor-pointer"
-                                  title="تعديل المنطقة"
+                                  title={t('sectors.editZone', 'Edit Zone')}
                                 >
                                   <Edit3 className="w-3.5 h-3.5" />
                                 </button>
                                 <button 
                                   onClick={() => handleDelete(sector.id, sector.name)}
                                   className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 hover:text-rose-200 border border-rose-500/20 transition-colors cursor-pointer"
-                                  title="إلغاء التفعيل"
+                                  title={t('sectors.decommissionZone', 'Decommission Zone')}
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
                                 </button>

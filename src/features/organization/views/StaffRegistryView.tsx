@@ -44,29 +44,29 @@ export function StaffRegistryView() {
   const filterGroups: FilterGroup[] = useMemo(() => [
     {
       id: 'role',
-      label: 'الدور الوظيفي (Role)',
+      label: t('staff.roleFilterLabel', 'Staff Role'),
       value: roleFilter,
       onChange: setRoleFilter,
-      allLabel: 'جميع الأدوار الوظيفية',
+      allLabel: t('staff.allRoles', 'All Roles'),
       type: 'chips',
       options: [
-        { value: 'TC', label: 'فني صيانة (Technician)', count: tcSlotsCount },
-        { value: 'OP', label: 'مشغل إنتاج (Operator)', count: opSlotsCount }
+        { value: 'TC', label: t('staff.roleTechnician', 'Technician'), count: tcSlotsCount },
+        { value: 'OP', label: t('staff.roleOperator', 'Operator'), count: opSlotsCount }
       ]
     },
     {
       id: 'status',
-      label: 'حالة التفعيل (Status)',
+      label: t('staff.statusFilterLabel', 'Activation Status'),
       value: statusFilter,
       onChange: setStatusFilter,
-      allLabel: 'جميع الحالات',
+      allLabel: t('staff.allStatuses', 'All Statuses'),
       type: 'chips',
       options: [
-        { value: 'ACTIVE', label: 'نشط (Active)', count: activeStaff.length },
-        { value: 'SPARE', label: 'شاغر / غير مفعل (Spare)', count: staffSlots.length - activeStaff.length }
+        { value: 'ACTIVE', label: t('staff.statusActive', 'Active'), count: activeStaff.length },
+        { value: 'SPARE', label: t('staff.statusSpare', 'Spare / Dormant'), count: staffSlots.length - activeStaff.length }
       ]
     }
-  ], [roleFilter, statusFilter, tcSlotsCount, opSlotsCount, activeStaff.length, staffSlots.length]);
+  ], [roleFilter, statusFilter, tcSlotsCount, opSlotsCount, activeStaff.length, staffSlots.length, t]);
 
   const filteredStaff = useMemo(() => {
     return staffSlots.filter(t => {
@@ -181,7 +181,7 @@ export function StaffRegistryView() {
               <UnifiedSearchFilter
                 searchTerm={searchTerm}
                 onSearchChange={setSearchTerm}
-                searchPlaceholder={t('staff.searchPlaceholder', 'بحث في الكادر، الأسماء، المعرفات، أو بطاقات الدخول...')}
+                searchPlaceholder={t('staff.searchPlaceholder', 'Search staff...')}
                 filterGroups={filterGroups}
                 themeColor="indigo"
                 extraControls={
@@ -193,7 +193,7 @@ export function StaffRegistryView() {
                         "p-1.5 rounded-lg transition-all cursor-pointer",
                         displayMode === 'table' ? "bg-white text-slate-950 shadow-sm font-bold" : "text-slate-400 hover:text-white"
                       )}
-                      title="عرض الجدول (Crystal Table)"
+                      title={t('staff.tableTooltip', 'Crystal Table View')}
                     >
                       <Eye className="w-4 h-4" />
                     </button>
@@ -204,7 +204,7 @@ export function StaffRegistryView() {
                         "p-1.5 rounded-lg transition-all cursor-pointer",
                         displayMode === 'cards' ? "bg-white text-slate-950 shadow-sm font-bold" : "text-slate-400 hover:text-white"
                       )}
-                      title="عرض البطاقات (Cards Grid)"
+                      title={t('staff.cardsTooltip', 'Cards Grid View')}
                     >
                       <LayoutGrid className="w-4 h-4" />
                     </button>
@@ -283,22 +283,29 @@ export function StaffRegistryView() {
           <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar bg-[#0a0a0f]/40 p-4 md:p-6">
             {displayMode === 'table' ? (
               /* Crystal Table View */
-              <div className="rounded-2xl border border-white/10 overflow-hidden bg-slate-900/60 backdrop-blur-xl shadow-2xl">
-                <div className="overflow-x-auto custom-scrollbar">
+              <div className="rounded-2xl border border-white/10 overflow-hidden bg-slate-900/60 backdrop-blur-xl shadow-2xl flex flex-col max-h-[600px]">
+                <div className="overflow-x-auto overflow-y-auto custom-scrollbar flex-1">
                   <table className="w-full text-start border-collapse">
-                    <thead>
-                      <tr className="bg-white/[0.04] border-b border-white/10 text-slate-300 font-bold uppercase tracking-wider text-[11px]">
-                        <th className="py-3.5 px-4 text-start font-bold">معرف المقعد</th>
-                        <th className="py-3.5 px-4 text-start font-bold">الاسم والصفة</th>
-                        <th className="py-3.5 px-4 text-start font-bold">شارة الدخول المادية</th>
-                        <th className="py-3.5 px-4 text-start font-bold">الرتبة والمسؤولية</th>
-                        <th className="py-3.5 px-4 text-center font-bold">حالة التفعيل</th>
-                        <th className="py-3.5 px-4 text-center font-bold">الإجراءات</th>
+                    <thead className="bg-[#12141d] border-b-2 border-white/15 text-slate-200 font-extrabold uppercase tracking-wider text-[11px] sticky top-0 z-20 backdrop-blur-md shadow-sm">
+                      <tr>
+                        <th className="py-3.5 px-4 text-start font-bold">{t('staff.thSlotId', 'Slot ID')}</th>
+                        <th className="py-3.5 px-4 text-start font-bold">{t('staff.thNameRole', 'Name & Title')}</th>
+                        <th className="py-3.5 px-4 text-start font-bold">{t('staff.thBadgeId', 'Physical Badge ID')}</th>
+                        <th className="py-3.5 px-4 text-start font-bold">{t('staff.thResponsibility', 'Rank & Responsibility')}</th>
+                        <th className="py-3.5 px-4 text-center font-bold">{t('staff.thStatus', 'Activation Status')}</th>
+                        <th className="py-3.5 px-4 text-center font-bold">{t('staff.thActions', 'Actions')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5 text-xs">
-                      {filteredStaff.map((tech) => (
-                        <tr key={tech.id} className="hover:bg-white/[0.04] transition-colors group">
+                      {filteredStaff.map((tech, idx) => (
+                        <tr 
+                          key={tech.id} 
+                          className={cn(
+                            "transition-colors duration-150 group text-start",
+                            idx % 2 === 0 ? "bg-white/[0.015]" : "bg-white/[0.05]",
+                            "hover:bg-indigo-500/15"
+                          )}
+                        >
                           {/* Slot ID */}
                           <td className="py-3.5 px-4 font-mono font-bold">
                             <span className="px-2.5 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[11px] inline-flex items-center gap-1.5">
@@ -318,7 +325,7 @@ export function StaffRegistryView() {
                                   {tech.name}
                                 </span>
                                 <span className="text-[10px] text-slate-400 font-medium">
-                                  {tech.role || 'فني صيانة معتمد'}
+                                  {tech.role || t('staff.defaultRole', 'Certified Maintenance Tech')}
                                 </span>
                               </div>
                             </div>
@@ -329,7 +336,7 @@ export function StaffRegistryView() {
                             <div className="flex items-center gap-2">
                               <Fingerprint className="w-3.5 h-3.5 text-slate-400" />
                               <span className="font-mono text-xs font-bold text-slate-300 bg-white/5 px-2.5 py-1 rounded-md border border-white/10">
-                                {tech.realBadgeId || 'غير معرّف'}
+                                {tech.realBadgeId || t('staff.unassignedBadge', 'Not Configured')}
                               </span>
                             </div>
                           </td>
@@ -347,12 +354,12 @@ export function StaffRegistryView() {
                             {tech.isActive ? (
                               <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 inline-flex items-center gap-1">
                                 <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                                نشط ميدانياً
+                                {t('staff.badgeFieldActive', 'Field Active')}
                               </span>
                             ) : (
                               <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20 inline-flex items-center gap-1">
                                 <XCircle className="w-3 h-3 text-rose-400" />
-                                مقعد مخدر
+                                {t('staff.badgeDormant', 'Dormant Slot')}
                               </span>
                             )}
                           </td>
@@ -362,10 +369,10 @@ export function StaffRegistryView() {
                             <button 
                               onClick={() => handleEdit(tech)}
                               className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/15 text-slate-300 hover:text-white border border-white/10 transition-colors inline-flex items-center gap-1.5 text-xs font-bold cursor-pointer"
-                              title="تهيئة المقعد"
+                              title={t('staff.configureTooltip', 'Configure Slot')}
                             >
                               <Edit3 className="w-3.5 h-3.5" />
-                              <span>تهيئة</span>
+                              <span>{t('staff.configureBtn', 'Configure')}</span>
                             </button>
                           </td>
                         </tr>
@@ -396,7 +403,7 @@ export function StaffRegistryView() {
                              <button 
                                onClick={() => handleEdit(tech)}
                                className="p-1.5 rounded-md hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer"
-                               title="Configure Slot"
+                               title={t('staff.configureTooltip', 'Configure Slot')}
                              >
                                <Edit3 className="w-3.5 h-3.5" />
                              </button>
@@ -417,10 +424,10 @@ export function StaffRegistryView() {
                           
                           <div className="w-full bg-[#0a0a0f] rounded-xl p-4 border border-white/5 flex flex-col gap-2 mt-auto text-left group-hover:bg-white/5 transition-colors">
                             <span className="text-[10px] uppercase tracking-widest font-bold text-slate-500 flex items-center gap-1.5 group-hover:text-slate-400 transition-colors">
-                              <Fingerprint className="w-3.5 h-3.5 text-slate-500 group-hover:text-slate-400" /> Physical Badge ID
+                              <Fingerprint className="w-3.5 h-3.5 text-slate-500 group-hover:text-slate-400" /> {t('staff.thBadgeId', 'Physical Badge ID')}
                             </span>
                             <div className="text-sm font-bold text-slate-400 group-hover:text-slate-200 font-mono uppercase tracking-tight transition-colors">
-                               {tech.realBadgeId || 'NOT CONFIGURED'}
+                               {tech.realBadgeId || t('staff.unassignedBadge', 'NOT CONFIGURED')}
                             </div>
                           </div>
                         </div>
@@ -431,8 +438,8 @@ export function StaffRegistryView() {
                 {filteredStaff.length === 0 && (
                   <div className="col-span-full py-20 flex flex-col items-center justify-center border border-dashed border-white/10 rounded-3xl bg-white/[0.02]">
                     <Users className="w-12 h-12 text-slate-600 mb-4" />
-                    <p className="text-sm text-slate-400 font-bold uppercase tracking-widest">No Active Personnel</p>
-                    <p className="text-xs text-slate-500 mt-2">Active slots list is currently empty.</p>
+                    <p className="text-sm text-slate-400 font-bold uppercase tracking-widest">{t('staff.noPersonnelTitle', 'No Active Personnel')}</p>
+                    <p className="text-xs text-slate-500 mt-2">{t('staff.noPersonnelDesc', 'Active slots list is currently empty.')}</p>
                   </div>
                 )}
               </div>

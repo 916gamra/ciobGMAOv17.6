@@ -71,21 +71,21 @@ export function MachineRegistryView() {
   const filterGroups: FilterGroup[] = useMemo(() => [
     {
       id: 'sector',
-      label: 'منطقة التشغيل (Sector)',
+      label: t('machines.sectorFilterLabel', 'Operating Sector'),
       value: filterSector,
       onChange: setFilterSector,
-      allLabel: 'جميع قطاعات المعمل',
+      allLabel: t('machines.allSectors', 'All Factory Sectors'),
       options: sectors.map(s => ({ value: s.id, label: s.name }))
     },
     {
       id: 'template',
-      label: 'القالب المرجعي (Template)',
+      label: t('machines.templateFilterLabel', 'Engineering Template'),
       value: filterTemplate,
       onChange: setFilterTemplate,
-      allLabel: 'جميع القوالب الهندسية',
+      allLabel: t('machines.allTemplates', 'All Engineering Templates'),
       options: uniqueTemplates.map(t => ({ value: t, label: t }))
     }
-  ], [filterSector, filterTemplate, sectors, uniqueTemplates]);
+  ], [filterSector, filterTemplate, sectors, uniqueTemplates, t]);
 
   const filteredMachines = useMemo(() => {
     return machines.filter(m => {
@@ -114,10 +114,10 @@ export function MachineRegistryView() {
         templateId,
         referenceCode 
       });
-      showSuccess('تم تحديث الآلة', 'تم تحديث البيانات المادية للآلة بنجاح.');
+      showSuccess('Machine Updated', 'Machine physical specifications updated successfully.');
       handleEditClose();
     } catch (err: any) {
-      showError('فشل التعديل', err.message);
+      showError('Update Failed', err.message);
     }
   };
 
@@ -174,47 +174,31 @@ export function MachineRegistryView() {
         icon={<Factory className="w-7 h-7 text-indigo-400" />}
         badgeText={t('machines.badge', 'Machine Registry')}
         badgeColor="indigo"
-        actions={
-          <div className="flex items-center gap-3">
-            <button 
-              onClick={() => setIsImporterOpen(true)}
-              className="bg-white/[0.04] text-emerald-400 hover:bg-emerald-500/10 border border-emerald-500/30 font-bold rounded-xl px-4 py-2.5 text-xs transition-all shrink-0 flex items-center justify-center gap-2 cursor-pointer"
-            >
-               <Upload className="w-4 h-4" /> {t('machines.smartImport', 'Smart Import')}
-            </button>
-            <button 
-              onClick={handleTriggerNewAssetWizard}
-              className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all shrink-0 flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <Plus className="w-4 h-4 shrink-0" /> {t('machines.newAsset', 'New Asset')}
-            </button>
-          </div>
-        }
       >
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <HeaderBentoCard
-            title={t('machines.total', 'إجمالي الآلات')}
+            title={t('machines.total', 'Total Machines')}
             subtitle="TOTAL MACHINES"
             value={machines.length}
             icon={<Factory className="w-3.5 h-3.5" />}
             color="blue"
           />
           <HeaderBentoCard
-            title={t('machines.sectors', 'قطاعات المعمل')}
+            title={t('machines.sectors', 'Factory Sectors')}
             subtitle="SECTORS"
             value={sectors.length}
             icon={<Cpu className="w-3.5 h-3.5" />}
             color="blue"
           />
           <HeaderBentoCard
-            title={t('machines.squad', 'الفريق الموجه')}
+            title={t('machines.squad', 'Assigned Squad')}
             subtitle="TECHNICIANS SQUAD"
             value={technicians.length}
             icon={<Activity className="w-3.5 h-3.5" />}
             color="emerald"
           />
           <HeaderBentoCard
-            title={t('machines.health', 'جاهزية العمليات')}
+            title={t('machines.health', 'Operational Health')}
             subtitle="OPERATIONAL HEALTH"
             value="100%"
             icon={<Box className="w-3.5 h-3.5" />}
@@ -228,8 +212,8 @@ export function MachineRegistryView() {
       <motion.div variants={itemVariants} className="flex-1 min-h-0 flex flex-col">
         <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl h-full flex flex-col bg-[#0a0a0f]/60 backdrop-blur-xl">
           {/* Universal Crystal Command Bar */}
-          <div className="p-4 md:p-6 border-b border-white/10 bg-white/[0.02] flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 shrink-0 relative z-10">
-            {/* Right Side (RTL): Context Count */}
+          <div className="p-4 md:p-6 border-b border-white/10 bg-white/[0.02] flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4 shrink-0 relative z-10">
+            {/* Context Count */}
             <div className="flex items-center gap-3 shrink-0">
               <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shrink-0">
                 <Cpu className="w-5 h-5 text-indigo-400" />
@@ -245,37 +229,55 @@ export function MachineRegistryView() {
               </div>
             </div>
 
-            {/* Center & Left: Unified Search & Filter with View Switcher */}
-            <div className="flex-1 max-w-3xl">
+            {/* Center & Left: Unified Search & Filter with View Switcher & Action Buttons */}
+            <div className="flex-1 max-w-3xl w-full">
               <UnifiedSearchFilter
                 searchTerm={searchTerm}
                 onSearchChange={setSearchTerm}
-                searchPlaceholder={t('machines.searchPlaceholder', 'بحث في الآلات، الأكواد، القطاعات، أو الموديلات...')}
+                searchPlaceholder={t('machines.searchPlaceholder', 'Search machines...')}
                 filterGroups={filterGroups}
                 themeColor="indigo"
                 extraControls={
-                  <div className="flex items-center gap-1 p-1 bg-[#161821] rounded-xl border border-white/10 shrink-0">
-                    <button
+                  <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-1 p-1 bg-[#12131a] rounded-xl border border-white/10 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setDisplayMode('table')}
+                        className={cn(
+                          "p-1.5 rounded-lg transition-all cursor-pointer",
+                          displayMode === 'table' ? "bg-white text-slate-950 shadow-sm font-bold" : "text-slate-400 hover:text-white"
+                        )}
+                        title={t('machines.tableTooltip', 'Crystal Table View')}
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDisplayMode('cards')}
+                        className={cn(
+                          "p-1.5 rounded-lg transition-all cursor-pointer",
+                          displayMode === 'cards' ? "bg-white text-slate-950 shadow-sm font-bold" : "text-slate-400 hover:text-white"
+                        )}
+                        title={t('machines.cardsTooltip', 'Cards Grid View')}
+                      >
+                        <LayoutGrid className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <button 
                       type="button"
-                      onClick={() => setDisplayMode('table')}
-                      className={cn(
-                        "p-1.5 rounded-lg transition-all cursor-pointer",
-                        displayMode === 'table' ? "bg-white text-slate-950 shadow-sm" : "text-slate-500 hover:text-white"
-                      )}
-                      title="عرض الجدول (Crystal Table)"
+                      onClick={() => setIsImporterOpen(true)}
+                      className="bg-white/[0.04] text-slate-300 hover:bg-white/[0.08] hover:text-white border border-white/10 font-bold rounded-xl px-4 py-2.5 text-xs transition-all shrink-0 flex items-center justify-center gap-2 cursor-pointer"
                     >
-                      <Eye className="w-4 h-4" />
+                      <Upload className="w-4 h-4" /> {t('machines.smartImport', 'Smart Import')}
                     </button>
-                    <button
+                    
+                    <button 
                       type="button"
-                      onClick={() => setDisplayMode('cards')}
-                      className={cn(
-                        "p-1.5 rounded-lg transition-all cursor-pointer",
-                        displayMode === 'cards' ? "bg-white text-slate-950 shadow-sm" : "text-slate-500 hover:text-white"
-                      )}
-                      title="عرض البطاقات (Cards Grid)"
+                      onClick={handleTriggerNewAssetWizard}
+                      className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all shrink-0 flex items-center justify-center gap-2 cursor-pointer"
                     >
-                      <LayoutGrid className="w-4 h-4" />
+                      <Plus className="w-4 h-4 shrink-0" /> {t('machines.newAsset', 'New Asset')}
                     </button>
                   </div>
                 }
@@ -298,22 +300,29 @@ export function MachineRegistryView() {
               </div>
             ) : displayMode === 'table' ? (
               /* Crystal Table View */
-              <div className="rounded-2xl border border-white/10 overflow-hidden bg-slate-900/60 backdrop-blur-xl shadow-2xl">
-                <div className="overflow-x-auto custom-scrollbar">
+              <div className="rounded-2xl border border-white/10 overflow-hidden bg-slate-900/60 backdrop-blur-xl shadow-2xl flex flex-col max-h-[600px]">
+                <div className="overflow-x-auto overflow-y-auto custom-scrollbar flex-1">
                   <table className="w-full text-start border-collapse">
-                    <thead>
-                      <tr className="bg-white/[0.04] border-b border-white/10 text-slate-300 font-bold uppercase tracking-wider text-[11px]">
-                        <th className="py-3.5 px-4 text-start font-bold">معرف الآلة (Asset ID)</th>
-                        <th className="py-3.5 px-4 text-start font-bold">اسم الآلة والموديل</th>
-                        <th className="py-3.5 px-4 text-start font-bold">منطقة التشغيل</th>
-                        <th className="py-3.5 px-4 text-start font-bold">المسؤول والفني</th>
-                        <th className="py-3.5 px-4 text-start font-bold">العائلة والقالب</th>
-                        <th className="py-3.5 px-4 text-center font-bold">الإجراءات والربط</th>
+                    <thead className="bg-[#12141d] border-b-2 border-white/15 text-slate-200 font-extrabold uppercase tracking-wider text-[11px] sticky top-0 z-20 backdrop-blur-md shadow-sm">
+                      <tr>
+                        <th className="py-3.5 px-4 text-start font-bold">{t('machines.thAssetId', 'Asset ID')}</th>
+                        <th className="py-3.5 px-4 text-start font-bold">{t('machines.thNameModel', 'Machine Name & Model')}</th>
+                        <th className="py-3.5 px-4 text-start font-bold">{t('machines.thSector', 'Operating Sector')}</th>
+                        <th className="py-3.5 px-4 text-start font-bold">{t('machines.thManager', 'Manager & Tech')}</th>
+                        <th className="py-3.5 px-4 text-start font-bold">{t('machines.thFamilyTemplate', 'Family & Template')}</th>
+                        <th className="py-3.5 px-4 text-center font-bold">{t('machines.thActions', 'Actions & Links')}</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5 text-xs">
-                      {filteredMachines.map((machine) => (
-                        <tr key={machine.id} className="hover:bg-white/[0.04] transition-colors group">
+                      {filteredMachines.map((machine, idx) => (
+                        <tr 
+                          key={machine.id} 
+                          className={cn(
+                            "transition-colors duration-150 group text-start",
+                            idx % 2 === 0 ? "bg-white/[0.015]" : "bg-white/[0.05]",
+                            "hover:bg-indigo-500/15"
+                          )}
+                        >
                           {/* Reference Code */}
                           <td className="py-3.5 px-4 font-mono font-bold">
                             <span 
@@ -335,7 +344,7 @@ export function MachineRegistryView() {
                                 {machine.name}
                               </span>
                               <span className="text-[10px] text-slate-400 font-medium">
-                                {machine.blueprintReference || 'غير مسند لموديل تجاري'}
+                                {machine.blueprintReference || t('machines.unassignedBlueprint', 'Unassigned Model')}
                               </span>
                             </div>
                           </td>
@@ -353,7 +362,7 @@ export function MachineRegistryView() {
                           {/* Tech / Manager */}
                           <td className="py-3.5 px-4">
                             <span className="text-[11px] text-slate-300 font-medium">
-                              {machine.managerName || 'مسؤول القطاع'}
+                              {machine.managerName || t('machines.defaultManager', 'Sector Manager')}
                             </span>
                           </td>
 
@@ -378,7 +387,7 @@ export function MachineRegistryView() {
                                 type="button"
                                 onClick={() => setSelectedMachineForPdrLink(machine)}
                                 className="p-1.5 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 transition-colors cursor-pointer"
-                                title="ربط قطعة غيار PDR"
+                                title={t('machines.linkPdrTooltip', 'Link Spare Part (PDR)')}
                               >
                                 <Link2 className="w-3.5 h-3.5" />
                               </button>
@@ -387,7 +396,7 @@ export function MachineRegistryView() {
                               <button 
                                 onClick={() => setSelectedMachineForQr(machine)}
                                 className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 text-slate-300 hover:text-white border border-white/10 transition-colors cursor-pointer"
-                                title="Digital ID & QR Card"
+                                title={t('machines.digitalIdTooltip', 'Digital ID & QR Card')}
                               >
                                 <QrCode className="w-3.5 h-3.5" />
                               </button>
@@ -396,7 +405,7 @@ export function MachineRegistryView() {
                               <button 
                                 onClick={() => setSelectedMachineForBom({ id: machine.id, name: machine.name })}
                                 className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 text-slate-300 hover:text-white border border-white/10 transition-colors cursor-pointer"
-                                title="BOM Configuration"
+                                title={t('machines.bomTooltip', 'BOM Configuration')}
                               >
                                 <Wrench className="w-3.5 h-3.5" />
                               </button>
@@ -405,7 +414,7 @@ export function MachineRegistryView() {
                               <button 
                                 onClick={() => handleEdit(machine)}
                                 className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 text-slate-300 hover:text-white border border-white/10 transition-colors cursor-pointer"
-                                title="تعديل البيانات"
+                                title={t('machines.editTooltip', 'Edit Asset Specs')}
                               >
                                 <Edit3 className="w-3.5 h-3.5" />
                               </button>
@@ -414,7 +423,7 @@ export function MachineRegistryView() {
                               <button 
                                 onClick={() => handleDelete(machine.id, machine.name)}
                                 className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition-colors cursor-pointer"
-                                title="إخراج من الخدمة"
+                                title={t('machines.decommissionTooltip', 'Decommission Asset')}
                               >
                                 <Trash2 className="w-3.5 h-3.5" />
                               </button>

@@ -13,8 +13,7 @@ const resources = {
 };
 
 const updateDocumentDir = (lng: string) => {
-  const dir = lng === 'ar' ? 'rtl' : 'ltr';
-  document.documentElement.dir = dir;
+  document.documentElement.dir = 'ltr';
   document.documentElement.lang = lng;
 };
 
@@ -22,14 +21,14 @@ i18n
   .use(initReactI18next) // passes i18n down to react-i18next
   .init({
     resources,
-    lng: "ar", // default language
-    fallbackLng: "fr",
+    lng: "en", // default language is English as required
+    fallbackLng: "en",
     interpolation: {
       escapeValue: false // react already safes from xss
     }
   });
 
-updateDocumentDir(i18n.language || 'ar');
+updateDocumentDir(i18n.language || 'en');
 
 i18n.on('languageChanged', (lng) => {
   updateDocumentDir(lng);

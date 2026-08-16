@@ -8,6 +8,7 @@ import { ShoppingCart, Clock, CheckCircle2, AlertCircle, Search, Filter, Loader2
 import { UnifiedSearchFilter, FilterGroup, QuickTabOption } from '@/shared/components/UnifiedSearchFilter';
 import { useProcurementEngine } from '@/features/pdr-engine/hooks/useProcurementEngine';
 import { useNotifications } from '@/shared/hooks/useNotifications';
+import { EmptyState } from '@/shared/components/EmptyState';
 import { cn } from '@/shared/utils';
 
 const containerVariants: Variants = {
@@ -215,16 +216,16 @@ export function ProcurementView() {
         </div>
 
         <div className="overflow-x-auto custom-scrollbar">
-          <table dir="rtl" className="w-full text-right border-collapse whitespace-nowrap">
+          <table dir="ltr" className="w-full text-left border-collapse whitespace-nowrap">
             <thead className="bg-white/[0.04] border-b border-white/10 text-slate-300 font-bold uppercase tracking-wider font-mono text-[11px]">
               <tr>
-                <th className="px-6 py-4">رقم الطلب</th>
-                <th className="px-6 py-4">المورد والجهة</th>
-                <th className="px-6 py-4">التاريخ</th>
-                <th className="px-6 py-4">بنود الطلبية</th>
-                <th className="px-6 py-4 text-center">الحالة</th>
-                <th className="px-6 py-4 text-center">القيمة التقديرية</th>
-                <th className="px-6 py-4 text-left">الإجراءات</th>
+                <th className="px-6 py-4">{t('procurement.orderNumber', 'Order #')}</th>
+                <th className="px-6 py-4">{t('procurement.supplier', 'Supplier')}</th>
+                <th className="px-6 py-4">{t('procurement.date', 'Date')}</th>
+                <th className="px-6 py-4">{t('procurement.items', 'Items')}</th>
+                <th className="px-6 py-4 text-center">{t('procurement.status', 'Status')}</th>
+                <th className="px-6 py-4 text-center">{t('procurement.estimatedValue', 'Est. Value')}</th>
+                <th className="px-6 py-4 text-right">{t('procurement.actions', 'Actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 bg-[#0a0a0f]/40">
@@ -315,11 +316,14 @@ export function ProcurementView() {
               </AnimatePresence>
               {filteredOrders.length === 0 && (
                 <tr className="bg-[#0a0a0f]/20">
-                  <td colSpan={7} className="py-24 text-center">
-                    <div className="flex flex-col items-center opacity-40">
-                      <AlertCircle className="w-12 h-12 mb-3 text-slate-500" />
-                      <p className="text-sm font-bold text-slate-400 font-sans">لا توجد أوامر توريد مطابقة لمعايير البحث</p>
-                    </div>
+                  <td colSpan={7} className="p-0">
+                    <EmptyState 
+                      icon={ShoppingCart}
+                      title={t('procurement.noOrders', 'لا توجد أوامر توريد مطابقة لمعايير البحث')}
+                      description={t('procurement.noOrdersDesc', 'يمكنك تعديل خيارات البحث أو التصفية لعرض الأوامر المتاحة.')}
+                      color="amber"
+                      className="py-20 opacity-80"
+                    />
                   </td>
                 </tr>
               )}

@@ -1,7 +1,8 @@
 // src/features/security/components/SecurityDashboard.tsx
 import React, { useState, useEffect } from 'react';
-import { Shield, AlertTriangle, Lock, Activity, Server, RefreshCw, CheckCircle2, Zap, Radio } from 'lucide-react';
+import { Shield, AlertTriangle, Lock, Activity, Server, RefreshCw, CheckCircle2, Zap, Radio, ShieldCheck } from 'lucide-react';
 import { securityManager } from '@/core/security/SecurityManager';
+import { EmptyState } from '@/shared/components/EmptyState';
 
 export function SecurityDashboard() {
   const [report, setReport] = useState<any>(null);
@@ -199,7 +200,15 @@ export function SecurityDashboard() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={5} className="py-8 text-center text-slate-500">لا توجد تهديدات مسجلة</td>
+                      <td colSpan={5} className="p-0">
+                        <EmptyState 
+                          icon={ShieldCheck}
+                          title="لا توجد تهديدات مسجلة"
+                          description="النظام آمن وحالة الحماية نشطة ومستقرة."
+                          color="emerald"
+                          className="py-10 opacity-80 text-xs"
+                        />
+                      </td>
                     </tr>
                   )}
                 </tbody>
@@ -277,7 +286,15 @@ export function SecurityDashboard() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={4} className="py-8 text-center text-slate-500">لا توجد خروقات لسلامة البيانات</td>
+                      <td colSpan={4} className="p-0">
+                        <EmptyState 
+                          icon={ShieldCheck}
+                          title="لا توجد خروقات لسلامة البيانات"
+                          description="توقيعات التشفير والتحقق الذاتي متطابقة بالكامل."
+                          color="cyan"
+                          className="py-10 opacity-80 text-xs"
+                        />
+                      </td>
                     </tr>
                   )}
                 </tbody>
@@ -313,7 +330,15 @@ export function SecurityDashboard() {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={4} className="py-8 text-center text-slate-500">لا توجد جلسات نشطة مسجلة حالياً</td>
+                      <td colSpan={4} className="p-0">
+                        <EmptyState 
+                          icon={Activity}
+                          title="لا توجد جلسات نشطة مسجلة حالياً"
+                          description="سجل الجلسات فارغ لم يتم تسجيل الدخول مؤخراً."
+                          color="blue"
+                          className="py-10 opacity-80 text-xs"
+                        />
+                      </td>
                     </tr>
                   )}
                 </tbody>

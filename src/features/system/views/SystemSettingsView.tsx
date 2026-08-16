@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { DatabaseZap, ShieldAlert, RefreshCw, AlertTriangle, ArrowRightLeft, HardDrive, LayoutGrid, Wrench, Factory, FileLock } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 import { db, User } from '@/core/db';
 import { motion, Variants } from 'motion/react';
 import { useAuditTrail } from '../hooks/useAuditTrail';
@@ -23,6 +24,7 @@ const itemVariants: Variants = {
 };
 
 export function SystemSettingsView({ user, onLogout }: { user: User | null, onLogout: () => void }) {
+  const { t } = useTranslation();
   const { logEvent } = useAuditTrail();
   const [isWiping, setIsWiping] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
@@ -138,39 +140,38 @@ export function SystemSettingsView({ user, onLogout }: { user: User | null, onLo
       initial="hidden"
       animate="visible"
       className="w-full space-y-6 pb-12 lg:px-8 pt-2 font-sans"
-      dir="rtl"
     >
       <PageHeader
-        title="إدارة البيانات وإعدادات النظام"
-        subtitle="المعايير الهيكلية الكبرى لأصول المصنع، بروتوكولات الأمان، وعمليات إعادة الضبط الصناعية الشاملة."
+        title={t('system.title', 'Data Management & System Settings')}
+        subtitle={t('system.subtitle', 'Major architectural standards for factory assets, security protocols, and comprehensive industrial resets.')}
         icon={<DatabaseZap className="w-7 h-7 text-rose-500" />}
-        badgeText="إدارة البيانات"
+        badgeText={t('system.badge', 'Data Management')}
         badgeColor="rose"
       >
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <HeaderBentoCard
-            title="كتالوج قطع الغيار"
+            title={t('system.sparePartsCatalog', 'Spare Parts Catalog')}
             subtitle="TOTAL BLUEPRINTS"
             value={blueprintsCount}
             icon={<LayoutGrid className="w-3.5 h-3.5" />}
             color="blue"
           />
           <HeaderBentoCard
-            title="الوحدات المخزنية"
+            title={t('system.inventoryUnits', 'Inventory Items')}
             subtitle="TOTAL INVENTORY ITEMS"
             value={partsCount}
             icon={<Wrench className="w-3.5 h-3.5" />}
             color="emerald"
           />
           <HeaderBentoCard
-            title="المعدات والآلات"
+            title={t('system.equipmentMachinery', 'Machinery & Equipment')}
             subtitle="REGISTERED EQUIPMENT"
             value={machinesCount}
             icon={<Factory className="w-3.5 h-3.5" />}
             color="purple"
           />
           <HeaderBentoCard
-            title="سجلات الأمان والعمليات"
+            title={t('system.securityLogs', 'Security Audit Trail')}
             subtitle="SECURITY AUDIT TRAIL"
             value={auditLogsCount}
             icon={<FileLock className="w-3.5 h-3.5" />}

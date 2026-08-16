@@ -16,6 +16,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { cn } from '@/shared/utils';
+import { EmptyState } from '@/shared/components/EmptyState';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -217,13 +218,14 @@ export function AuditTrailView() {
               <AnimatePresence mode="popLayout">
                 {filteredLogs.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-24 text-center">
-                       <div className="flex flex-col items-center">
-                          <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-4 shadow-inner">
-                            <Activity className="w-8 h-8 text-slate-600" />
-                          </div>
-                          <p className="text-sm font-medium text-slate-400">No matching logs found.</p>
-                       </div>
+                    <td colSpan={5} className="p-0">
+                      <EmptyState 
+                        icon={Activity}
+                        title="No matching audit logs found"
+                        description="Try adjusting your filter query or search term to view older audit trail records."
+                        color="cyan"
+                        className="py-16 opacity-80"
+                      />
                     </td>
                   </tr>
                 ) : (

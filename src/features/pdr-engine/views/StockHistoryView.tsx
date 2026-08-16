@@ -33,6 +33,7 @@ import {
 import { cn } from '@/shared/utils';
 import { toast } from 'sonner';
 import { UnifiedSearchFilter, type FilterGroup, type QuickTabOption } from '@/shared/components/UnifiedSearchFilter';
+import { EmptyState } from '@/shared/components/EmptyState';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -579,9 +580,14 @@ export function StockHistoryView() {
 
                     {filteredMovements.length === 0 && (
                       <tr>
-                        <td colSpan={5} className="px-6 py-24 text-center">
-                          <History className="w-12 h-12 mb-3 text-slate-700 mx-auto opacity-40" />
-                          <p className="text-xs text-slate-400 font-sans">لم يتم العثور على أي حركات مخزنية مطابقة لمعايير البحث</p>
+                        <td colSpan={5} className="p-0">
+                          <EmptyState 
+                            icon={History}
+                            title={t('pdr.history.noMovements', 'لم يتم العثور على أي حركات مخزنية')}
+                            description={t('pdr.history.noMovementsDesc', 'لم يتم تسجيل حركات سحب أو صرف مطابقة لمعايير البحث الحالية.')}
+                            color="cyan"
+                            className="py-16 opacity-80"
+                          />
                         </td>
                       </tr>
                     )}
@@ -896,8 +902,14 @@ export function StockHistoryView() {
 
                                 {selectedData.mappedParts.length === 0 && (
                                   <tr>
-                                    <td colSpan={4} className="px-5 py-12 text-center text-slate-500 text-xs">
-                                      لا توجد مكونات مربوطة قياسياً بشجرة هذه الآلة بعد.
+                                    <td colSpan={4} className="p-0">
+                                      <EmptyState 
+                                        icon={Cpu}
+                                        title={t('pdr.history.noMappedComponents', 'لا توجد مكونات مربوطة')}
+                                        description={t('pdr.history.noMappedComponentsDesc', 'لا توجد مكونات مربوطة قياسياً بشجرة هذه الآلة بعد.')}
+                                        color="blue"
+                                        className="py-10 opacity-80 text-xs"
+                                      />
                                     </td>
                                   </tr>
                                 )}

@@ -375,21 +375,21 @@ export function ComponentCatalogView() {
 
             {/* Sidebar Search Bar - Crystal White */}
             <div className="relative w-full shrink-0">
-              <Search className="w-4 h-4 absolute right-3 rtl:right-3 left-auto rtl:left-auto left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               <input 
                 type="text" 
-                placeholder="ابحث برمز القطعة، الموديل، أو المعرف..." 
+                placeholder={t('pdr.catalog.searchPlaceholder', 'Search by part code, model, or ID...')} 
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-white border border-slate-300 rounded-xl pr-9 pl-3 rtl:pr-9 rtl:pl-3 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition-all text-start font-bold shadow-sm"
+                className="w-full bg-white border border-slate-300 rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 outline-none transition-all text-left font-bold shadow-sm"
               />
             </div>
 
             {/* Tree Navigation Area (Bento Mini-Cards) */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 text-start pt-1 -mx-2 px-2 pb-4">
+            <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 text-left pt-1 -mx-2 px-2 pb-4">
               {families.length === 0 ? (
                 <div className="p-6 text-center text-slate-400 text-xs font-medium">
-                  لا توجد عائلات نشطة في الكتالوج حتى الآن.
+                  {t('pdr.catalog.noActiveFamilies', 'No active families in catalog yet.')}
                 </div>
               ) : (
                 <div className="space-y-1.5">
@@ -405,7 +405,7 @@ export function ComponentCatalogView() {
                           setSelectedTemplateId(null);
                         }}
                         className={cn(
-                          "w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 text-start cursor-pointer transform active:scale-95",
+                          "w-full flex items-center gap-3 p-3 rounded-xl border transition-all duration-200 text-left cursor-pointer transform active:scale-95",
                           isSelected 
                             ? "bg-cyan-500/20 border-cyan-500/50 text-white font-black shadow-[0_4px_20px_rgba(6,182,212,0.25)] scale-[1.02] -translate-y-0.5" 
                             : "bg-[#0a0a0f] border-white/10 text-slate-300 hover:bg-white/[0.05] hover:text-white"
@@ -420,39 +420,39 @@ export function ComponentCatalogView() {
                           </div>
                           <div className={cn("text-[10px] font-mono", isSelected ? "text-cyan-200" : "text-slate-400")}>{family.code}</div>
                         </div>
-                        <ChevronRight className={cn("w-4 h-4 transition-transform rtl:rotate-180", isSelected ? "text-white rtl:rotate-[270deg] rotate-90" : "text-slate-500")} />
+                        <ChevronRight className={cn("w-4 h-4 transition-transform", isSelected ? "text-white rotate-90" : "text-slate-500")} />
                       </button>
                       
                       {isSelected && (
-                        <div className="pr-6 rtl:pr-6 pl-2 rtl:pl-2 py-2 space-y-1 border-r-2 border-white/20 mr-4 rtl:mr-4 mt-1 mb-2">
+                        <div className="pl-6 pr-2 py-2 space-y-1 border-l-2 border-white/20 ml-4 mt-1 mb-2">
                           <button
                             onClick={() => setSelectedTemplateId(null)}
                             className={cn(
-                              "w-full text-start px-3 py-2 rounded-lg text-xs transition-all cursor-pointer transform active:scale-95 duration-200",
+                              "w-full text-left px-3 py-2 rounded-lg text-xs transition-all cursor-pointer transform active:scale-95 duration-200",
                               selectedTemplateId === null 
                                 ? "bg-cyan-500/20 text-white font-black border border-cyan-500/50 shadow-md scale-[1.02] -translate-y-0.5" 
                                 : "bg-[#0a0a0f] border border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/[0.05] hover:border-white/10"
                             )}
                           >
-                            جميع قوالب {family.name}
+                            {t('pdr.catalog.allFamilyTemplates', 'All templates for')} {family.name}
                           </button>
                           {familyTemplates.map(temp => (
                             <div
                               key={temp.id}
                               onClick={() => setSelectedTemplateId(temp.id)}
                               className={cn(
-                                "w-full text-start px-3 py-2 rounded-lg text-xs transition-all duration-200 flex justify-between items-center cursor-pointer group/item transform active:scale-95",
+                                "w-full text-left px-3 py-2 rounded-lg text-xs transition-all duration-200 flex justify-between items-center cursor-pointer group/item transform active:scale-95",
                                 selectedTemplateId === temp.id 
                                   ? "bg-cyan-500/20 text-white font-black border border-cyan-500/50 shadow-md scale-[1.02] -translate-y-0.5" 
                                   : "bg-[#0a0a0f] border border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/[0.05] hover:border-white/10"
                               )}
                             >
-                              <span className="truncate pl-2">{temp.name}</span>
+                              <span className="truncate pr-2">{temp.name}</span>
                               <div className="flex items-center gap-1.5 shrink-0">
                                 <span className={cn("text-[9px] font-mono opacity-60 group-hover/item:opacity-100", selectedTemplateId === temp.id ? "text-cyan-200" : "")}>{temp.code}</span>
                                 <button 
                                   onClick={(e) => handleUnlinkTemplate(temp.id, e)}
-                                  title="إلغاء ربط القالب بالكتالوج"
+                                  title={t('pdr.catalog.unlinkTemplate', 'Unlink template from catalog')}
                                   className="opacity-0 group-hover/item:opacity-100 p-1 hover:bg-rose-500/20 text-rose-400 rounded transition-all"
                                 >
                                   <Unlink className="w-3 h-3" />

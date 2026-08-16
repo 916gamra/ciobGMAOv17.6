@@ -48,6 +48,7 @@ import { KpiCard } from '@/shared/components/KpiCard';
 import { BadgePill } from '@/shared/components/BadgePill';
 import { UnifiedSearchFilter, FilterGroup } from '@/shared/components/UnifiedSearchFilter';
 import { Button } from '@/shared/components/Button';
+import { EmptyState } from '@/shared/components/EmptyState';
 import { cn, EMPTY_ARRAY } from '@/shared/utils';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
@@ -527,15 +528,15 @@ export function BreakdownLogView({ user }: { user: any }) {
           {viewMode === 'table' ? (
             /* CRYSTAL HIGH-CONTRAST TABLE VIEW */
             <div className="w-full overflow-x-auto rounded-2xl border border-white/10 bg-[#0a0a0f]/60 backdrop-blur-xl shadow-2xl">
-              <table dir="rtl" className="w-full text-right border-collapse text-xs">
+              <table dir="ltr" className="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="bg-white/[0.04] border-b border-white/10 text-slate-300 font-bold uppercase tracking-wider font-mono text-[11px]">
-                    <th className="py-3.5 px-4 text-right">رقم البون</th>
-                    <th className="py-3.5 px-4 text-right">الآلة والمنطقة</th>
-                    <th className="py-3.5 px-4 text-right">المجال والإجراء</th>
-                    <th className="py-3.5 px-4 text-right">تشخيص العطل والسبب</th>
-                    <th className="py-3.5 px-4 text-right">الفني المكلف</th>
-                    <th className="py-3.5 px-4 text-right">مدة التوقف</th>
+                    <th className="py-3.5 px-4 text-left">رقم البون</th>
+                    <th className="py-3.5 px-4 text-left">الآلة والمنطقة</th>
+                    <th className="py-3.5 px-4 text-left">المجال والإجراء</th>
+                    <th className="py-3.5 px-4 text-left">تشخيص العطل والسبب</th>
+                    <th className="py-3.5 px-4 text-left">الفني المكلف</th>
+                    <th className="py-3.5 px-4 text-left">مدة التوقف</th>
                     <th className="py-3.5 px-4 text-center">الحالة والمطابقة</th>
                     <th className="py-3.5 px-4 text-center">الإجراءات</th>
                   </tr>
@@ -543,12 +544,23 @@ export function BreakdownLogView({ user }: { user: any }) {
                 <tbody className="divide-y divide-white/5 font-sans">
                   {filteredExecutions.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="py-20 text-center">
-                        <div className="flex flex-col items-center justify-center">
-                          <Wrench className="w-16 h-16 text-slate-500 mb-4 opacity-50" />
-                          <p className="font-semibold text-slate-300">لا توجد تدخلات إصلاحية مطابقة لمعايير البحث</p>
-                          <p className="text-xs text-slate-500 mt-1">يمكنك تعديل خيارات الفلترة أو تسجيل تدخل جديد.</p>
-                        </div>
+                      <td colSpan={8} className="p-0">
+                        <EmptyState 
+                          icon={Wrench}
+                          title={t('corrective.log.noBreakdowns', 'لا توجد تدخلات إصلاحية مطابقة لمعايير البحث')}
+                          description={t('corrective.log.noBreakdownsDesc', 'يمكنك تعديل خيارات الفلترة أو تسجيل تدخل طارئ جديد.')}
+                          color="rose"
+                          className="py-16 opacity-80"
+                          action={
+                            <Button
+                              onClick={() => setIsWizardOpen(true)}
+                              className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center gap-1.5"
+                            >
+                              <Plus className="w-4 h-4" />
+                              <span>{t('corrective.log.newOrder', 'تسجيل تدخل طارئ جديد')}</span>
+                            </Button>
+                          }
+                        />
                       </td>
                     </tr>
                   ) : filteredExecutions.map((ex) => {
@@ -655,10 +667,23 @@ export function BreakdownLogView({ user }: { user: any }) {
           ) : (
             /* CARDS VIEW */
             filteredExecutions.length === 0 ? (
-              <div className="py-20 text-center border border-dashed border-white/10 rounded-3xl bg-white/[0.02]">
-                <Wrench className="w-16 h-16 text-slate-500 mx-auto mb-4 opacity-50" />
-                <p className="font-semibold text-slate-400">لا توجد تدخلات إصلاحية مسجلة</p>
-                <p className="text-xs text-slate-500 mt-1">انقر فوق "تسجيل تدخل طارئ" لبدء إدخال بون جديد.</p>
+              <div className="w-full">
+                <EmptyState 
+                  icon={Wrench}
+                  title={t('corrective.log.noBreakdowns', 'لا توجد تدخلات إصلاحية مسجلة')}
+                  description={t('corrective.log.noBreakdownsCardsDesc', 'انقر فوق "تسجيل تدخل طارئ" لبدء إدخال بون جديد.')}
+                  color="rose"
+                  className="py-16 border border-dashed border-white/10 rounded-3xl bg-white/[0.02]"
+                  action={
+                    <Button
+                      onClick={() => setIsWizardOpen(true)}
+                      className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center gap-1.5"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>{t('corrective.log.newOrder', 'تسجيل تدخل طارئ جديد')}</span>
+                    </Button>
+                  }
+                />
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -761,7 +786,7 @@ export function BreakdownLogView({ user }: { user: any }) {
       {/* 4-STEP CORRECTIVE WIZARD MODAL */}
       <AnimatePresence>
         {isWizardOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 dir-rtl" dir="rtl">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4" dir="ltr">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -774,7 +799,7 @@ export function BreakdownLogView({ user }: { user: any }) {
               initial={{ scale: 0.95, opacity: 0, y: 30 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 30 }}
-              className="relative bg-[#0a0a0f] border border-orange-500/30 p-6 md:p-8 rounded-3xl w-full max-w-3xl shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar text-right font-sans"
+              className="relative bg-[#0a0a0f] border border-orange-500/30 p-6 md:p-8 rounded-3xl w-full max-w-3xl shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar text-left font-sans"
             >
               {/* MODAL HEADER */}
               <div className="flex justify-between items-start mb-6 border-b border-white/10 pb-4">
@@ -1340,7 +1365,7 @@ export function BreakdownLogView({ user }: { user: any }) {
       {/* VOUCHER INSPECTION DETAILS MODAL */}
       <AnimatePresence>
         {selectedInspectExecution && (
-          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 dir-rtl" dir="rtl">
+          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4" dir="ltr">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -1353,7 +1378,7 @@ export function BreakdownLogView({ user }: { user: any }) {
               initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 20 }}
-              className="relative bg-[#0a0a0f] border border-cyan-500/30 p-6 md:p-8 rounded-3xl w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar text-right font-sans"
+              className="relative bg-[#0a0a0f] border border-cyan-500/30 p-6 md:p-8 rounded-3xl w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar text-left font-sans"
             >
               {/* Header Plaque */}
               <div className="flex justify-between items-start pb-4 border-b border-white/10 mb-6">

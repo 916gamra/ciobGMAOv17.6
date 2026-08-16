@@ -28,6 +28,7 @@ import { HeaderBentoCard } from '@/shared/components/HeaderBentoCard';
 import { GlassCard } from '@/shared/components/GlassCard';
 import { UnifiedSearchFilter, FilterGroup } from '@/shared/components/UnifiedSearchFilter';
 import { BadgePill } from '@/shared/components/BadgePill';
+import { EmptyState } from '@/shared/components/EmptyState';
 import { cn } from '@/shared/utils';
 import { useTranslation } from 'react-i18next';
 
@@ -384,26 +385,37 @@ export function ComponentsCatalogView() {
           {viewMode === 'table' ? (
             /* CRYSTAL HIGH-CONTRAST TABLE VIEW */
             <div className="w-full overflow-x-auto rounded-2xl border border-white/10 bg-[#0a0a0f]/60 backdrop-blur-xl shadow-2xl">
-              <table dir="rtl" className="w-full text-right border-collapse text-xs">
+              <table dir="ltr" className="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="bg-white/[0.04] border-b border-white/10 text-slate-300 font-bold uppercase tracking-wider font-mono text-[11px]">
-                    <th className="py-3.5 px-4 text-right">العائلة الفنية</th>
-                    <th className="py-3.5 px-4 text-right">اسم المكون (Template)</th>
-                    <th className="py-3.5 px-4 text-right">مستوى الأهمية</th>
-                    <th className="py-3.5 px-4 text-right">البصمات التجارية (Blueprints)</th>
-                    <th className="py-3.5 px-4 text-right">قطع الغيار المرتبطة (PDRs)</th>
+                    <th className="py-3.5 px-4 text-left">العائلة الفنية</th>
+                    <th className="py-3.5 px-4 text-left">اسم المكون (Template)</th>
+                    <th className="py-3.5 px-4 text-left">مستوى الأهمية</th>
+                    <th className="py-3.5 px-4 text-left">البصمات التجارية (Blueprints)</th>
+                    <th className="py-3.5 px-4 text-left">قطع الغيار المرتبطة (PDRs)</th>
                     <th className="py-3.5 px-4 text-center">الإجراءات والتحكم</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5 font-sans">
                   {filteredTemplates.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="py-20 text-center">
-                        <div className="flex flex-col items-center justify-center">
-                          <Cpu className="w-16 h-16 text-slate-500 mb-4 opacity-50" />
-                          <p className="font-semibold text-slate-400">لا توجد قوالب مكونات مسجلة</p>
-                          <p className="text-xs text-slate-500 mt-1">انقر فوق "إضافة مكون جديد" لبدء إضافة قالب جديد للكتالوج.</p>
-                        </div>
+                      <td colSpan={6} className="p-0">
+                        <EmptyState 
+                          icon={Cpu}
+                          title={t('corrective.components.noTemplates', 'لا توجد قوالب مكونات مسجلة')}
+                          description={t('corrective.components.noTemplatesDesc', 'انقر فوق "إضافة مكون جديد" لبدء إضافة قالب جديد للكتالوج.')}
+                          color="purple"
+                          className="py-16 opacity-80"
+                          action={
+                            <button
+                              onClick={() => openNewTemplate()}
+                              className="text-xs px-4 py-2.5 bg-white text-slate-950 font-extrabold rounded-xl hover:bg-slate-200 shadow-md transition-all inline-flex items-center gap-1.5 cursor-pointer"
+                            >
+                              <Plus className="w-3.5 h-3.5" />
+                              <span>{t('corrective.components.addFirst', 'إضافة مكون جديد')}</span>
+                            </button>
+                          }
+                        />
                       </td>
                     </tr>
                   ) : filteredTemplates.map((tItem) => {
@@ -592,10 +604,23 @@ export function ComponentsCatalogView() {
               </table>
             </div>
           ) : filteredTemplates.length === 0 ? (
-            <div className="py-20 text-center border border-dashed border-white/10 rounded-3xl bg-white/[0.02]">
-              <Cpu className="w-16 h-16 text-slate-500 mx-auto mb-4 opacity-50" />
-              <p className="font-semibold text-slate-400">لا توجد قوالب مكونات مسجلة</p>
-              <p className="text-xs text-slate-500 mt-1">انقر فوق "إضافة مكون جديد" لبدء إضافة قالب جديد للكتالوج.</p>
+            <div className="w-full">
+              <EmptyState 
+                icon={Cpu}
+                title={t('corrective.components.noTemplates', 'لا توجد قوالب مكونات مسجلة')}
+                description={t('corrective.components.noTemplatesDesc', 'انقر فوق "إضافة مكون جديد" لبدء إضافة قالب جديد للكتالوج.')}
+                color="purple"
+                className="py-16 border border-dashed border-white/10 rounded-3xl bg-white/[0.02]"
+                action={
+                  <button
+                    onClick={() => openNewTemplate()}
+                    className="text-xs px-4 py-2.5 bg-white text-slate-950 font-extrabold rounded-xl hover:bg-slate-200 shadow-md transition-all inline-flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>{t('corrective.components.addFirst', 'إضافة مكون جديد')}</span>
+                  </button>
+                }
+              />
             </div>
           ) : (
             /* CARDS VIEW */
@@ -704,15 +729,15 @@ export function ComponentsCatalogView() {
       {/* TEMPLATE MODAL */}
       <AnimatePresence>
         {isTemplateModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0a0a0f]/80 backdrop-blur-md dir-rtl" dir="rtl">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0a0a0f]/80 backdrop-blur-md" dir="ltr">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-[#0a0a0f] border border-white/10 rounded-3xl p-6 md:p-8 w-full max-w-xl shadow-2xl text-right font-sans"
+              className="bg-[#0a0a0f] border border-white/10 rounded-3xl p-6 md:p-8 w-full max-w-xl shadow-2xl text-left font-sans"
             >
-              <div className="flex justify-between items-center pb-4 border-b border-white/10 mb-6 flex-row-reverse">
-                <h3 className="text-lg font-black text-white text-right">
+              <div className="flex justify-between items-center pb-4 border-b border-white/10 mb-6">
+                <h3 className="text-lg font-black text-white text-left">
                   {editingTemplate ? 'تعديل قالب المكون' : 'إضافة قالب مكون جديد'}
                 </h3>
                 <button onClick={() => setIsTemplateModalOpen(false)} className="text-slate-400 hover:text-white">
@@ -808,15 +833,15 @@ export function ComponentsCatalogView() {
       {/* BLUEPRINT MODAL */}
       <AnimatePresence>
         {isBlueprintModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0a0a0f]/80 backdrop-blur-md dir-rtl" dir="rtl">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0a0a0f]/80 backdrop-blur-md" dir="ltr">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-[#0a0a0f] border border-white/10 rounded-3xl p-6 md:p-8 w-full max-w-md shadow-2xl text-right font-sans"
+              className="bg-[#0a0a0f] border border-white/10 rounded-3xl p-6 md:p-8 w-full max-w-md shadow-2xl text-left font-sans"
             >
-              <div className="flex justify-between items-center pb-2 border-b border-white/10 mb-4 flex-row-reverse">
-                <div className="text-right">
+              <div className="flex justify-between items-center pb-2 border-b border-white/10 mb-4">
+                <div className="text-left">
                   <h3 className="text-lg font-black text-white">إضافة بصمة تجارية جديدة</h3>
                   <p className="text-xs text-orange-400 font-mono mt-0.5">القالب: {selectedTemplateForBlueprint?.name}</p>
                 </div>
@@ -827,7 +852,7 @@ export function ComponentsCatalogView() {
               
               <form onSubmit={handleSaveBlueprint} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-400 mb-1 text-right">الموديل / المرجع التجاري *</label>
+                  <label className="block text-xs font-semibold text-slate-400 mb-1 text-left">الموديل / المرجع التجاري *</label>
                   <input
                     type="text"
                     required

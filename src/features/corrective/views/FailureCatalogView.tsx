@@ -423,7 +423,7 @@ export function FailureCatalogView() {
                       <span>{cat.name}</span>
                     </div>
                     <ChevronRight className={cn(
-                      "w-4 h-4 transition-transform rtl:rotate-180",
+                      "w-4 h-4 transition-transform",
                       isSelected ? "opacity-100 text-white" : "opacity-40 text-slate-500"
                     )} />
                   </button>
@@ -673,14 +673,13 @@ export function FailureCatalogView() {
                   {/* Center: Search filter for failures */}
                   <div className="flex-1 max-w-md w-full">
                     <div className="relative w-full">
-                      <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                       <input 
-                        type="text"
-                        placeholder="البحث في الأعطال..."
+                        type="text" 
+                        placeholder={t('corrective.failures.search', "Search failures...")}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full bg-[#161821] hover:bg-[#1a1c26] border border-white/10 hover:border-white/20 rounded-xl py-2 pr-10 pl-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-orange-500/50 focus:bg-slate-900 transition-colors shadow-inner text-start"
-                        dir="rtl"
+                        className="w-full bg-[#161821] hover:bg-[#1a1c26] border border-white/10 hover:border-white/20 rounded-xl py-2 pl-10 pr-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-orange-500/50 focus:bg-slate-900 transition-colors shadow-inner text-left"
                       />
                     </div>
                   </div>
@@ -937,14 +936,13 @@ export function FailureCatalogView() {
                   {/* Center: Search/Filter for Carousel */}
                   <div className="flex-1 max-w-md w-full">
                     <div className="relative w-full">
-                      <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
                       <input 
-                        type="text"
-                        placeholder="تصفية الأعطال في المحاكي..."
+                        type="text" 
+                        placeholder={t('corrective.failures.filterSimulator', "Filter simulator failures...")}
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full bg-[#161821] border border-white/10 rounded-xl py-2 pr-10 pl-4 text-xs text-slate-300 placeholder-slate-600 focus:outline-none focus:border-orange-500/50 transition-colors shadow-inner text-start opacity-70 hover:opacity-100"
-                        dir="rtl"
+                        className="w-full bg-[#161821] border border-white/10 rounded-xl py-2 pl-10 pr-4 text-xs text-slate-300 placeholder-slate-600 focus:outline-none focus:border-orange-500/50 transition-colors shadow-inner text-left opacity-70 hover:opacity-100"
                       />
                     </div>
                   </div>

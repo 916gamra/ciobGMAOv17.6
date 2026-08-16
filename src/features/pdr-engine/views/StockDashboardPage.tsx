@@ -293,13 +293,13 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
               <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto justify-start">
                 {/* Search Inputs */}
                 <div className="relative w-full sm:w-56 group">
-                  <Search className="absolute rtl:left-auto rtl:right-3 left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 group-focus-within:text-cyan-400 transition-colors" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 group-focus-within:text-cyan-400 transition-colors pointer-events-none" />
                   <input 
                     type="text" 
-                    placeholder="بحث في المخزون (الاسم، المرجع)..." 
+                    placeholder={t('pdr.dashboard.searchPlaceholder', 'Search stock (name, reference)...')} 
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-[#0a0b10] border border-white/10 rounded-xl py-2 rtl:pr-9 rtl:pl-3 pl-9 pr-3 text-xs font-medium text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 transition-all shadow-inner"
+                    className="w-full bg-[#0a0b10] border border-white/10 rounded-xl py-2 pl-9 pr-3 text-xs font-medium text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 transition-all shadow-inner"
                   />
                 </div>
                 
@@ -742,12 +742,12 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                         </div>
                         
                         {/* Component metadata */}
-                        <div className="text-left rtl:text-right">
+                        <div className="text-left">
                           <div className="font-extrabold text-slate-200 text-xs group-hover:text-white transition-colors">
                             {movement.partName}
                           </div>
                           <div className="text-[9px] text-slate-500 font-mono mt-0.5">
-                            المرجع: <span className="text-slate-400">{movement.reference}</span>
+                            {t('pdr.dashboard.reference', 'Reference')}: <span className="text-slate-400">{movement.reference}</span>
                           </div>
                           {movement.notes && (
                             <div className="text-[9px] text-slate-400/80 bg-[#0a0a0f]/40 p-1.5 rounded border border-white/[0.02] mt-1.5 font-sans leading-relaxed">

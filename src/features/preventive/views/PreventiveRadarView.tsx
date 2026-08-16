@@ -635,7 +635,7 @@ export function PreventiveRadarView() {
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
           {/* Search Input */}
           <div className="flex items-center bg-[#0a0a0f]/40 rounded-xl px-3 py-1.5 border border-white/5 focus-within:border-emerald-500/30 transition-all w-full md:w-auto">
-            <Search className="w-4 h-4 text-slate-400 shrink-0 mr-2 rtl:mr-0 rtl:ml-2" />
+            <Search className="w-4 h-4 text-slate-400 shrink-0 mr-2" />
             <input
               type="text"
               placeholder={t("preventive.radar.search", "Search machinery...")}

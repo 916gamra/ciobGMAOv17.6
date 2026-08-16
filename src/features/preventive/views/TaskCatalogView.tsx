@@ -328,18 +328,18 @@ export function TaskCatalogView() {
 
                 {/* Sidebar Search Bar - Crystal White */}
                 <div className="relative w-full shrink-0">
-                  <Search className="w-4 h-4 absolute right-3 rtl:right-3 left-auto rtl:left-auto left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                   <input 
                     type="text" 
-                    placeholder={t('preventive.catalog.searchPlaceholder', 'ابحث في السجلات...')}
+                    placeholder={t('preventive.catalog.searchPlaceholder', 'Search catalog...')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-white border border-slate-300 rounded-xl pr-9 pl-3 rtl:pr-9 rtl:pl-3 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all text-start font-bold shadow-sm"
+                    className="w-full bg-white border border-slate-300 rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all text-left font-bold shadow-sm"
                   />
                 </div>
 
                 {/* Tree Navigation Area */}
-                <div className="flex-1 overflow-y-auto custom-scrollbar text-start pt-1 -mx-2 px-2 pb-4 space-y-2">
+                <div className="flex-1 overflow-y-auto custom-scrollbar text-left pt-1 -mx-2 px-2 pb-4 space-y-2">
                   <div className="flex items-center justify-between mb-1.5 px-1 shrink-0">
                     <span className="text-[10px] uppercase text-slate-400 font-bold tracking-wider">
                       {activeTab === 'tasks' ? `عائلات المهمات (${pdrFamilies?.length || 0})` : `تصنيفات الأفعال (${standardActions?.length || 0})`}

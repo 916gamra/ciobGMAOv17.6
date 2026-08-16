@@ -24,14 +24,14 @@ const syncI18n = (lang: Language) => {
 export const useLanguageStore = create<LanguageState>()(
   persist(
     (set) => ({
-      language: 'AR',
+      language: 'EN',
       setLanguage: (lang) => {
         syncI18n(lang);
         set({ language: lang });
       },
       cycleLanguage: () =>
         set((state) => {
-          const sequence: Language[] = ['AR', 'FR', 'EN'];
+          const sequence: Language[] = ['EN', 'AR', 'FR'];
           const currentIndex = sequence.indexOf(state.language);
           const nextIndex = (currentIndex + 1) % sequence.length;
           const nextLang = sequence[nextIndex];
