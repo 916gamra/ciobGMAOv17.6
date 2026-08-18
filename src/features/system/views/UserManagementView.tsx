@@ -1,8 +1,9 @@
 import { PageHeader } from "@/shared/components/PageHeader";
+import { HeaderBentoCard } from "@/shared/components/HeaderBentoCard";
 import React, { useState } from 'react';
 import { motion, AnimatePresence, Variants } from 'motion/react';
 import { GlassCard } from '@/shared/components/GlassCard';
-import { ShieldCheck, UserCog, AlertCircle, Save, X, Lock, Fingerprint, Info, CheckCircle2, User as UserIcon, KeyRound } from 'lucide-react';
+import { ShieldCheck, UserCog, AlertCircle, Save, X, Lock, Fingerprint, Info, CheckCircle2, User as UserIcon, KeyRound, Users } from 'lucide-react';
 import { db } from '@/core/db';
 import type { User } from '@/core/db';
 import { useNotifications } from '@/shared/hooks/useNotifications';
@@ -215,13 +216,48 @@ export function UserManagementView() {
       initial="hidden"
       animate="visible"
       variants={containerVariants}
-      className="w-full flex flex-col pt-4 min-h-0 h-full relative z-10"
+      className="w-full flex flex-col pt-2 min-h-0 h-full relative z-10"
     >
-      <PageHeader
-        title="Identity Slot Configuration"
-        subtitle="Manage stationary access slots and authentication overrides."
-        icon={<Fingerprint className="w-6 h-6 text-slate-500" />}
-      />
+      <div className="lg:px-8">
+        <PageHeader
+          title="Identity Slot Configuration"
+          subtitle="Manage stationary access slots, role hierarchy, and authentication overrides."
+          icon={<UserCog className="w-7 h-7 text-slate-300" />}
+          badgeText="IAM & Auth Slots"
+          badgeColor="slate"
+        >
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <HeaderBentoCard
+              title="Total User Slots"
+              subtitle="TOTAL SLOTS"
+              value={allSlots.length}
+              icon={<Users className="w-3.5 h-3.5" />}
+              color="slate"
+            />
+            <HeaderBentoCard
+              title="Active Accounts"
+              subtitle="ACTIVE ACCOUNTS"
+              value={allSlots.filter(s => s.isActive).length}
+              icon={<ShieldCheck className="w-3.5 h-3.5" />}
+              color="emerald"
+            />
+            <HeaderBentoCard
+              title="Admins & Ops"
+              subtitle="ADMIN & OPERATORS"
+              value={allSlots.filter(s => s.id.startsWith('SY') || s.id.startsWith('OP')).length}
+              icon={<UserCog className="w-3.5 h-3.5" />}
+              color="blue"
+            />
+            <HeaderBentoCard
+              title="Field Technicians"
+              subtitle="ACTIVE TECHNICIANS"
+              value={allSlots.filter(s => s.id.startsWith('TC')).length}
+              icon={<UserIcon className="w-3.5 h-3.5" />}
+              color="amber"
+            />
+          </div>
+        </PageHeader>
+      </div>
       
       <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar lg:px-8 pb-12">
         {renderSlotGroup("System Administration", "SY")}

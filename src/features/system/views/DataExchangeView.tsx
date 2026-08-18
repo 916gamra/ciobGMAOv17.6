@@ -1,6 +1,8 @@
 import { PageHeader } from "@/shared/components/PageHeader";
+import { HeaderBentoCard } from "@/shared/components/HeaderBentoCard";
 import React, { useState } from 'react';
-import { DownloadCloud, UploadCloud, Database, Users, Factory, Package, AlertTriangle, RefreshCw, HardDrive } from 'lucide-react';
+import { DownloadCloud, UploadCloud, Database, Users, Factory, Package, AlertTriangle, RefreshCw, HardDrive, FileSpreadsheet, Layers, ShieldCheck } from 'lucide-react';
+import { useLiveQuery } from 'dexie-react-hooks';
 import ExcelJS from 'exceljs';
 import { db } from '@/core/db';
 import { toast } from 'sonner';
@@ -22,6 +24,10 @@ const itemVariants: Variants = {
 
 export function DataExchangeView() {
   const [isProcessing, setIsProcessing] = useState(false);
+  const sectorsCount = useLiveQuery(() => db.sectors.count()) || 0;
+  const machinesCount = useLiveQuery(() => db.machines.count()) || 0;
+  const blueprintsCount = useLiveQuery(() => db.pdrBlueprints.count()) || 0;
+  const inventoryCount = useLiveQuery(() => db.inventory.count()) || 0;
 
   // --- DOWNLOAD HELPER ---
   const handleDownloadTemplate = async (fileName: string, columns: { header: string, key: string, width: number }[]) => {
@@ -480,17 +486,50 @@ export function DataExchangeView() {
       <PageHeader
         title="Data Exchange Hub"
         subtitle={<>Strict, standardized template injection framework. Buffered extraction ensures 100% database ACID compliance. <strong className="text-amber-400">Note: You must upload the Master PDR Catalog before injecting Inventory.</strong></>}
-        icon={<RefreshCw className={`w-6 h-6 text-slate-400 ${isProcessing ? 'animate-spin border-slate-500 rounded-full' : ''}`} />}
+        icon={<RefreshCw className={`w-7 h-7 text-slate-300 ${isProcessing ? 'animate-spin' : ''}`} />}
+        badgeText="Data Exchange Hub"
+        badgeColor="slate"
         actions={
           <button 
             onClick={handleSnapshotDownload}
             disabled={isProcessing}
-            className="titan-button bg-blue-500/10 border border-blue-500/30 text-blue-400 hover:bg-blue-500/20"
+            className="titan-button bg-white text-slate-950 hover:bg-slate-200 font-extrabold shadow-lg"
           >
             <HardDrive className="w-4 h-4" /> Export DB Snapshot
           </button>
         }
-      />
+      >
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <HeaderBentoCard
+            title="Infrastructure"
+            subtitle="ZONES & MACHINES"
+            value={`${sectorsCount} Z / ${machinesCount} M`}
+            icon={<Factory className="w-3.5 h-3.5" />}
+            color="slate"
+          />
+          <HeaderBentoCard
+            title="Catalog Matrix"
+            subtitle="PDR BLUEPRINTS"
+            value={blueprintsCount}
+            icon={<Database className="w-3.5 h-3.5" />}
+            color="blue"
+          />
+          <HeaderBentoCard
+            title="Inventory Items"
+            subtitle="STOCK BALANCES"
+            value={inventoryCount}
+            icon={<Package className="w-3.5 h-3.5" />}
+            color="emerald"
+          />
+          <HeaderBentoCard
+            title="ACID Validation"
+            subtitle="BUFFER ENGINE"
+            value="Active"
+            icon={<ShieldCheck className="w-3.5 h-3.5" />}
+            color="cyan"
+          />
+        </div>
+      </PageHeader>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {CARDS.map((card, idx) => (

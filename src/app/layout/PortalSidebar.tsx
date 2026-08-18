@@ -12,7 +12,7 @@ interface PortalSidebarProps {
   colorClass?: string;
   borderClass?: string;
   textClass?: string;
-  glowColor?: 'cyan' | 'indigo' | 'fuchsia' | 'emerald' | 'amber' | 'rose' | 'orange' | 'purple' | 'blue';
+  glowColor?: 'cyan' | 'indigo' | 'fuchsia' | 'emerald' | 'amber' | 'rose' | 'orange' | 'purple' | 'blue' | 'slate';
   children: React.ReactNode;
   className?: string;
 }
@@ -105,6 +105,14 @@ export function PortalSidebar({
       glow: 'bg-blue-500/20',
       brandBadge: 'bg-gradient-to-br from-blue-500/20 to-blue-700/30 border-blue-400/40 text-blue-300 shadow-lg shadow-blue-950/50',
       bgGradient: 'from-blue-950/60 via-[#0a0a0f]/90 to-[#0a0a0f]/95',
+    },
+    slate: {
+      border: 'group-hover/sidebar:border-slate-400/50',
+      borderColorLine: 'bg-slate-500/30',
+      shadow: 'shadow-[0_10px_30px_rgba(148,163,184,0.15)]',
+      glow: 'bg-slate-400/20',
+      brandBadge: 'bg-gradient-to-br from-slate-700/40 to-slate-800/60 border-slate-400/40 text-slate-200 shadow-lg shadow-slate-950/50',
+      bgGradient: 'from-slate-900/80 via-[#0a0a0f]/90 to-[#0a0a0f]/95',
     },
   };
 

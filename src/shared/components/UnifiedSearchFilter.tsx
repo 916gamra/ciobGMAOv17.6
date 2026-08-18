@@ -218,7 +218,7 @@ export function UnifiedSearchFilter({
             isFilterOpen && "border-white/40 ring-1 ring-white/20"
           )}>
             {/* Search Icon */}
-            <div className="absolute left-3 pointer-events-none text-slate-400 group-focus-within:text-white transition-colors">
+            <div className="absolute left-3 rtl:left-auto rtl:right-3 pointer-events-none text-slate-400 group-focus-within:text-white transition-colors">
               <Search className="w-4 h-4" />
             </div>
 
@@ -228,7 +228,7 @@ export function UnifiedSearchFilter({
               placeholder={effectivePlaceholder}
               value={searchTerm}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full bg-transparent py-2.5 text-xs text-white placeholder-slate-400 focus:outline-none transition-colors pl-9 pr-9 text-left font-medium"
+              className="w-full bg-transparent py-2.5 text-xs text-white placeholder-slate-400 focus:outline-none transition-colors pl-9 pr-9 rtl:pr-9 rtl:pl-9 text-start font-medium"
             />
 
             {/* Clear Search Button (shows when searchTerm has text) */}
@@ -236,7 +236,7 @@ export function UnifiedSearchFilter({
               <button
                 type="button"
                 onClick={() => onSearchChange('')}
-                className="absolute right-3 p-1 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition-colors cursor-pointer"
+                className="absolute right-3 rtl:right-auto rtl:left-3 p-1 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition-colors cursor-pointer"
                 title={t('action.clear', 'Clear')}
               >
                 <X className="w-3.5 h-3.5" />
@@ -280,7 +280,7 @@ export function UnifiedSearchFilter({
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 8, scale: 0.96 }}
                     transition={{ duration: 0.15, ease: 'easeOut' }}
-                    className="absolute left-0 top-full mt-2 w-72 sm:w-88 bg-[#0c0e17]/98 border border-white/20 backdrop-blur-2xl rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] p-4 z-50 text-left"
+                    className="absolute left-0 rtl:left-auto rtl:right-0 top-full mt-2 w-72 sm:w-88 bg-[#0c0e17]/98 border border-white/20 backdrop-blur-2xl rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] p-4 z-50 text-start"
                   >
                     {/* Header: Title & Clear All */}
                     <div className="flex items-center justify-between pb-3 mb-3 border-b border-white/10">

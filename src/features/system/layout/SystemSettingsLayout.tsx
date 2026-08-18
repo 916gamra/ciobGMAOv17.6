@@ -42,10 +42,10 @@ export function SystemSettingsLayout({ user, onLogout }: { user: User | null, on
       <PortalSidebar 
         portalName="System Config"
         portalIcon={<Settings />}
-        glowColor="purple"
-        colorClass="text-purple-400 bg-purple-500/20"
-        borderClass="border-purple-500/30"
-        textClass="text-purple-400"
+        glowColor="slate"
+        colorClass="text-slate-300 bg-slate-500/20"
+        borderClass="border-slate-500/30"
+        textClass="text-slate-300"
       >
         <PortalSidebarItem 
           icon={<Users />} 

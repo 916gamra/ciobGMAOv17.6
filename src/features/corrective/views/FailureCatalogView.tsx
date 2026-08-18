@@ -13,6 +13,7 @@ import { HeaderBentoCard } from '@/shared/components/HeaderBentoCard';
 import { cn } from '@/shared/utils';
 import { useTranslation } from 'react-i18next';
 import { GlassCard } from '@/shared/components/GlassCard';
+import { UnifiedSearchFilter, FilterGroup } from '@/shared/components/UnifiedSearchFilter';
 import { useTabStore } from '@/app/store';
 
 export function FailureCatalogView() {
@@ -24,8 +25,10 @@ export function FailureCatalogView() {
   // Selection state - start as null to show Welcome / Empty State by default (matching EngineeringLabView)
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   
-  // Search states for faults and categories with dedicated clear buttons
+  // Search and filter states for faults and categories
   const [searchTerm, setSearchTerm] = useState('');
+  const [severityFilter, setSeverityFilter] = useState<string>('ALL');
+  const [symptomsFilter, setSymptomsFilter] = useState<string>('ALL');
   const [categorySearch, setCategorySearch] = useState('');
 
   // Modals
@@ -111,9 +114,21 @@ export function FailureCatalogView() {
     return categories.filter(c => c.name.toLowerCase().includes(q) || (c.description && c.description.toLowerCase().includes(q)));
   }, [categories, categorySearch]);
 
-  const filteredTemplates = useMemo(() => {
+  const categoryTemplates = useMemo(() => {
     if (!selectedCategoryId) return [];
-    let list = templates.filter(t => t.categoryId === selectedCategoryId);
+    return templates.filter(t => t.categoryId === selectedCategoryId);
+  }, [templates, selectedCategoryId]);
+
+  const filteredTemplates = useMemo(() => {
+    let list = categoryTemplates;
+    if (severityFilter && severityFilter !== 'ALL') {
+      list = list.filter(t => (t.severity || 'medium') === severityFilter);
+    }
+    if (symptomsFilter === 'HAS_SYMPTOMS') {
+      list = list.filter(t => t.description && t.description.trim().length > 0);
+    } else if (symptomsFilter === 'NO_SYMPTOMS') {
+      list = list.filter(t => !t.description || t.description.trim().length === 0);
+    }
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
       list = list.filter(t => 
@@ -123,7 +138,46 @@ export function FailureCatalogView() {
       );
     }
     return list;
-  }, [templates, selectedCategoryId, searchTerm]);
+  }, [categoryTemplates, severityFilter, symptomsFilter, searchTerm]);
+
+  const filterGroups: FilterGroup[] = useMemo(() => {
+    const criticalCount = categoryTemplates.filter(t => t.severity === 'critical').length;
+    const highCount = categoryTemplates.filter(t => t.severity === 'high').length;
+    const mediumCount = categoryTemplates.filter(t => (t.severity || 'medium') === 'medium').length;
+    const lowCount = categoryTemplates.filter(t => t.severity === 'low').length;
+    
+    const hasSymptomsCount = categoryTemplates.filter(t => t.description && t.description.trim().length > 0).length;
+    const noSymptomsCount = categoryTemplates.length - hasSymptomsCount;
+
+    return [
+      {
+        id: 'severity',
+        label: t('corrective.failureCatalog.severityFilterLabel', 'مستوى الخطورة'),
+        value: severityFilter,
+        onChange: setSeverityFilter,
+        allLabel: t('corrective.failureCatalog.allSeverities', 'جميع المستويات'),
+        type: 'chips',
+        options: [
+          { value: 'critical', label: t('corrective.failureCatalog.severityCritical', 'حرج (Critical)'), count: criticalCount, badgeColor: 'rose' },
+          { value: 'high', label: t('corrective.failureCatalog.severityHigh', 'عالي (High)'), count: highCount, badgeColor: 'amber' },
+          { value: 'medium', label: t('corrective.failureCatalog.severityMedium', 'متوسط (Medium)'), count: mediumCount, badgeColor: 'cyan' },
+          { value: 'low', label: t('corrective.failureCatalog.severityLow', 'منخفض (Low)'), count: lowCount, badgeColor: 'emerald' }
+        ]
+      },
+      {
+        id: 'symptoms',
+        label: t('corrective.failureCatalog.symptomsFilterLabel', 'مصفوفة الأعراض'),
+        value: symptomsFilter,
+        onChange: setSymptomsFilter,
+        allLabel: t('corrective.failureCatalog.allSymptoms', 'جميع الأعطال'),
+        type: 'chips',
+        options: [
+          { value: 'HAS_SYMPTOMS', label: t('corrective.failureCatalog.filterWithSymptoms', 'أعراض مسجلة وموثقة'), count: hasSymptomsCount },
+          { value: 'NO_SYMPTOMS', label: t('corrective.failureCatalog.filterNoSymptoms', 'بانتظار توثيق الأعراض'), count: noSymptomsCount }
+        ]
+      }
+    ];
+  }, [categoryTemplates, severityFilter, symptomsFilter, t]);
 
   const getCategoryIcon = (name: string) => {
     const lower = (name || '').toLowerCase();
@@ -239,29 +293,7 @@ export function FailureCatalogView() {
                 </span>
               </div>
 
-              {/* Category Search Input with Clear Button */}
-              <div className="relative shrink-0">
-                <Search className="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
-                <input
-                  type="text"
-                  value={categorySearch}
-                  onChange={(e) => setCategorySearch(e.target.value)}
-                  placeholder={t('corrective.failureCatalog.searchFamilies', 'بحث في العائلات والقطاعات...')}
-                  className="w-full bg-[#111218] border border-white/10 rounded-xl py-2 pl-9 pr-8 rtl:pr-9 rtl:pl-8 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-orange-500/50 transition-colors shadow-inner text-start"
-                />
-                {categorySearch && (
-                  <button
-                    type="button"
-                    onClick={() => setCategorySearch('')}
-                    className="absolute right-2.5 rtl:right-auto rtl:left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white flex items-center justify-center text-[10px] cursor-pointer transition-colors"
-                    title={t('common.clear', 'مسح البحث')}
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-
-              {/* Action Buttons: High-contrast Add Family + Simulator Link */}
+              {/* Action Buttons: High-contrast Add Family + Simulator Link (Above search input) */}
               <div className="space-y-2 shrink-0">
                 <button 
                   type="button"
@@ -281,6 +313,28 @@ export function FailureCatalogView() {
                   <span>{t('corrective.failureCatalog.openSimulatorBtn', 'تشغيل شجرة التشخيص الميداني')}</span>
                   <ArrowRight className="w-3.5 h-3.5 text-slate-400 rtl:rotate-180" />
                 </button>
+              </div>
+
+              {/* Category Search Input with Clear Button (Positioned Below Action Buttons) */}
+              <div className="relative shrink-0">
+                <Search className="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+                <input
+                  type="text"
+                  value={categorySearch}
+                  onChange={(e) => setCategorySearch(e.target.value)}
+                  placeholder={t('corrective.failureCatalog.searchFamilies', 'بحث في العائلات والقطاعات...')}
+                  className="w-full bg-[#111218] border border-white/10 rounded-xl py-2 pl-9 pr-8 rtl:pr-9 rtl:pl-8 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-orange-500/50 transition-colors shadow-inner text-start"
+                />
+                {categorySearch && (
+                  <button
+                    type="button"
+                    onClick={() => setCategorySearch('')}
+                    className="absolute right-2.5 rtl:right-auto rtl:left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white flex items-center justify-center text-[10px] cursor-pointer transition-colors"
+                    title={t('common.clear', 'مسح البحث')}
+                  >
+                    ✕
+                  </button>
+                )}
               </div>
 
               {/* Categories List */}
@@ -365,17 +419,18 @@ export function FailureCatalogView() {
                     className="flex flex-col h-full min-h-0 p-6 md:p-8"
                   >
                     {/* Category Header info (Header & Actions matching EngineeringLabView standard) */}
-                    <div className="flex flex-col sm:flex-row justify-between items-start border-b border-white/10 pb-6 mb-6 gap-4 text-start">
-                      <div className="flex items-start gap-4">
+                    <div className="flex flex-col xl:flex-row items-stretch xl:items-center justify-between border-b border-white/10 pb-5 mb-5 gap-4 text-start">
+                      {/* Start / Left: Icon, Name & Result Count Badge */}
+                      <div className="flex items-start gap-4 shrink-0">
                         <div className="w-12 h-12 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shadow-inner shrink-0 text-orange-400">
                           {getCategoryIcon(selectedCategory.name)}
                         </div>
                         <div className="text-start">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-mono font-bold bg-white/10 text-white px-2 py-0.5 rounded border border-white/15">
-                              {templates.filter(t => t.categoryId === selectedCategory.id).length} {t('corrective.failureCatalog.activeFailuresCount', 'عطل')}
-                            </span>
+                          <div className="flex items-center gap-2 flex-wrap">
                             <h3 className="text-lg font-bold text-white tracking-tight">{selectedCategory.name}</h3>
+                            <span className="text-xs font-mono font-bold bg-orange-500/20 text-orange-300 border border-orange-500/30 px-2.5 py-0.5 rounded-full">
+                              {filteredTemplates.length} {t('corrective.failureCatalog.activeFailuresCount', 'عطل')}
+                            </span>
                           </div>
                           <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider">
                             {selectedCategory.description || t('corrective.failureCatalog.categoryHeaderSubtitle', 'كتالوج الأعطال ومصفوفات الأعراض الميدانية')}
@@ -383,10 +438,26 @@ export function FailureCatalogView() {
                         </div>
                       </div>
 
-                      {/* Top Action Buttons: View Switcher, Add Fault, Delete Category */}
-                      <div className="flex items-center gap-2">
+                      {/* Center: Unified Search & Filters with Popover in the Middle of Header */}
+                      <div className="flex-1 max-w-lg xl:max-w-xl mx-auto w-full px-1">
+                        <UnifiedSearchFilter
+                          searchTerm={searchTerm}
+                          onSearchChange={setSearchTerm}
+                          searchPlaceholder={t('corrective.failureCatalog.searchPlaceholder', 'بحث باسم العطل، رمز المعايرة، أو الأعراض...')}
+                          filterGroups={filterGroups}
+                          themeColor="orange"
+                          onResetAll={() => {
+                            setSearchTerm('');
+                            setSeverityFilter('ALL');
+                            setSymptomsFilter('ALL');
+                          }}
+                        />
+                      </div>
+
+                      {/* End / Right: View Switcher, Add Fault, Delete Category */}
+                      <div className="flex items-center gap-2 shrink-0 justify-end">
                         {/* View Switcher matching EngineeringLab standard */}
-                        <div className="flex items-center gap-1.5 p-1 bg-[#08080c] rounded-xl border border-white/10">
+                        <div className="flex items-center gap-1.5 p-1 bg-[#08080c] rounded-xl border border-white/10 mr-1">
                           <button
                             type="button"
                             onClick={() => setViewMode('table')}
@@ -433,37 +504,8 @@ export function FailureCatalogView() {
                       </div>
                     </div>
 
-                    {/* Sub-bar: Title & Search with Clear Button */}
+                    {/* Main List / Table / Empty States */}
                     <div className="flex-1 flex flex-col min-h-0 text-start">
-                      <div className="flex items-center justify-between mb-4 flex-col sm:flex-row gap-3">
-                        <div className="text-sm font-bold text-slate-200">
-                          {t('corrective.failureCatalog.failuresUnderFamilyTitle', 'الأعطال المسجلة ضمن هذه العائلة')} ({filteredTemplates.length})
-                        </div>
-
-                        {/* Search Input Bar with Clear Button (زر المسح) */}
-                        <div className="relative w-full sm:w-72">
-                          <Search className="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
-                          <input
-                            type="text"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            placeholder={t('corrective.failureCatalog.searchPlaceholder', 'بحث باسم العطل أو الأعراض...')}
-                            className="w-full bg-[#111218] border border-white/10 rounded-xl py-2 pl-9 pr-8 rtl:pr-9 rtl:pl-8 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-orange-500/50 transition-colors shadow-inner text-start"
-                          />
-                          {searchTerm && (
-                            <button
-                              type="button"
-                              onClick={() => setSearchTerm('')}
-                              className="absolute right-2.5 rtl:right-auto rtl:left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white flex items-center justify-center text-[10px] cursor-pointer transition-colors"
-                              title={t('common.clear', 'مسح')}
-                            >
-                              ✕
-                            </button>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Main List / Table / Empty States */}
                       <div className="flex-1 overflow-y-auto custom-scrollbar">
                         {templates.filter(t => t.categoryId === selectedCategory.id).length === 0 ? (
                           /* Empty state when NO templates exist under this category - matching EngineeringLabView */

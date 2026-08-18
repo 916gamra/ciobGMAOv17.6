@@ -14,13 +14,27 @@ import { useNotificationsContext } from '@/shared/context/NotificationContext';
 import { PortalTabs } from './layout/PortalTabs';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 
-const PdrLayout = React.lazy(() => import('@/features/pdr-engine/layout/PdrLayout').then(m => ({ default: m.PdrLayout })));
-const MasterDataLayout = React.lazy(() => import('@/features/organization/layout/MasterDataLayout').then(m => ({ default: m.MasterDataLayout })));
-const AnalyticsLayout = React.lazy(() => import('@/features/analytics/layout/AnalyticsLayout').then(m => ({ default: m.AnalyticsLayout })));
-const PreventiveLayout = React.lazy(() => import('@/features/preventive/layout/PreventiveLayout').then(m => ({ default: m.PreventiveLayout })));
-const CorrectiveLayout = React.lazy(() => import('@/features/corrective/layout/CorrectiveLayout').then(m => ({ default: m.CorrectiveLayout })));
-const SystemSettingsLayout = React.lazy(() => import('@/features/system/layout/SystemSettingsLayout').then(m => ({ default: m.SystemSettingsLayout })));
-const FactoryLayout = React.lazy(() => import('@/features/factory/layout/FactoryLayout').then(m => ({ default: m.FactoryLayout })));
+function lazyWithRetry<T extends React.ComponentType<any>>(
+  factory: () => Promise<{ default: T }>
+): React.LazyExoticComponent<T> {
+  return React.lazy(async () => {
+    try {
+      return await factory();
+    } catch (error) {
+      console.warn('Retrying dynamic import...', error);
+      await new Promise(resolve => setTimeout(resolve, 200));
+      return await factory();
+    }
+  });
+}
+
+const PdrLayout = lazyWithRetry(() => import('@/features/pdr-engine/layout/PdrLayout').then(m => ({ default: m.PdrLayout })));
+const MasterDataLayout = lazyWithRetry(() => import('@/features/organization/layout/MasterDataLayout').then(m => ({ default: m.MasterDataLayout })));
+const AnalyticsLayout = lazyWithRetry(() => import('@/features/analytics/layout/AnalyticsLayout').then(m => ({ default: m.AnalyticsLayout })));
+const PreventiveLayout = lazyWithRetry(() => import('@/features/preventive/layout/PreventiveLayout').then(m => ({ default: m.PreventiveLayout })));
+const CorrectiveLayout = lazyWithRetry(() => import('@/features/corrective/layout/CorrectiveLayout').then(m => ({ default: m.CorrectiveLayout })));
+const SystemSettingsLayout = lazyWithRetry(() => import('@/features/system/layout/SystemSettingsLayout').then(m => ({ default: m.SystemSettingsLayout })));
+const FactoryLayout = lazyWithRetry(() => import('@/features/factory/layout/FactoryLayout').then(m => ({ default: m.FactoryLayout })));
 
 import { useTabStore } from '@/app/store';
 import { NexusIconLoader } from '@/shared/components/NexusIconLoader';
@@ -43,7 +57,7 @@ function PortalFallback() {
     PREVENTIVE: 'emerald',
     CORRECTIVE: 'orange',
     ANALYTICS: 'fuchsia',
-    SETTINGS: 'indigo',
+    SETTINGS: 'slate',
     ORGANIZATION: 'amber',
   };
 

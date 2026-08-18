@@ -1,4 +1,5 @@
 import { PageHeader } from "@/shared/components/PageHeader";
+import { HeaderBentoCard } from "@/shared/components/HeaderBentoCard";
 import React, { useState, useRef, useEffect } from 'react';
 import { HardDriveDownload, HardDriveUpload, Disc, ShieldCheck, AlertTriangle, Terminal, RefreshCw, FileJson } from 'lucide-react';
 import { toast } from 'sonner';
@@ -152,10 +153,43 @@ export function DataCoreView({ user }: { user: User | null }) {
       className="w-full space-y-10 pb-12 pt-4 px-6 md:px-0 bg-transparent lg:px-8"
     >
       <PageHeader
-        title="Database Backup"
-        subtitle="System Data Preservation"
-        icon={<Disc className="w-6 h-6 text-slate-400" />}
-      />
+        title="Database Backup & Recovery"
+        subtitle="System Data Preservation, Core Vault Snapshots, and Cold Storage Archives."
+        icon={<HardDriveDownload className="w-7 h-7 text-slate-300" />}
+        badgeText="Disaster Recovery"
+        badgeColor="slate"
+      >
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <HeaderBentoCard
+            title="Database Tables"
+            subtitle="ACTIVE TABLES"
+            value={dbStats.tables}
+            icon={<Terminal className="w-3.5 h-3.5" />}
+            color="slate"
+          />
+          <HeaderBentoCard
+            title="Stored Records"
+            subtitle="TOTAL ROW COUNT"
+            value={dbStats.rows}
+            icon={<RefreshCw className="w-3.5 h-3.5" />}
+            color="blue"
+          />
+          <HeaderBentoCard
+            title="Storage Engine"
+            subtitle="PERSISTENCE MODE"
+            value="IndexedDB"
+            icon={<ShieldCheck className="w-3.5 h-3.5" />}
+            color="emerald"
+          />
+          <HeaderBentoCard
+            title="System Security"
+            subtitle="ENCRYPTION STATUS"
+            value="Online / Secure"
+            icon={<Disc className="w-3.5 h-3.5" />}
+            color="cyan"
+          />
+        </div>
+      </PageHeader>
 
       {/* Stats Terminal */}
       <motion.div variants={itemVariants}>

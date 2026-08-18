@@ -2,7 +2,7 @@ import React from 'react';
 import { Skeleton } from '@/shared/components/Skeleton';
 import { cn } from '@/shared/utils';
 
-export type SkeletonTheme = 'indigo' | 'cyan' | 'emerald' | 'orange' | 'fuchsia' | 'amber' | 'blue' | 'rose';
+export type SkeletonTheme = 'indigo' | 'cyan' | 'emerald' | 'orange' | 'fuchsia' | 'amber' | 'blue' | 'rose' | 'slate';
 
 interface EngineViewSkeletonProps {
   mode?: 'lab' | 'split-pane' | 'registry' | 'table' | 'cards';
@@ -63,6 +63,12 @@ const THEME_ACCENTS: Record<SkeletonTheme, {
     leftGrad: 'from-rose-950/40 via-[#0a0a0f]/95 to-[#0a0a0f]/98',
     pillBorder: 'border-rose-500/30',
     badgeBg: 'bg-rose-500/10',
+  },
+  slate: {
+    glow: 'bg-slate-400/15',
+    leftGrad: 'from-slate-900/40 via-[#0a0a0f]/95 to-[#0a0a0f]/98',
+    pillBorder: 'border-slate-500/30',
+    badgeBg: 'bg-slate-500/10',
   },
 };
 

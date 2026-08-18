@@ -21,6 +21,7 @@ import type { User } from '@/core/db';
 import { cn, EMPTY_ARRAY } from '@/shared/utils';
 import { useTranslation } from 'react-i18next';
 import { EngineViewSkeleton } from '@/shared/components/EngineViewSkeleton';
+import { UnifiedSearchFilter, FilterGroup } from '@/shared/components/UnifiedSearchFilter';
 
 export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: User | null }) {
   const { t } = useTranslation();
@@ -42,6 +43,10 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
   const [expandedTemplates, setExpandedTemplates] = useState<Record<string, boolean>>({});
 
   const [searchTerm, setSearchTerm] = useState('');
+  const [rightSearchTerm, setRightSearchTerm] = useState('');
+  const [blueprintComponentsFilter, setBlueprintComponentsFilter] = useState<string>('ALL');
+  const [blueprintSpecsFilter, setBlueprintSpecsFilter] = useState<string>('ALL');
+  const [templateStatusFilter, setTemplateStatusFilter] = useState<string>('ALL');
   const [activeModal, setActiveModal] = useState<ModalType>(null);
 
   // Queries for Standard Components attached to Blueprints
@@ -589,7 +594,67 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
                     const tpl = templates.find(t => t.id === selectedTemplateId);
                     if (!tpl) return null;
                     const parentFamily = families.find(f => f.id === tpl.familyId);
-                    const tplBlueprints = blueprints.filter(b => b.templateId === tpl.id);
+                    const allTplBlueprints = blueprints.filter(b => b.templateId === tpl.id);
+                    
+                    const tplBlueprints = allTplBlueprints.filter(b => {
+                      if (blueprintComponentsFilter === 'WITH_COMPONENTS') {
+                        const hasComps = standardComponents.some(c => c.blueprintId === b.id);
+                        if (!hasComps) return false;
+                      } else if (blueprintComponentsFilter === 'WITHOUT_COMPONENTS') {
+                        const hasComps = standardComponents.some(c => c.blueprintId === b.id);
+                        if (hasComps) return false;
+                      }
+
+                      if (blueprintSpecsFilter === 'WITH_SPECS') {
+                        const hasSpecs = (b.powerOrForce && b.powerOrForce.trim()) || (b.technicalSpecs && b.technicalSpecs.trim());
+                        if (!hasSpecs) return false;
+                      } else if (blueprintSpecsFilter === 'WITHOUT_SPECS') {
+                        const hasSpecs = (b.powerOrForce && b.powerOrForce.trim()) || (b.technicalSpecs && b.technicalSpecs.trim());
+                        if (hasSpecs) return false;
+                      }
+
+                      if (rightSearchTerm.trim()) {
+                        const q = rightSearchTerm.toLowerCase();
+                        return (
+                          b.reference.toLowerCase().includes(q) ||
+                          (b.model && b.model.toLowerCase().includes(q)) ||
+                          (b.powerOrForce && b.powerOrForce.toLowerCase().includes(q))
+                        );
+                      }
+                      return true;
+                    });
+
+                    const withCompsCount = allTplBlueprints.filter(b => standardComponents.some(c => c.blueprintId === b.id)).length;
+                    const withoutCompsCount = allTplBlueprints.length - withCompsCount;
+                    const withSpecsCount = allTplBlueprints.filter(b => (b.powerOrForce && b.powerOrForce.trim()) || (b.technicalSpecs && b.technicalSpecs.trim())).length;
+                    const withoutSpecsCount = allTplBlueprints.length - withSpecsCount;
+
+                    const templateFilterGroups: FilterGroup[] = [
+                      {
+                        id: 'components',
+                        label: t('lab.filterComponentsLabel', 'المكونات المجمعة'),
+                        value: blueprintComponentsFilter,
+                        onChange: setBlueprintComponentsFilter,
+                        allLabel: t('lab.filterAllBlueprints', 'جميع البصمات'),
+                        type: 'chips',
+                        options: [
+                          { value: 'WITH_COMPONENTS', label: t('lab.filterWithComponents', 'بصمات بمكونات مجمعة'), count: withCompsCount, badgeColor: 'indigo' },
+                          { value: 'WITHOUT_COMPONENTS', label: t('lab.filterWithoutComponents', 'بصمات بدون مكونات'), count: withoutCompsCount, badgeColor: 'slate' }
+                        ]
+                      },
+                      {
+                        id: 'specs',
+                        label: t('lab.filterSpecsLabel', 'المواصفات الفنية'),
+                        value: blueprintSpecsFilter,
+                        onChange: setBlueprintSpecsFilter,
+                        allLabel: t('lab.filterAllBlueprints', 'جميع المواصفات'),
+                        type: 'chips',
+                        options: [
+                          { value: 'WITH_SPECS', label: t('lab.filterWithSpecs', 'بمواصفات مكتملة'), count: withSpecsCount, badgeColor: 'cyan' },
+                          { value: 'WITHOUT_SPECS', label: t('lab.filterWithoutSpecs', 'بدون مواصفات'), count: withoutSpecsCount, badgeColor: 'slate' }
+                        ]
+                      }
+                    ];
 
                     return (
                       <motion.div
@@ -600,17 +665,21 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
                         className="flex flex-col h-full min-h-0 p-6 md:p-8"
                       >
                         {/* Template Header info */}
-                        <div className="flex flex-col sm:flex-row justify-between items-start border-b border-white/10 pb-6 mb-6 gap-4 text-start">
-                          <div className="flex items-start gap-4">
+                        <div className="flex flex-col xl:flex-row items-stretch xl:items-center justify-between border-b border-white/10 pb-5 mb-5 gap-4 text-start">
+                          {/* Start / Left: Icon, Names & Results Count Badge */}
+                          <div className="flex items-start gap-4 shrink-0">
                             <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shadow-inner shrink-0">
                               <Layers className="w-6 h-6 text-indigo-400" />
                             </div>
                             <div className="text-start">
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 flex-wrap">
                                 <span className="text-[9px] font-mono font-bold text-white bg-white/10 px-1.5 py-0.5 rounded border border-white/15">
                                   {tpl.skuBase}
                                 </span>
                                 <h3 className="text-lg font-bold text-white tracking-tight">{tpl.name}</h3>
+                                <span className="text-xs font-mono font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2.5 py-0.5 rounded-full">
+                                  {tplBlueprints.length} {t('lab.registeredBlueprintsCount', 'بصمة مسجلة')}
+                                </span>
                               </div>
                               <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider">
                                 {parentFamily?.name} / {tpl.skuBase} ({t('lab.templateTitle', 'Specification Template')})
@@ -618,33 +687,25 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-2">
-                            <button 
-                              onClick={() => setActiveModal('blueprint')}
-                              className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center gap-1.5 cursor-pointer"
-                            >
-                              <Plus className="w-3.5 h-3.5" />
-                              <span>{t('lab.newBlueprintBtn', 'New Blueprint')}</span>
-                            </button>
-                            <button 
-                              onClick={(e) => handleDelete('template', tpl.id, e)}
-                              className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500/20 transition-all cursor-pointer"
-                              title={t('common.delete', 'Delete')}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                          {/* Center: Search & Filter in the Middle of Header */}
+                          <div className="flex-1 max-w-md xl:max-w-lg mx-auto w-full px-1">
+                            <UnifiedSearchFilter
+                              searchTerm={rightSearchTerm}
+                              onSearchChange={setRightSearchTerm}
+                              searchPlaceholder={t('lab.searchBlueprintsPlaceholder', 'بحث برقم المرجع أو الطراز أو المواصفات...')}
+                              filterGroups={templateFilterGroups}
+                              themeColor="indigo"
+                              onResetAll={() => {
+                                setRightSearchTerm('');
+                                setBlueprintComponentsFilter('ALL');
+                                setBlueprintSpecsFilter('ALL');
+                              }}
+                            />
                           </div>
-                        </div>
 
-                        {/* Blueprints List inside Template */}
-                        <div className="flex-1 flex flex-col min-h-0 text-start">
-                          <div className="flex items-center justify-between mb-4 flex-row">
-                            <div className="text-sm font-bold text-slate-200">
-                              {t('lab.clonedBlueprintsTitle', 'Physical Blueprints under this Template')} ({tplBlueprints.length})
-                            </div>
-                            
-                            {/* View Switcher */}
-                            <div className="flex items-center gap-1.5 p-1 bg-[#08080c] rounded-xl border border-white/10">
+                          {/* End / Right: View Mode Switcher, Actions */}
+                          <div className="flex items-center gap-2 shrink-0 justify-end">
+                            <div className="flex items-center gap-1.5 p-1 bg-[#08080c] rounded-xl border border-white/10 mr-1">
                               <button
                                 onClick={() => setViewMode('table')}
                                 className={cn(
@@ -666,10 +727,28 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
                                 <LayoutGrid className="w-4 h-4" />
                               </button>
                             </div>
-                          </div>
 
+                            <button 
+                              onClick={() => setActiveModal('blueprint')}
+                              className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center gap-1.5 cursor-pointer"
+                            >
+                              <Plus className="w-3.5 h-3.5" />
+                              <span>{t('lab.newBlueprintBtn', 'New Blueprint')}</span>
+                            </button>
+                            <button 
+                              onClick={(e) => handleDelete('template', tpl.id, e)}
+                              className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500/20 transition-all cursor-pointer"
+                              title={t('common.delete', 'Delete')}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Blueprints List inside Template */}
+                        <div className="flex-1 flex flex-col min-h-0 text-start">
                           <div className="flex-1 overflow-y-auto custom-scrollbar">
-                            {tplBlueprints.length === 0 ? (
+                            {allTplBlueprints.length === 0 ? (
                               <div className="p-12 border border-dashed border-white/10 rounded-2xl text-center bg-white/[0.01]">
                                 <Hash className="w-10 h-10 text-slate-600 mx-auto mb-2" />
                                 <p className="text-xs text-slate-400">{t('lab.noBlueprintsFound', 'No physical blueprints registered under this template yet.')}</p>
@@ -679,6 +758,18 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
                                 >
                                   <Plus className="w-3.5 h-3.5" />
                                   {t('lab.addFirstBlueprintBtn', 'Add First Blueprint')}
+                                </button>
+                              </div>
+                            ) : tplBlueprints.length === 0 ? (
+                              <div className="p-12 border border-dashed border-white/10 rounded-2xl text-center bg-white/[0.01]">
+                                <Search className="w-10 h-10 text-slate-600 mx-auto mb-2" />
+                                <p className="text-xs text-slate-400">{t('common.nullResultsDesc', 'لا توجد نتائج تطابق معايير البحث.')}</p>
+                                <button 
+                                  type="button"
+                                  onClick={() => setRightSearchTerm('')}
+                                  className="mt-4 px-4 py-2 bg-white/5 hover:bg-white/10 text-white font-bold rounded-xl border border-white/10 text-xs transition-all cursor-pointer"
+                                >
+                                  {t('common.resetSearch', 'إلغاء التصفية ومسح البحث')}
                                 </button>
                               </div>
                             ) : viewMode === 'cards' ? (
@@ -812,7 +903,44 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
                   (() => {
                     const fam = families.find(f => f.id === selectedFamilyId);
                     if (!fam) return null;
-                    const famTemplates = templates.filter(t => t.familyId === fam.id);
+                    const allFamTemplates = templates.filter(t => t.familyId === fam.id);
+                    const famTemplates = allFamTemplates.filter(t => {
+                      if (templateStatusFilter === 'HAS_BLUEPRINTS') {
+                        const hasBps = blueprints.some(b => b.templateId === t.id);
+                        if (!hasBps) return false;
+                      } else if (templateStatusFilter === 'EMPTY') {
+                        const hasBps = blueprints.some(b => b.templateId === t.id);
+                        if (hasBps) return false;
+                      }
+
+                      if (rightSearchTerm.trim()) {
+                        const q = rightSearchTerm.toLowerCase();
+                        return (
+                          t.name.toLowerCase().includes(q) ||
+                          t.skuBase.toLowerCase().includes(q) ||
+                          (t.description && t.description.toLowerCase().includes(q))
+                        );
+                      }
+                      return true;
+                    });
+
+                    const withBlueprintsCount = allFamTemplates.filter(t => blueprints.some(b => b.templateId === t.id)).length;
+                    const emptyCount = allFamTemplates.length - withBlueprintsCount;
+
+                    const familyFilterGroups: FilterGroup[] = [
+                      {
+                        id: 'templatesStatus',
+                        label: t('lab.filterTemplatesLabel', 'حالة القوالب'),
+                        value: templateStatusFilter,
+                        onChange: setTemplateStatusFilter,
+                        allLabel: t('lab.filterAllTemplates', 'جميع القوالب'),
+                        type: 'chips',
+                        options: [
+                          { value: 'HAS_BLUEPRINTS', label: t('lab.filterWithBlueprints', 'قوالب بها بصمات نشطة'), count: withBlueprintsCount, badgeColor: 'indigo' },
+                          { value: 'EMPTY', label: t('lab.filterEmptyTemplates', 'قوالب شاغرة (0 بصمات)'), count: emptyCount, badgeColor: 'slate' }
+                        ]
+                      }
+                    ];
 
                     return (
                       <motion.div
@@ -823,17 +951,21 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
                         className="flex flex-col h-full min-h-0 p-6 md:p-8"
                       >
                         {/* Family Header info */}
-                        <div className="flex flex-col sm:flex-row justify-between items-start border-b border-white/10 pb-6 mb-6 gap-4 text-start">
-                          <div className="flex items-start gap-4">
+                        <div className="flex flex-col xl:flex-row items-stretch xl:items-center justify-between border-b border-white/10 pb-5 mb-5 gap-4 text-start">
+                          {/* Start / Left: Icon, Names & Results Count Badge */}
+                          <div className="flex items-start gap-4 shrink-0">
                             <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shadow-inner shrink-0">
                               <Folder className="w-6 h-6 text-indigo-400" />
                             </div>
                             <div className="text-start">
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-2 flex-wrap">
                                 <span className="text-xs font-mono font-bold bg-white/10 text-white px-1.5 py-0.5 rounded border border-white/15">
                                   {fam.code}
                                 </span>
                                 <h3 className="text-lg font-bold text-white tracking-tight">{fam.name}</h3>
+                                <span className="text-xs font-mono font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2.5 py-0.5 rounded-full">
+                                  {famTemplates.length} {t('lab.registeredTemplatesCount', 'قالب مسجل')}
+                                </span>
                               </div>
                               <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider">
                                 {fam.description || t('lab.familyDescriptionDefault', 'Certified Industrial Family')}
@@ -841,8 +973,24 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-2">
-                            <div className="flex items-center gap-1.5 p-1 bg-[#08080c] rounded-xl border border-white/10 mr-2">
+                          {/* Center: Search & Filter in the Middle of Header */}
+                          <div className="flex-1 max-w-md xl:max-w-lg mx-auto w-full px-1">
+                            <UnifiedSearchFilter
+                              searchTerm={rightSearchTerm}
+                              onSearchChange={setRightSearchTerm}
+                              searchPlaceholder={t('lab.searchTemplatesPlaceholder', 'بحث باسم القالب أو الرمز المعياري...')}
+                              filterGroups={familyFilterGroups}
+                              themeColor="indigo"
+                              onResetAll={() => {
+                                setRightSearchTerm('');
+                                setTemplateStatusFilter('ALL');
+                              }}
+                            />
+                          </div>
+
+                          {/* End / Right: View Mode Switcher, Actions */}
+                          <div className="flex items-center gap-2 shrink-0 justify-end">
+                            <div className="flex items-center gap-1.5 p-1 bg-[#08080c] rounded-xl border border-white/10 mr-1">
                               <button
                                 onClick={() => setViewMode('table')}
                                 className={cn(
@@ -884,14 +1032,8 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
 
                         {/* Templates list inside Family */}
                         <div className="flex-1 flex flex-col min-h-0 text-start">
-                          <div className="flex items-center justify-between mb-4 flex-row">
-                            <div className="text-sm font-bold text-slate-200">
-                              {t('lab.templatesUnderFamilyTitle', 'Specification Templates under this Family')} ({famTemplates.length})
-                            </div>
-                          </div>
-
                           <div className="flex-1 overflow-y-auto custom-scrollbar">
-                            {famTemplates.length === 0 ? (
+                            {allFamTemplates.length === 0 ? (
                               <div className="p-12 border border-dashed border-white/10 rounded-2xl text-center bg-white/[0.01]">
                                 <Layers className="w-10 h-10 text-slate-600 mx-auto mb-2" />
                                 <p className="text-xs text-slate-400">{t('lab.noTemplatesFound', 'No specification templates registered under this family yet.')}</p>
@@ -901,6 +1043,18 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
                                 >
                                   <Plus className="w-3.5 h-3.5" />
                                   {t('lab.addFirstTemplateBtn', 'Add First Template')}
+                                </button>
+                              </div>
+                            ) : famTemplates.length === 0 ? (
+                              <div className="p-12 border border-dashed border-white/10 rounded-2xl text-center bg-white/[0.01]">
+                                <Search className="w-10 h-10 text-slate-600 mx-auto mb-2" />
+                                <p className="text-xs text-slate-400">{t('common.nullResultsDesc', 'لا توجد نتائج تطابق معايير البحث.')}</p>
+                                <button 
+                                  type="button"
+                                  onClick={() => setRightSearchTerm('')}
+                                  className="mt-4 px-4 py-2 bg-white/5 hover:bg-white/10 text-white font-bold rounded-xl border border-white/10 text-xs transition-all cursor-pointer"
+                                >
+                                  {t('common.resetSearch', 'إلغاء التصفية ومسح البحث')}
                                 </button>
                               </div>
                             ) : viewMode === 'cards' ? (

@@ -1,4 +1,5 @@
 import { PageHeader } from "@/shared/components/PageHeader";
+import { HeaderBentoCard } from "@/shared/components/HeaderBentoCard";
 import React, { useState, useEffect } from 'react';
 import { Shield, LockKeyhole, Timer, Fingerprint, Code2, AlertTriangle, Settings } from 'lucide-react';
 import { toast } from 'sonner';
@@ -56,18 +57,51 @@ export function SecurityPoliciesView() {
       className="space-y-10 pb-12 pt-4 px-4 md:px-0 relative w-full lg:px-8"
     >
       <PageHeader
-        title="Network Policies"
+        title="Security & Network Policies"
         subtitle="Global configuration capabilities for system-wide access parameters and interface behavior settings."
-        icon={<Settings className="w-6 h-6 text-slate-400" />}
+        icon={<Shield className="w-7 h-7 text-slate-300" />}
+        badgeText="Security Policies"
+        badgeColor="slate"
         actions={
           <button 
             onClick={handleSave}
-            className="titan-button titan-button-primary"
+            className="titan-button bg-white text-slate-950 hover:bg-slate-200 font-extrabold shadow-lg"
           >
             <Shield className="w-4 h-4" /> Save Configuration
           </button>
         }
-      />
+      >
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <HeaderBentoCard
+            title="Session Inactivity"
+            subtitle="AUTO LOGOUT THRESHOLD"
+            value={`${autoLogoutMinutes} min`}
+            icon={<Timer className="w-3.5 h-3.5" />}
+            color="slate"
+          />
+          <HeaderBentoCard
+            title="Zero-Trust Guard"
+            subtitle="STRICT VALIDATION"
+            value={strictMode ? "Enforced" : "Disabled"}
+            icon={<Fingerprint className="w-3.5 h-3.5" />}
+            color={strictMode ? "emerald" : "amber"}
+          />
+          <HeaderBentoCard
+            title="Dev Sandbox"
+            subtitle="DEVELOPER TOOLS"
+            value={devMode ? "Active" : "Locked"}
+            icon={<Code2 className="w-3.5 h-3.5" />}
+            color={devMode ? "cyan" : "slate"}
+          />
+          <HeaderBentoCard
+            title="Policy Compliance"
+            subtitle="INTEGRITY STATUS"
+            value="Compliant"
+            icon={<Shield className="w-3.5 h-3.5" />}
+            color="blue"
+          />
+        </div>
+      </PageHeader>
 
       <div className="grid grid-cols-1 gap-6 relative z-10">
         

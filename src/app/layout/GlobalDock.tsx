@@ -19,7 +19,7 @@ const PORTALS = [
   { id: 'ORGANIZATION' as PortalType, title: 'Part Catalog', icon: Network, color: 'text-amber-400', bgHover: 'hover:bg-amber-500/10' },
   { id: 'FACTORY' as PortalType, title: 'Factory Admin', icon: Factory, color: 'text-indigo-400', bgHover: 'hover:bg-indigo-500/10' },
   { id: 'ANALYTICS' as PortalType, title: 'Analytics Hub', icon: PieChart, color: 'text-fuchsia-400', bgHover: 'hover:bg-fuchsia-500/10' },
-  { id: 'SETTINGS' as PortalType, title: 'System Config', icon: SettingsIcon, color: 'text-rose-400', bgHover: 'hover:bg-rose-500/10' }
+  { id: 'SETTINGS' as PortalType, title: 'System Config', icon: SettingsIcon, color: 'text-slate-300', bgHover: 'hover:bg-slate-500/10' }
 ];
 
 export function GlobalDock({ user, onLogout, onToggleNotifications }: { user: User | null, onLogout: () => void, onToggleNotifications: () => void }) {

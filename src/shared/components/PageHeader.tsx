@@ -12,7 +12,7 @@ interface PageHeaderProps {
   subtitle?: React.ReactNode;
   icon?: React.ReactNode;
   badgeText?: string;
-  badgeColor?: 'cyan' | 'indigo' | 'fuchsia' | 'emerald' | 'amber' | 'rose' | 'orange' | 'purple' | 'blue';
+  badgeColor?: 'cyan' | 'indigo' | 'fuchsia' | 'emerald' | 'amber' | 'rose' | 'orange' | 'purple' | 'blue' | 'slate';
   actions?: React.ReactNode;
   children?: React.ReactNode;
   className?: string;
@@ -100,6 +100,14 @@ export function PageHeader({
       shadow: 'shadow-[0_10px_30px_rgba(59,130,246,0.12)]',
       badge: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
       iconContainer: 'bg-gradient-to-br from-blue-500/20 to-blue-700/30 border-blue-400/40 shadow-blue-900/30',
+    },
+    slate: {
+      bg: 'bg-gradient-to-r from-slate-900/80 via-[#0a0a0f]/95 to-[#0a0a0f]/90',
+      border: 'border-slate-500/30',
+      glow: 'bg-slate-400/15',
+      shadow: 'shadow-[0_10px_30px_rgba(100,116,139,0.15)]',
+      badge: 'bg-slate-500/15 text-slate-300 border-slate-500/30',
+      iconContainer: 'bg-gradient-to-br from-slate-700/40 to-slate-800/60 border-slate-500/40 shadow-slate-900/50',
     },
   };
 

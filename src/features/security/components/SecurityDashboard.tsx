@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { Shield, AlertTriangle, Lock, Activity, Server, RefreshCw, CheckCircle2, Zap, Radio, ShieldCheck } from 'lucide-react';
 import { securityManager } from '@/core/security/SecurityManager';
 import { EmptyState } from '@/shared/components/EmptyState';
+import { PageHeader } from '@/shared/components/PageHeader';
+import { HeaderBentoCard } from '@/shared/components/HeaderBentoCard';
 
 export function SecurityDashboard() {
   const [report, setReport] = useState<any>(null);
@@ -48,75 +50,61 @@ export function SecurityDashboard() {
   };
 
   return (
-    <div className="p-6 space-y-6 text-slate-100 bg-slate-950 min-h-screen">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/60 p-6 rounded-3xl border border-white/10 backdrop-blur-xl">
-        <div className="flex items-center gap-4">
-          <div className="p-3 bg-cyan-500/10 text-cyan-400 rounded-2xl border border-cyan-500/20 shadow-lg">
-            <Shield className="h-8 w-8" />
+    <div className="p-6 space-y-6 text-slate-100 bg-transparent min-h-screen">
+      {/* PageHeader with Bento Cards */}
+      <PageHeader
+        title="نظام الحماية المتقدم (BDR Security Shield)"
+        subtitle="مراقبة التهديدات، تحليل الحزم، كشف التسلل، وسلامة البيانات في الوقت الفعلي"
+        icon={<Shield className="w-7 h-7 text-slate-300" />}
+        badgeText="Military Security"
+        badgeColor="slate"
+        actions={
+          <div className="flex items-center gap-3">
+            <span className={`px-4 py-2 rounded-xl text-xs font-bold border uppercase tracking-wider flex items-center gap-2 ${getBadgeColor(threatLevel)}`}>
+              <Radio className="h-3.5 w-3.5 animate-pulse" />
+              مستوى التهديد: {threatLevel}
+            </span>
+            <button 
+              onClick={fetchReport}
+              className="px-4 py-2 bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl text-xs shadow-lg transition-all flex items-center gap-2"
+            >
+              <RefreshCw className="h-3.5 w-3.5" />
+              تحديث
+            </button>
           </div>
-          <div>
-            <h1 className="text-2xl font-black tracking-tight text-white">نظام الحماية العسكري المتقدم (BDR Security Shield)</h1>
-            <p className="text-sm text-slate-400">مراقبة التهديدات، تحليل الحزم، كشف التسلل، وسلامة البيانات في الوقت الفعلي</p>
-          </div>
+        }
+      >
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <HeaderBentoCard
+            title="التهديدات المرصودة"
+            subtitle="TOTAL THREATS"
+            value={report?.threatReport?.totalThreats || 0}
+            icon={<AlertTriangle className="w-3.5 h-3.5" />}
+            color="amber"
+          />
+          <HeaderBentoCard
+            title="عناوين IP المحظورة"
+            subtitle="BLOCKED IPS"
+            value={report?.blockedIPs?.length || 0}
+            icon={<Lock className="w-3.5 h-3.5" />}
+            color="rose"
+          />
+          <HeaderBentoCard
+            title="خرق تكامل البيانات"
+            subtitle="INTEGRITY BREACHES"
+            value={report?.integrityViolations?.length || 0}
+            icon={<Activity className="w-3.5 h-3.5" />}
+            color="cyan"
+          />
+          <HeaderBentoCard
+            title="الجلسات النشطة"
+            subtitle="ACTIVE SESSIONS"
+            value={report?.activeSessions?.length || 0}
+            icon={<Server className="w-3.5 h-3.5" />}
+            color="emerald"
+          />
         </div>
-        <div className="flex items-center gap-3">
-          <span className={`px-4 py-2 rounded-xl text-xs font-bold border uppercase tracking-wider flex items-center gap-2 ${getBadgeColor(threatLevel)}`}>
-            <Radio className="h-3.5 w-3.5 animate-pulse" />
-            مستوى التهديد: {threatLevel}
-          </span>
-          <button 
-            onClick={fetchReport}
-            className="px-4 py-2 bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl text-xs shadow-lg transition-all flex items-center gap-2"
-          >
-            <RefreshCw className="h-3.5 w-3.5" />
-            تحديث
-          </button>
-        </div>
-      </div>
-
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-slate-900/60 p-5 rounded-2xl border border-white/10 backdrop-blur-xl">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-xs font-bold">إجمالي التهديدات المرصودة</span>
-            <AlertTriangle className="h-4 w-4 text-amber-400" />
-          </div>
-          <div className="text-3xl font-mono font-extrabold text-white">
-            {report?.threatReport?.totalThreats || 0}
-          </div>
-        </div>
-
-        <div className="bg-slate-900/60 p-5 rounded-2xl border border-white/10 backdrop-blur-xl">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-xs font-bold">عناوين IP المحظورة</span>
-            <Lock className="h-4 w-4 text-rose-400" />
-          </div>
-          <div className="text-3xl font-mono font-extrabold text-white">
-            {report?.blockedIPs?.length || 0}
-          </div>
-        </div>
-
-        <div className="bg-slate-900/60 p-5 rounded-2xl border border-white/10 backdrop-blur-xl">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-xs font-bold">خرق تكامل البيانات</span>
-            <Activity className="h-4 w-4 text-cyan-400" />
-          </div>
-          <div className="text-3xl font-mono font-extrabold text-white">
-            {report?.integrityViolations?.length || 0}
-          </div>
-        </div>
-
-        <div className="bg-slate-900/60 p-5 rounded-2xl border border-white/10 backdrop-blur-xl">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-xs font-bold">الجلسات النشطة المؤمنة</span>
-            <Server className="h-4 w-4 text-emerald-400" />
-          </div>
-          <div className="text-3xl font-mono font-extrabold text-white">
-            {report?.activeSessions?.length || 0}
-          </div>
-        </div>
-      </div>
+      </PageHeader>
 
       {/* Tabs */}
       <div className="flex items-center gap-2 border-b border-white/10 pb-4">
