@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback, useMemo } from 'react';
 
 export type NotificationType = 'critical' | 'warning' | 'info';
 
@@ -32,33 +32,43 @@ const NotificationContext = createContext<NotificationContextType | undefined>(u
 export const NotificationProvider = ({ children }: { children: React.ReactNode }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
-  const unreadCount = notifications.filter(n => !n.isRead).length;
+  const unreadCount = useMemo(() => notifications.filter(n => !n.isRead).length, [notifications]);
 
-  const getUnreadCountByPortal = (portal: string) => {
+  const getUnreadCountByPortal = useCallback((portal: string) => {
     return notifications.filter(n => !n.isRead && n.portal === portal).length;
-  };
+  }, [notifications]);
 
-  const addNotification = (n: Omit<Notification, 'id' | 'isRead' | 'createdAt'>) => {
+  const addNotification = useCallback((n: Omit<Notification, 'id' | 'isRead' | 'createdAt'>) => {
     setNotifications(prev => [
       { ...n, id: crypto.randomUUID(), isRead: false, createdAt: Date.now() },
       ...prev
     ]);
-  };
+  }, []);
 
-  const markAsRead = (id: string) => {
+  const markAsRead = useCallback((id: string) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
-  };
+  }, []);
 
-  const markAllAsRead = () => {
+  const markAllAsRead = useCallback(() => {
     setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-  };
+  }, []);
 
-  const removeNotification = (id: string) => {
+  const removeNotification = useCallback((id: string) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
-  };
+  }, []);
+
+  const value = useMemo(() => ({
+    notifications,
+    unreadCount,
+    getUnreadCountByPortal,
+    addNotification,
+    markAsRead,
+    markAllAsRead,
+    removeNotification
+  }), [notifications, unreadCount, getUnreadCountByPortal, addNotification, markAsRead, markAllAsRead, removeNotification]);
 
   return (
-    <NotificationContext.Provider value={{ notifications, unreadCount, getUnreadCountByPortal, addNotification, markAsRead, markAllAsRead, removeNotification }}>
+    <NotificationContext.Provider value={value}>
       {children}
     </NotificationContext.Provider>
   );

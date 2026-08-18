@@ -5,6 +5,7 @@ import { motion, AnimatePresence, Variants } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { GlassCard } from '@/shared/components/GlassCard';
 import { ShoppingCart, Clock, CheckCircle2, AlertCircle, Search, Filter, Loader2, ArrowRightCircle, PackagePlus, Zap, TrendingUp, DollarSign, Package } from 'lucide-react';
+import { NexusIconLoader } from '@/shared/components/NexusIconLoader';
 import { UnifiedSearchFilter, FilterGroup, QuickTabOption } from '@/shared/components/UnifiedSearchFilter';
 import { useProcurementEngine } from '@/features/pdr-engine/hooks/useProcurementEngine';
 import { useNotifications } from '@/shared/hooks/useNotifications';
@@ -111,10 +112,12 @@ export function ProcurementView() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
-        <Loader2 className="w-10 h-10 text-cyan-500 animate-spin opacity-50" />
-        <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Syncing Procurement Data...</p>
-      </div>
+      <NexusIconLoader
+        icon={ShoppingCart}
+        title="جاري مزامنة بيانات التوريد والمشتريات..."
+        subtitle="SYNCING PROCUREMENT PIPELINE"
+        themeColor="cyan"
+      />
     );
   }
 

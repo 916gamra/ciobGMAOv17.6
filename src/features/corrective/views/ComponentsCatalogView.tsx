@@ -29,6 +29,7 @@ import { GlassCard } from '@/shared/components/GlassCard';
 import { UnifiedSearchFilter, FilterGroup } from '@/shared/components/UnifiedSearchFilter';
 import { BadgePill } from '@/shared/components/BadgePill';
 import { EmptyState } from '@/shared/components/EmptyState';
+import { RegistryGuidanceState } from '@/core/ui/RegistryGuidanceState';
 import { cn } from '@/shared/utils';
 import { useTranslation } from 'react-i18next';
 
@@ -56,10 +57,10 @@ export function ComponentsCatalogView() {
   const filterGroups: FilterGroup[] = useMemo(() => [
     {
       id: 'family',
-      label: 'العائلة الفنية (Domain)',
+      label: t('corrective.componentsCatalog.thFamily', 'العائلة الفنية'),
       value: filterFamily,
       onChange: setFilterFamily,
-      allLabel: 'جميع العائلات الفنية',
+      allLabel: t('corrective.breakdownLog.allDomains', 'جميع العائلات الفنية'),
       type: 'chips',
       options: [
         { value: 'MEC', label: 'ميكانيك (MEC)' },
@@ -71,10 +72,10 @@ export function ComponentsCatalogView() {
     },
     {
       id: 'criticality',
-      label: 'مستوى الأهمية (Criticality)',
+      label: t('corrective.componentsCatalog.thCriticality', 'مستوى الأهمية'),
       value: filterCriticality,
       onChange: setFilterCriticality,
-      allLabel: 'جميع مستويات الأهمية',
+      allLabel: t('corrective.componentsCatalog.allCriticalities', 'جميع مستويات الأهمية'),
       type: 'chips',
       options: [
         { value: 'Critical', label: 'حرجة (Critical)' },
@@ -83,7 +84,7 @@ export function ComponentsCatalogView() {
         { value: 'Low', label: 'منخفضة (Low)' }
       ]
     }
-  ], [filterFamily, filterCriticality]);
+  ], [filterFamily, filterCriticality, t]);
 
   // Template Modal State
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
@@ -307,25 +308,27 @@ export function ComponentsCatalogView() {
       </div>
 
       {/* CORE TABLE CONTAINER (FACTORY ADMIN CRYSTAL HIGH-CONTRAST DESIGN) */}
-      <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl flex-1 flex flex-col bg-[#0a0a0f]/60 backdrop-blur-xl mx-6 md:mx-8 mb-6 mt-6">
+      <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl flex-1 flex flex-col bg-[#0a0b10]/95 backdrop-blur-xl mx-6 md:mx-8 mb-6 mt-6 relative min-h-0 font-sans">
+        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent pointer-events-none" />
+
         {/* Table Registry Header + UnifiedSearchFilter */}
         <div className="p-4 md:p-6 border-b border-white/10 bg-white/[0.02] flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4 shrink-0 relative z-10">
-          {/* Right Side (RTL): Context Count */}
+          {/* Context Count */}
           <div className="flex items-center gap-3 shrink-0">
-            <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shrink-0">
-              <Cpu className="w-5 h-5 text-orange-400" />
+            <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
+              <Cpu className="w-5 h-5 text-amber-400" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-sm font-extrabold text-white uppercase tracking-tight font-sans">
-                  كتالوج المكونات الفنية
+                  {t('corrective.componentsCatalog.registryTitle', 'كتالوج القوالب والمكونات الفنية')}
                 </h2>
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-orange-500/15 border border-orange-500/30 text-orange-300">
-                  {filteredTemplates.length} قالب
+                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-amber-500/15 border border-amber-500/30 text-amber-300">
+                  {filteredTemplates.length} {t('corrective.componentsCatalog.activeTemplatesCount', 'قالب')}
                 </span>
               </div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono">
-                Component Templates & Commercial Blueprints
+                {t('corrective.componentsCatalog.registrySubtitle', 'Component Templates & Commercial Blueprints')}
               </p>
             </div>
           </div>
@@ -335,9 +338,9 @@ export function ComponentsCatalogView() {
             <UnifiedSearchFilter
               searchTerm={searchTerm}
               onSearchChange={setSearchTerm}
-              searchPlaceholder="بحث باسم المكون، القالب، أو العائلة..."
+              searchPlaceholder={t('corrective.componentsCatalog.searchPlaceholder', 'بحث باسم المكون، القالب، العائلة، أو الوصف...')}
               filterGroups={filterGroups}
-              themeColor="orange"
+              themeColor="amber"
               extraControls={
                 <div className="flex items-center gap-2 shrink-0">
                   {/* VIEW SWITCHER */}
@@ -372,7 +375,7 @@ export function ComponentsCatalogView() {
                     className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 shrink-0 whitespace-nowrap"
                   >
                     <Plus className="w-4 h-4 text-slate-950" />
-                    <span>إضافة قالب مكون جديد</span>
+                    <span>{t('corrective.componentsCatalog.addTemplateBtn', 'إضافة قالب مكون جديد')}</span>
                   </button>
                 </div>
               }
@@ -381,56 +384,88 @@ export function ComponentsCatalogView() {
         </div>
 
         {/* CONTENT DISPLAY */}
-        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar bg-[#0a0a0f]/40 p-4 md:p-6">
-          {viewMode === 'table' ? (
+        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar bg-[#0a0b10]/40 p-4 md:p-6">
+          {filteredTemplates.length === 0 ? (
+            <RegistryGuidanceState
+              id="components-catalog-guidance"
+              icon={Cpu}
+              title={
+                searchTerm || filterFamily !== 'ALL' || filterCriticality !== 'ALL'
+                  ? t('corrective.componentsCatalog.nullResultsTitle', 'لم يتم العثور على مكونات مطابقة')
+                  : t('corrective.componentsCatalog.welcomeTitle', 'كتالوج المكونات الفنية والتجميعات')
+              }
+              subtitle={
+                searchTerm || filterFamily !== 'ALL' || filterCriticality !== 'ALL'
+                  ? t('corrective.componentsCatalog.nullResultsDesc', 'لا توجد قوالب مكونات تطابق معايير البحث والتصفية المحددة.')
+                  : t('corrective.componentsCatalog.welcomeDesc', 'الدليل المرجعي الهيكلي لتأطير القوالب والبصمات التجارية وتحديد التجميعات الفرعية للآلات والمعدات.')
+              }
+              isSearchActive={Boolean(searchTerm || filterFamily !== 'ALL' || filterCriticality !== 'ALL')}
+              onClearSearch={() => {
+                setSearchTerm('');
+                setFilterFamily('ALL');
+                setFilterCriticality('ALL');
+              }}
+              primaryAction={{
+                label: t('corrective.componentsCatalog.addTemplateBtn', 'إضافة قالب مكون جديد'),
+                onClick: openNewTemplate,
+                icon: Plus
+              }}
+              secondaryAction={
+                (searchTerm || filterFamily !== 'ALL' || filterCriticality !== 'ALL') ? {
+                  label: t('corrective.componentsCatalog.resetFilters', 'عرض جميع القوالب'),
+                  onClick: () => {
+                    setSearchTerm('');
+                    setFilterFamily('ALL');
+                    setFilterCriticality('ALL');
+                  }
+                } : undefined
+              }
+              guidanceCards={[
+                {
+                  icon: Layers,
+                  title: t('corrective.componentsCatalog.guidanceTemplateTitle', 'تأطير المعرفة الميكانيكية والهندسية'),
+                  description: t('corrective.componentsCatalog.guidanceTemplateDesc', 'القالب المجرّد يعرّف النوع العائلي الهيكلي المجرّد للمكون قبل ربطه بالموديلات التجارية والماركات.')
+                },
+                {
+                  icon: Box,
+                  title: t('corrective.componentsCatalog.guidanceBlueprintTitle', 'قانون الـ 999 مقعد للبصمات التجارية'),
+                  description: t('corrective.componentsCatalog.guidanceBlueprintDesc', 'كل قالب مولد يتسع حتى 999 موديل وتجلي تجاري برقم تسلسلي مخصص (مثل MEC-001 إلى MEC-999).')
+                }
+              ]}
+              themeColor="amber"
+            />
+          ) : viewMode === 'table' ? (
             /* CRYSTAL HIGH-CONTRAST TABLE VIEW */
-            <div className="w-full overflow-x-auto rounded-2xl border border-white/10 bg-[#0a0a0f]/60 backdrop-blur-xl shadow-2xl">
-              <table dir="ltr" className="w-full text-left border-collapse text-xs">
+            <div className="w-full overflow-x-auto rounded-2xl border border-white/10 bg-[#0a0b10]/80 backdrop-blur-xl shadow-2xl">
+              <table className="w-full text-start border-collapse text-xs">
                 <thead>
-                  <tr className="bg-white/[0.04] border-b border-white/10 text-slate-300 font-bold uppercase tracking-wider font-mono text-[11px]">
-                    <th className="py-3.5 px-4 text-left">العائلة الفنية</th>
-                    <th className="py-3.5 px-4 text-left">اسم المكون (Template)</th>
-                    <th className="py-3.5 px-4 text-left">مستوى الأهمية</th>
-                    <th className="py-3.5 px-4 text-left">البصمات التجارية (Blueprints)</th>
-                    <th className="py-3.5 px-4 text-left">قطع الغيار المرتبطة (PDRs)</th>
-                    <th className="py-3.5 px-4 text-center">الإجراءات والتحكم</th>
+                  <tr className="sticky top-0 z-20 bg-[#12141d] border-b-2 border-white/15 text-slate-200 font-extrabold uppercase tracking-wider text-[11px] font-mono">
+                    <th className="py-3.5 px-4 text-start">{t('corrective.componentsCatalog.thFamily', 'العائلة الفنية')}</th>
+                    <th className="py-3.5 px-4 text-start">{t('corrective.componentsCatalog.thTemplateName', 'اسم المكون (Template)')}</th>
+                    <th className="py-3.5 px-4 text-start">{t('corrective.componentsCatalog.thCriticality', 'مستوى الأهمية')}</th>
+                    <th className="py-3.5 px-4 text-start">{t('corrective.componentsCatalog.thBlueprints', 'البصمات التجارية (Blueprints)')}</th>
+                    <th className="py-3.5 px-4 text-start">{t('corrective.componentsCatalog.thLinkedPdrs', 'قطع الغيار المرتبطة (PDRs)')}</th>
+                    <th className="py-3.5 px-4 text-center">{t('corrective.componentsCatalog.thActions', 'الإجراءات والتحكم')}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5 font-sans">
-                  {filteredTemplates.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="p-0">
-                        <EmptyState 
-                          icon={Cpu}
-                          title={t('corrective.components.noTemplates', 'لا توجد قوالب مكونات مسجلة')}
-                          description={t('corrective.components.noTemplatesDesc', 'انقر فوق "إضافة مكون جديد" لبدء إضافة قالب جديد للكتالوج.')}
-                          color="purple"
-                          className="py-16 opacity-80"
-                          action={
-                            <button
-                              onClick={() => openNewTemplate()}
-                              className="text-xs px-4 py-2.5 bg-white text-slate-950 font-extrabold rounded-xl hover:bg-slate-200 shadow-md transition-all inline-flex items-center gap-1.5 cursor-pointer"
-                            >
-                              <Plus className="w-3.5 h-3.5" />
-                              <span>{t('corrective.components.addFirst', 'إضافة مكون جديد')}</span>
-                            </button>
-                          }
-                        />
-                      </td>
-                    </tr>
-                  ) : filteredTemplates.map((tItem) => {
+                  {filteredTemplates.map((tItem, idx) => {
                     const isExpanded = expandedTemplates.has(tItem.id);
                     const tmplBlueprints = blueprints.filter(b => b.templateId === tItem.id);
 
                     return (
                       <React.Fragment key={tItem.id}>
                         <tr 
-                          className="hover:bg-white/[0.04] transition-colors border-b border-white/5 cursor-pointer group"
+                          className={cn(
+                            "transition-colors border-b border-white/5 cursor-pointer group",
+                            idx % 2 === 0 ? "bg-white/[0.015]" : "bg-white/[0.05]",
+                            "hover:bg-amber-500/10 hover:text-white"
+                          )}
                           onClick={() => toggleTemplate(tItem.id)}
                         >
                           {/* Family Badge */}
                           <td className="py-3.5 px-4 whitespace-nowrap">
-                            <span className="px-2.5 py-1 rounded-lg text-xs font-mono font-black bg-orange-500/10 text-orange-400 border border-orange-500/20 uppercase">
+                            <span className="px-2.5 py-1 rounded-lg text-xs font-mono font-black bg-amber-500/10 text-amber-400 border border-amber-500/20 uppercase">
                               {tItem.family}
                             </span>
                           </td>
@@ -602,25 +637,6 @@ export function ComponentsCatalogView() {
                   })}
                 </tbody>
               </table>
-            </div>
-          ) : filteredTemplates.length === 0 ? (
-            <div className="w-full">
-              <EmptyState 
-                icon={Cpu}
-                title={t('corrective.components.noTemplates', 'لا توجد قوالب مكونات مسجلة')}
-                description={t('corrective.components.noTemplatesDesc', 'انقر فوق "إضافة مكون جديد" لبدء إضافة قالب جديد للكتالوج.')}
-                color="purple"
-                className="py-16 border border-dashed border-white/10 rounded-3xl bg-white/[0.02]"
-                action={
-                  <button
-                    onClick={() => openNewTemplate()}
-                    className="text-xs px-4 py-2.5 bg-white text-slate-950 font-extrabold rounded-xl hover:bg-slate-200 shadow-md transition-all inline-flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>{t('corrective.components.addFirst', 'إضافة مكون جديد')}</span>
-                  </button>
-                }
-              />
             </div>
           ) : (
             /* CARDS VIEW */

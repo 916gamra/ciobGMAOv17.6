@@ -3,7 +3,7 @@ import { motion, AnimatePresence, Variants } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/core/db';
-import { PdrPageSkeleton } from '../components/PdrPageSkeleton';
+import { EngineViewSkeleton } from '@/shared/components/EngineViewSkeleton';
 import { useStockEngine } from '../hooks/useStockEngine';
 import { useProcurementEngine } from '../hooks/useProcurementEngine';
 import { useTabStore } from '@/app/store';
@@ -200,7 +200,7 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
   };
 
   if (isLoading) {
-    return <PdrPageSkeleton />;
+    return <EngineViewSkeleton mode="table" themeColor="cyan" />;
   }
 
   return (
@@ -269,8 +269,8 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
         
         {/* Left Columns: Beautiful Stock Radar Table Panel */}
         <motion.div variants={itemVariants} className="lg:col-span-2 space-y-6">
-          <GlassCard className="!p-0 border-white/5 overflow-hidden shadow-2xl rounded-3xl h-[650px] flex flex-col bg-[#0a0a0f]/20 backdrop-blur-2xl relative">
-            <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent" />
+          <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl h-[650px] flex flex-col bg-[#0a0b10]/95 backdrop-blur-xl relative">
+            <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
             
             {/* Control Panel Header */}
             <div className="p-4 md:p-6 border-b border-white/10 bg-white/[0.02] flex flex-col xl:flex-row xl:items-center justify-between gap-4 shrink-0">
@@ -338,7 +338,7 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
             </div>
 
             {/* Premium Instrumented Filters */}
-            <div className="px-5 py-2.5 bg-[#0a0a0f]/20 border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
+            <div className="px-5 py-2.5 bg-white/[0.01] border-b border-white/5 flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
               <div className="flex flex-wrap items-center gap-2">
                 
                 {/* Urgency status filter segment */}
@@ -436,7 +436,7 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
             </div>
             
             {/* Table / Grid Content Area */}
-            <div className="flex-1 overflow-auto custom-scrollbar p-5 bg-[#0a0a0f]/20">
+            <div className="flex-1 overflow-auto custom-scrollbar p-5 bg-transparent">
               {filteredInventory.length === 0 ? (
                 <div className="h-full flex flex-col items-center justify-center p-8">
                   <Box className="w-12 h-12 mb-3 text-slate-700 mx-auto opacity-20" />
@@ -449,23 +449,23 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                   </button>
                 </div>
               ) : viewMode === 'table' ? (
-                /* Crystal Clear High-Contrast Table View */
-                <div className="rounded-2xl border border-white/10 bg-[#0a0a0f]/60 backdrop-blur-xl overflow-hidden shadow-2xl">
+                /* Crystal Clear High-Contrast Table View with Zebra Striping */
+                <div className="rounded-2xl border border-white/10 bg-[#0a0b10]/95 backdrop-blur-xl overflow-hidden shadow-2xl">
                   <div className="overflow-x-auto custom-scrollbar">
                     <table dir="ltr" className="w-full text-left border-collapse font-sans">
-                      <thead className="bg-white/[0.04] border-b border-white/10">
+                      <thead className="bg-[#12141d] border-b-2 border-white/15 text-slate-200 sticky top-0 z-20 backdrop-blur-md shadow-sm">
                         <tr>
-                          <th className="py-3.5 px-4 text-xs font-bold text-slate-300 uppercase tracking-wider text-left">كود القطعة / Reference</th>
-                          <th className="py-3.5 px-4 text-xs font-bold text-slate-300 uppercase tracking-wider text-left">اسم القطعة والعائلة</th>
-                          <th className="py-3.5 px-4 text-xs font-bold text-slate-300 uppercase tracking-wider text-left">موقع التخزين</th>
-                          <th className="py-3.5 px-4 text-xs font-bold text-slate-300 uppercase tracking-wider text-center">الرصيد الفعلي</th>
-                          <th className="py-3.5 px-4 text-xs font-bold text-slate-300 uppercase tracking-wider text-center">الحد الأدنى</th>
-                          <th className="py-3.5 px-4 text-xs font-bold text-slate-300 uppercase tracking-wider text-center">حالة المخزون</th>
-                          <th className="py-3.5 px-4 text-xs font-bold text-slate-300 uppercase tracking-wider text-left">إجراء حركة</th>
+                          <th className="py-3.5 px-4 text-xs font-extrabold uppercase tracking-wider text-left">كود القطعة / Reference</th>
+                          <th className="py-3.5 px-4 text-xs font-extrabold uppercase tracking-wider text-left">اسم القطعة والعائلة</th>
+                          <th className="py-3.5 px-4 text-xs font-extrabold uppercase tracking-wider text-left">موقع التخزين</th>
+                          <th className="py-3.5 px-4 text-xs font-extrabold uppercase tracking-wider text-center">الرصيد الفعلي</th>
+                          <th className="py-3.5 px-4 text-xs font-extrabold uppercase tracking-wider text-center">الحد الأدنى</th>
+                          <th className="py-3.5 px-4 text-xs font-extrabold uppercase tracking-wider text-center">حالة المخزون</th>
+                          <th className="py-3.5 px-4 text-xs font-extrabold uppercase tracking-wider text-left">إجراء حركة</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-white/5">
-                        {filteredInventory.map((item) => {
+                      <tbody className="divide-y divide-white/5 text-xs text-slate-300">
+                        {filteredInventory.map((item, idx) => {
                           let badgeClass = "";
                           let statusLabel = "";
 
@@ -481,15 +481,24 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                           }
 
                           return (
-                            <tr key={item.id} className="hover:bg-white/[0.04] transition-colors border-b border-white/5 group">
+                            <tr 
+                              key={item.id} 
+                              className={cn(
+                                "transition-colors duration-150 group cursor-pointer",
+                                idx % 2 === 0 ? "bg-white/[0.015]" : "bg-white/[0.05]",
+                                "hover:bg-cyan-500/15 hover:text-white"
+                              )}
+                              onClick={() => handleQuickAction(item.id)}
+                            >
                               {/* Reference Code */}
-                              <td className="py-3.5 px-4 font-mono text-white font-bold text-sm tracking-wide">
+                              <td className="py-3.5 px-4 font-mono font-extrabold text-white text-sm tracking-wide flex items-center gap-2">
+                                <span className="w-2 h-2 rounded-full bg-cyan-400 shrink-0 inline-block" />
                                 {item.blueprintReference}
                               </td>
 
                               {/* Part Name & Family */}
                               <td className="py-3.5 px-4">
-                                <div className="font-bold text-white text-sm group-hover:text-slate-200 transition-colors">
+                                <div className="font-bold text-white text-sm group-hover:text-cyan-200 transition-colors">
                                   {item.partName}
                                 </div>
                                 <div className="text-[10px] font-mono text-slate-400 mt-0.5 flex items-center gap-1.5">
@@ -528,12 +537,12 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                               </td>
 
                               {/* Action button */}
-                              <td className="py-3.5 px-4 text-left">
+                              <td className="py-3.5 px-4 text-left" onClick={(e) => e.stopPropagation()}>
                                 <button
                                   onClick={() => handleQuickAction(item.id)}
-                                  className="px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-slate-300 text-xs font-bold transition-all flex items-center gap-1.5 ml-auto shadow-sm"
+                                  className="px-3 py-1.5 rounded-xl bg-white text-slate-950 hover:bg-slate-200 text-xs font-extrabold transition-all flex items-center gap-1.5 ml-auto shadow-sm cursor-pointer"
                                 >
-                                  <ArrowRightLeft className="w-3.5 h-3.5 text-slate-300" />
+                                  <ArrowRightLeft className="w-3.5 h-3.5 text-slate-950" />
                                   حركة
                                 </button>
                               </td>
@@ -585,9 +594,9 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                           transition={{ duration: 0.5, delay: (idx % 12) * 0.05, ease: [0.16, 1, 0.3, 1] }}
                         >
                           <GlassCard 
-                            className={`!p-0 relative overflow-hidden group h-full flex flex-col transition-all duration-300 border border-white/5 bg-[#0a0a0f]/20 hover:bg-white/[0.02] ${glowColor}`}
+                            className={`!p-0 relative overflow-hidden group h-full flex flex-col transition-all duration-300 border border-white/10 bg-[#0a0a0f]/80 hover:bg-[#0a0a0f] ${glowColor} shadow-lg`}
                           >
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-white/[0.02] rounded-full blur-3xl pointer-events-none" />
+                            <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none" />
                             
                             {/* Make body card clickable to open Quick Actions / Transaction Modal */}
                             <div 
@@ -596,8 +605,8 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                             >
                               <div className="flex justify-between items-start mb-5 gap-4">
                                 <div className="flex items-center gap-3 overflow-hidden">
-                                  <div className="w-10 h-10 rounded-xl bg-[#0a0a0f]/40 border border-white/10 flex items-center justify-center shrink-0 group-hover:border-white/20 transition-colors shadow-inner">
-                                    <Box className="w-5 h-5 text-slate-400 group-hover:text-white transition-colors" />
+                                  <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0 group-hover:border-cyan-500/40 transition-colors shadow-inner">
+                                    <Box className="w-5 h-5 text-cyan-400 group-hover:text-white transition-colors" />
                                   </div>
                                   <div className="overflow-hidden">
                                     <div className="flex items-center gap-2">
@@ -607,28 +616,28 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                                     <p className="text-[10px] text-white font-mono mt-0.5 truncate">{item.blueprintReference}</p>
                                   </div>
                                 </div>
-                                <div className="flex items-baseline gap-1.5 bg-[#0a0a0f]/40 border border-white/10 px-2 py-1 rounded-lg shrink-0">
+                                <div className="flex items-baseline gap-1.5 bg-[#0a0a0f]/80 border border-white/10 px-2.5 py-1 rounded-lg shrink-0">
                                   <span className="font-mono text-sm font-extrabold text-white tabular-nums">
                                     {item.quantityCurrent.toFixed(1).replace('.0', '')}
                                   </span>
-                                  <span className="text-[9px] font-mono text-slate-500">{item.unit}</span>
+                                  <span className="text-[9px] font-mono text-slate-400">{item.unit}</span>
                                 </div>
                               </div>
                               
                               <div className="space-y-3 mt-auto pt-2">
                                 <div className="flex items-center justify-between text-xs">
-                                  <span className="text-slate-500 flex items-center gap-1.5">
-                                    <MapPin className="w-3.5 h-3.5 text-cyan-500/60" />
+                                  <span className="text-slate-400 flex items-center gap-1.5">
+                                    <MapPin className="w-3.5 h-3.5 text-cyan-400" />
                                     <span className="truncate max-w-[150px]">{item.locationDetails || 'المخزن الرئيسي (A1)'}</span>
                                   </span>
                                 </div>
                                 <div className="flex items-center justify-between text-[10px] font-mono">
-                                  <span className="text-slate-400">الرصيد: {item.quantityCurrent} / الحد الأدنى: {item.minThreshold}</span>
+                                  <span className="text-slate-300">الرصيد: {item.quantityCurrent} / الحد الأدنى: {item.minThreshold}</span>
                                   <span className={cn("font-bold", item.isOutOfStock ? "text-rose-400" : item.isLowStock ? "text-amber-400" : "text-emerald-400")}>
                                     {statusText}
                                   </span>
                                 </div>
-                                <div className="w-full h-1 bg-[#0a0a0f]/40 rounded-full overflow-hidden border border-white/[0.04]">
+                                <div className="w-full h-1.5 bg-black/50 rounded-full overflow-hidden border border-white/10">
                                   <div 
                                     className={cn("h-full rounded-full transition-all duration-500", barColor)}
                                     style={{ width: `${Math.max(4, pct)}%` }}
@@ -637,9 +646,9 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                               </div>
                             </div>
                             
-                            <div className="mt-auto grid grid-cols-2 divide-x divide-x-reverse divide-white/5 border-t border-white/5 bg-white/[0.02] text-[10px] font-bold text-slate-400 uppercase tracking-widest relative z-10">
+                            <div className="mt-auto grid grid-cols-2 divide-x divide-x-reverse divide-white/5 border-t border-white/5 bg-white/[0.02] text-[10px] font-bold text-slate-300 uppercase tracking-widest relative z-10">
                               <div className="p-4 flex items-center gap-2 justify-center" title="العائلة">
-                                <Tag className="w-4 h-4 text-slate-500" />
+                                <Tag className="w-4 h-4 text-slate-400" />
                                 <span className="truncate">{item.partFamily}</span>
                               </div>
                               <button 
@@ -647,7 +656,7 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
                                   e.stopPropagation();
                                   handleQuickAction(item.id);
                                 }}
-                                className="p-4 flex items-center gap-2 justify-center hover:bg-white/[0.05] hover:text-white transition-colors cursor-pointer" title="حركة"
+                                className="p-4 flex items-center gap-2 justify-center hover:bg-white/[0.08] hover:text-white text-cyan-300 transition-colors cursor-pointer" title="حركة"
                               >
                                 <ArrowRightLeft className="w-4 h-4" />
                                 <span className="truncate">حركة</span>
@@ -665,7 +674,7 @@ export function StockDashboardPage({ tabId }: { tabId: string }) {
 
         {/* Right Column: Premium Cybernetic Log Stream */}
         <motion.div variants={itemVariants} className="space-y-6">
-          <GlassCard className="!p-0 border-white/5 overflow-hidden shadow-2xl rounded-3xl h-[650px] flex flex-col bg-[#0a0a0f]/20 backdrop-blur-2xl relative">
+          <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl h-[650px] flex flex-col bg-[#0a0b10]/95 backdrop-blur-2xl relative">
             
             {/* Feed Header */}
             <div className="p-5 border-b border-white/5 bg-white/[0.01] flex items-center justify-between gap-4 shrink-0">

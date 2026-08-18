@@ -49,6 +49,7 @@ import { BadgePill } from '@/shared/components/BadgePill';
 import { UnifiedSearchFilter, FilterGroup } from '@/shared/components/UnifiedSearchFilter';
 import { Button } from '@/shared/components/Button';
 import { EmptyState } from '@/shared/components/EmptyState';
+import { RegistryGuidanceState } from '@/core/ui/RegistryGuidanceState';
 import { cn, EMPTY_ARRAY } from '@/shared/utils';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
@@ -116,10 +117,10 @@ export function BreakdownLogView({ user }: { user: any }) {
   const filterGroups: FilterGroup[] = useMemo(() => [
     {
       id: 'domain',
-      label: 'المجال الفني (Domain)',
+      label: t('corrective.breakdownLog.domainFilterLabel', 'المجال الفني (Domain)'),
       value: filterDomain,
       onChange: setFilterDomain,
-      allLabel: 'جميع المجالات الفنية',
+      allLabel: t('corrective.breakdownLog.allDomains', 'جميع المجالات الفنية'),
       type: 'chips',
       options: [
         { value: 'MEC', label: 'ميكانيك (MEC)' },
@@ -131,10 +132,10 @@ export function BreakdownLogView({ user }: { user: any }) {
     },
     {
       id: 'machine',
-      label: 'الآلة / خط الإنتاج',
+      label: t('corrective.breakdownLog.machineFilterLabel', 'الآلة / خط الإنتاج'),
       value: filterMachine,
       onChange: setFilterMachine,
-      allLabel: 'جميع الآلات والمعدات',
+      allLabel: t('corrective.breakdownLog.allMachines', 'جميع الآلات والمعدات'),
       type: 'select',
       options: machines.map(m => ({
         value: m.id,
@@ -143,30 +144,30 @@ export function BreakdownLogView({ user }: { user: any }) {
     },
     {
       id: 'status',
-      label: 'حالة التدخل (Outcome)',
+      label: t('corrective.breakdownLog.statusFilterLabel', 'حالة التدخل (Outcome)'),
       value: filterStatus,
       onChange: setFilterStatus,
-      allLabel: 'جميع حالات التدخل',
+      allLabel: t('corrective.breakdownLog.allStatuses', 'جميع حالات التدخل'),
       type: 'chips',
       options: [
-        { value: 'COMPLETED', label: 'منجز بالكامل (Completed)' },
-        { value: 'PENDING_PARTS', label: 'مؤجل لقطعة غيار (Pending)' },
-        { value: 'WORKSHOP_FABRICATION', label: 'ورشة التصنيع (Workshop)' }
+        { value: 'COMPLETED', label: t('corrective.breakdownLog.statusCompleted', 'منجز بالكامل') },
+        { value: 'PENDING_PARTS', label: t('corrective.breakdownLog.statusPendingParts', 'مؤجل لقطعة غيار') },
+        { value: 'WORKSHOP_FABRICATION', label: t('corrective.breakdownLog.statusWorkshop', 'ورشة التصنيع') }
       ]
     },
     {
       id: 'reconcile',
-      label: 'مطابقة قطع المخزن',
+      label: t('corrective.breakdownLog.reconcileFilterLabel', 'مطابقة قطع المخزن'),
       value: filterReconcile,
       onChange: setFilterReconcile,
-      allLabel: 'جميع حالات المطابقة',
+      allLabel: t('corrective.breakdownLog.allReconcile', 'جميع حالات المطابقة'),
       type: 'chips',
       options: [
-        { value: 'RECONCILED', label: 'مطابق ومسوى' },
-        { value: 'PENDING_MATCH', label: 'في انتظار المخزن' }
+        { value: 'RECONCILED', label: t('corrective.breakdownLog.reconciled', 'مطابق ومسوى') },
+        { value: 'PENDING_MATCH', label: t('corrective.breakdownLog.pendingMatch', 'في انتظار المخزن') }
       ]
     }
-  ], [filterDomain, filterMachine, filterStatus, filterReconcile, machines]);
+  ], [filterDomain, filterMachine, filterStatus, filterReconcile, machines, t]);
 
   // WIZARD MODAL STATE
   const [isWizardOpen, setIsWizardOpen] = useState(false);
@@ -450,7 +451,9 @@ export function BreakdownLogView({ user }: { user: any }) {
       </div>
 
       {/* CORE TABLE CONTAINER (FACTORY ADMIN CRYSTAL HIGH-CONTRAST DESIGN) */}
-      <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl flex-1 flex flex-col bg-[#0a0a0f]/60 backdrop-blur-xl mx-6 md:mx-8 mb-6 mt-6">
+      <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl flex-1 flex flex-col bg-[#0a0b10]/95 backdrop-blur-xl mx-6 md:mx-8 mb-6 mt-6 relative min-h-0 font-sans">
+        <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-transparent via-orange-500/30 to-transparent pointer-events-none z-20" />
+
         {/* Table Registry Header + UnifiedSearchFilter */}
         <div className="p-4 md:p-6 border-b border-white/10 bg-white/[0.02] flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4 shrink-0 relative z-10">
           {/* Right Side (RTL): Context Count */}
@@ -461,14 +464,14 @@ export function BreakdownLogView({ user }: { user: any }) {
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-sm font-extrabold text-white uppercase tracking-tight font-sans">
-                  سجل التدخلات الإصلاحية
+                  {t('corrective.breakdownLog.registryTitle', 'سجل التدخلات الإصلاحية')}
                 </h2>
                 <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-orange-500/15 border border-orange-500/30 text-orange-300">
-                  {filteredExecutions.length} تدخل
+                  {filteredExecutions.length} {t('corrective.breakdownLog.activeInterventionsCount', 'تدخل')}
                 </span>
               </div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono">
-                Interventions & Breakdown Registry
+                {t('corrective.breakdownLog.registrySubtitle', 'Interventions & Breakdown Registry')}
               </p>
             </div>
           </div>
@@ -478,7 +481,7 @@ export function BreakdownLogView({ user }: { user: any }) {
             <UnifiedSearchFilter
               searchTerm={searchTerm}
               onSearchChange={setSearchTerm}
-              searchPlaceholder="بحث برقم البون، كود الآلة، الفني، أو تشخيص العطل..."
+              searchPlaceholder={t('corrective.breakdownLog.searchPlaceholder', 'بحث برقم البون، كود الآلة، الفني، أو تشخيص العطل...')}
               filterGroups={filterGroups}
               themeColor="orange"
               extraControls={
@@ -492,7 +495,7 @@ export function BreakdownLogView({ user }: { user: any }) {
                         "p-1.5 rounded-lg transition-all cursor-pointer",
                         viewMode === 'table' ? "bg-white text-slate-950 shadow-sm font-bold" : "text-slate-400 hover:text-white"
                       )}
-                      title="عرض الجدول الكريستالي"
+                      title={t('corrective.breakdownLog.tableViewTooltip', 'عرض الجدول الكريستالي')}
                     >
                       <LayoutList className="w-4 h-4" />
                     </button>
@@ -503,7 +506,7 @@ export function BreakdownLogView({ user }: { user: any }) {
                         "p-1.5 rounded-lg transition-all cursor-pointer",
                         viewMode === 'cards' ? "bg-white text-slate-950 shadow-sm font-bold" : "text-slate-400 hover:text-white"
                       )}
-                      title="عرض البطاقات"
+                      title={t('corrective.breakdownLog.cardsViewTooltip', 'عرض شبكة البطاقات')}
                     >
                       <Grid className="w-4 h-4" />
                     </button>
@@ -515,7 +518,7 @@ export function BreakdownLogView({ user }: { user: any }) {
                     className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 shrink-0 whitespace-nowrap"
                   >
                     <Plus className="w-4 h-4 text-slate-950" />
-                    <span>تسجيل تدخل طارئ</span>
+                    <span>{t('corrective.breakdownLog.registerOrderBtn', 'تسجيل تدخل طارئ')}</span>
                   </button>
                 </div>
               }
@@ -524,46 +527,78 @@ export function BreakdownLogView({ user }: { user: any }) {
         </div>
 
         {/* CONTENT AREA */}
-        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar bg-[#0a0a0f]/40 p-4 md:p-6">
-          {viewMode === 'table' ? (
-            /* CRYSTAL HIGH-CONTRAST TABLE VIEW */
-            <div className="w-full overflow-x-auto rounded-2xl border border-white/10 bg-[#0a0a0f]/60 backdrop-blur-xl shadow-2xl">
-              <table dir="ltr" className="w-full text-left border-collapse text-xs">
-                <thead>
-                  <tr className="bg-white/[0.04] border-b border-white/10 text-slate-300 font-bold uppercase tracking-wider font-mono text-[11px]">
-                    <th className="py-3.5 px-4 text-left">رقم البون</th>
-                    <th className="py-3.5 px-4 text-left">الآلة والمنطقة</th>
-                    <th className="py-3.5 px-4 text-left">المجال والإجراء</th>
-                    <th className="py-3.5 px-4 text-left">تشخيص العطل والسبب</th>
-                    <th className="py-3.5 px-4 text-left">الفني المكلف</th>
-                    <th className="py-3.5 px-4 text-left">مدة التوقف</th>
-                    <th className="py-3.5 px-4 text-center">الحالة والمطابقة</th>
-                    <th className="py-3.5 px-4 text-center">الإجراءات</th>
+        <div className="flex-1 min-h-0 flex flex-col overflow-hidden bg-transparent relative">
+          {filteredExecutions.length === 0 ? (
+            <div className="p-6 md:p-8 flex-1 flex items-center justify-center">
+              <RegistryGuidanceState
+                id="breakdown-log-guidance"
+                icon={Wrench}
+                title={
+                  searchTerm || filterMachine !== 'ALL' || filterDomain !== 'ALL' || filterStatus !== 'ALL' || filterReconcile !== 'ALL'
+                    ? t('corrective.breakdownLog.nullResultsTitle', 'لم يتم العثور على تدخلات مطابقة')
+                    : t('corrective.breakdownLog.welcomeTitle', 'سجل التدخلات والأعطال الطارئة')
+                }
+                subtitle={
+                  searchTerm || filterMachine !== 'ALL' || filterDomain !== 'ALL' || filterStatus !== 'ALL' || filterReconcile !== 'ALL'
+                    ? t('corrective.breakdownLog.nullResultsDesc', 'لا توجد بونات تدخل تطابق معايير التصفية والبحث المحددة. يمكنك تصفير الفلاتر أو تسجيل بون طارئ جديد.')
+                    : t('corrective.breakdownLog.welcomeDesc', 'السجل المرجعي المركزي لتوثيق الأعطال، متابعة مؤشرات التوقف، وتسوية أذونات قطع الغيار المستهلكة.')
+                }
+                isSearchActive={Boolean(searchTerm || filterMachine !== 'ALL' || filterDomain !== 'ALL' || filterStatus !== 'ALL' || filterReconcile !== 'ALL')}
+                onClearSearch={() => {
+                  setSearchTerm('');
+                  setFilterMachine('ALL');
+                  setFilterDomain('ALL');
+                  setFilterStatus('ALL');
+                  setFilterReconcile('ALL');
+                }}
+                primaryAction={{
+                  label: t('corrective.breakdownLog.registerOrderBtn', 'تسجيل تدخل طارئ جديد'),
+                  icon: Plus,
+                  onClick: handleOpenWizard
+                }}
+                secondaryAction={{
+                  label: t('corrective.breakdownLog.resetFilters', 'عرض جميع التدخلات'),
+                  icon: Eye,
+                  onClick: () => {
+                    setFilterMachine('ALL');
+                    setFilterDomain('ALL');
+                    setFilterStatus('ALL');
+                    setFilterReconcile('ALL');
+                  }
+                }}
+                guidanceCards={[
+                  {
+                    icon: ShieldAlert,
+                    title: t('corrective.breakdownLog.guidanceCauseTitle', 'التوثيق العضوي لأسباب العطل'),
+                    description: t('corrective.breakdownLog.guidanceCauseDesc', 'تسجيل التشخيص والسبب الجذري بدقة يثري السجل التاريخي للآلة ويساعد في بناء الخطط الوقائية الذكية.')
+                  },
+                  {
+                    icon: Package,
+                    title: t('corrective.breakdownLog.guidanceReconcileTitle', 'مطابقة وتسوية قطع المخزن'),
+                    description: t('corrective.breakdownLog.guidanceReconcileDesc', 'ربط بون التدخل بمخزن قطع الغيار يضمن الخصم الفوري للرصيد وتتبع حركة قطع الغيار بين الورش والمخازن.')
+                  }
+                ]}
+                themeColor="amber"
+              />
+            </div>
+          ) : viewMode === 'table' ? (
+            /* CRYSTAL HIGH-CONTRAST FULL TABLE VIEW WITH STICKY HEADER */
+            <div className="flex-1 overflow-x-auto overflow-y-auto custom-scrollbar w-full min-h-0">
+              <table className="w-full text-start border-collapse">
+                <thead className="bg-[#12141d] border-b-2 border-white/15 text-slate-200 font-extrabold uppercase tracking-wider text-[11px] sticky top-0 z-20 backdrop-blur-md shadow-sm font-mono">
+                  <tr>
+                    <th className="py-4 px-6 text-start font-extrabold">{t('corrective.breakdownLog.thBonId', 'رقم البون')}</th>
+                    <th className="py-4 px-6 text-start font-extrabold">{t('corrective.breakdownLog.thMachineSector', 'الآلة والمنطقة')}</th>
+                    <th className="py-4 px-6 text-start font-extrabold">{t('corrective.breakdownLog.thDomainAction', 'المجال والإجراء')}</th>
+                    <th className="py-4 px-6 text-start font-extrabold">{t('corrective.breakdownLog.thRootCause', 'تشخيص العطل والسبب')}</th>
+                    <th className="py-4 px-6 text-start font-extrabold">{t('corrective.breakdownLog.thTechnician', 'الفني المكلف')}</th>
+                    <th className="py-4 px-6 text-start font-extrabold">{t('corrective.breakdownLog.thDowntime', 'مدة التوقف')}</th>
+                    <th className="py-4 px-6 text-center font-extrabold">{t('corrective.breakdownLog.thStatus', 'الحالة والمطابقة')}</th>
+                    <th className="py-4 px-6 text-center font-extrabold">{t('corrective.breakdownLog.thActions', 'الإجراءات')}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5 font-sans">
-                  {filteredExecutions.length === 0 ? (
-                    <tr>
-                      <td colSpan={8} className="p-0">
-                        <EmptyState 
-                          icon={Wrench}
-                          title={t('corrective.log.noBreakdowns', 'لا توجد تدخلات إصلاحية مطابقة لمعايير البحث')}
-                          description={t('corrective.log.noBreakdownsDesc', 'يمكنك تعديل خيارات الفلترة أو تسجيل تدخل طارئ جديد.')}
-                          color="rose"
-                          className="py-16 opacity-80"
-                          action={
-                            <Button
-                              onClick={() => setIsWizardOpen(true)}
-                              className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center gap-1.5"
-                            >
-                              <Plus className="w-4 h-4" />
-                              <span>{t('corrective.log.newOrder', 'تسجيل تدخل طارئ جديد')}</span>
-                            </Button>
-                          }
-                        />
-                      </td>
-                    </tr>
-                  ) : filteredExecutions.map((ex) => {
+                <tbody className="divide-y divide-white/5 text-xs text-slate-300 font-sans">
+                  {filteredExecutions.map((ex, idx) => {
                     const machine = machinesMap.get(ex.machineId);
                     const sector = machine ? sectorsMap.get(machine.sectorId) : null;
                     const tech = techsMap.get(ex.doneBy || '');
@@ -571,29 +606,36 @@ export function BreakdownLogView({ user }: { user: any }) {
                     return (
                       <tr 
                         key={ex.id}
-                        className="hover:bg-white/[0.04] transition-colors border-b border-white/5 group"
+                        className={cn(
+                          "transition-colors duration-150 group text-start cursor-pointer",
+                          idx % 2 === 0 ? "bg-white/[0.015]" : "bg-white/[0.05]",
+                          "hover:bg-orange-500/15 hover:text-white"
+                        )}
                       >
                         {/* Bon ID */}
-                        <td className="py-3.5 px-4 font-mono font-black text-cyan-400 whitespace-nowrap">
-                          {ex.bonId || `BDC-${ex.id.slice(0, 6)}`}
+                        <td className="py-3.5 px-6 font-mono font-extrabold">
+                          <span className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-cyan-400 text-[11px] inline-flex items-center gap-1.5 font-mono">
+                            <Wrench className="w-3 h-3 text-orange-400" />
+                            {ex.bonId || `BDC-${ex.id.slice(0, 6)}`}
+                          </span>
                         </td>
 
                         {/* Machine & Sector */}
-                        <td className="py-3.5 px-4 whitespace-nowrap">
+                        <td className="py-3.5 px-6">
                           <div className="flex flex-col">
-                            <span className="font-mono font-bold text-white text-xs">
+                            <span className="font-mono font-extrabold text-white text-xs group-hover:text-orange-200 transition-colors uppercase">
                               {machine?.referenceCode || 'M-REG'}
                             </span>
-                            <span className="text-[10px] text-slate-400 font-mono">
-                              {sector?.name || machine?.name || 'عام'}
+                            <span className="text-[10px] text-slate-400 font-mono mt-0.5 font-medium">
+                              {sector?.name || machine?.name || t('common.general', 'عام')}
                             </span>
                           </div>
                         </td>
 
                         {/* Domain & Action */}
-                        <td className="py-3.5 px-4 whitespace-nowrap">
+                        <td className="py-3.5 px-6">
                           <div className="flex items-center gap-1.5">
-                            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-black bg-orange-500/10 text-orange-400 border border-orange-500/20 uppercase">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-mono font-black bg-orange-500/15 text-orange-400 border border-orange-500/30 uppercase">
                               {ex.domainFamily || 'MEC'}
                             </span>
                             <span className="text-[10px] font-bold text-slate-300 font-mono uppercase bg-white/5 px-1.5 py-0.5 rounded border border-white/10">
@@ -603,59 +645,65 @@ export function BreakdownLogView({ user }: { user: any }) {
                         </td>
 
                         {/* Root Cause */}
-                        <td className="py-3.5 px-4 text-slate-100 font-semibold max-w-xs truncate">
-                          <div className="truncate">{ex.rootCause || ex.notes}</div>
+                        <td className="py-3.5 px-6 max-w-xs">
+                          <div className="font-semibold text-slate-100 truncate">{ex.rootCause || ex.notes}</div>
                           {ex.operatorSymptom && (
-                            <span className="block text-[10px] text-slate-400 italic font-normal truncate">
+                            <span className="block text-[10px] text-slate-400 italic font-normal truncate mt-0.5">
                               "{ex.operatorSymptom}"
                             </span>
                           )}
                         </td>
 
                         {/* Technician */}
-                        <td className="py-3.5 px-4 text-slate-300 whitespace-nowrap text-[11px]">
-                          <div className="flex items-center gap-1.5">
-                            <User className="w-3.5 h-3.5 text-slate-400" />
-                            <span>{tech?.name || ex.doneBy || 'فني الصيانة'}</span>
+                        <td className="py-3.5 px-6">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-400">
+                              <User className="w-3 h-3" />
+                            </div>
+                            <span className="font-bold text-slate-200 text-xs">{tech?.name || ex.doneBy || t('corrective.breakdownLog.defaultTech', 'فني الصيانة')}</span>
                           </div>
                         </td>
 
                         {/* Duration */}
-                        <td className="py-3.5 px-4 font-mono text-amber-300 font-bold whitespace-nowrap">
-                          {ex.durationMinutes} دقيقة
+                        <td className="py-3.5 px-6 font-mono text-amber-300 font-extrabold text-xs">
+                          {ex.durationMinutes} {t('unit.minute', 'دقيقة')}
                         </td>
 
                         {/* Status */}
-                        <td className="py-3.5 px-4 text-center whitespace-nowrap">
-                          <div className="flex flex-col items-center gap-1">
+                        <td className="py-3.5 px-6 text-center">
+                          <div className="flex flex-col items-center justify-center gap-1">
                             <span className={cn(
-                              "text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider",
+                              "text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider inline-flex items-center gap-1",
                               ex.outcomeStatus === 'COMPLETED'
                                 ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
                                 : ex.outcomeStatus === 'PENDING_PARTS'
                                   ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
                                   : "bg-purple-500/20 text-purple-400 border border-purple-500/30"
                             )}>
-                              {ex.outcomeStatus === 'COMPLETED' ? 'منجز بالكامل' : ex.outcomeStatus === 'PENDING_PARTS' ? 'مؤجل لقطعة' : 'ورشة التصنيع'}
+                              {ex.outcomeStatus === 'COMPLETED' 
+                                ? t('corrective.breakdownLog.statusCompleted', 'منجز بالكامل') 
+                                : ex.outcomeStatus === 'PENDING_PARTS' 
+                                  ? t('corrective.breakdownLog.statusPendingParts', 'مؤجل لقطعة') 
+                                  : t('corrective.breakdownLog.statusWorkshop', 'ورشة التصنيع')}
                             </span>
                             {ex.reconciliationStatus === 'PENDING_MATCH' && (
                               <span className="text-[9px] font-mono text-amber-300 bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/30">
-                                في انتظار المخزن
+                                {t('corrective.breakdownLog.pendingMatch', 'في انتظار المخزن')}
                               </span>
                             )}
                           </div>
                         </td>
 
-                        {/* Details Action Button */}
-                        <td className="py-3.5 px-4 text-center whitespace-nowrap">
+                        {/* Actions */}
+                        <td className="py-3.5 px-6 text-center" onClick={(e) => e.stopPropagation()}>
                           <button
                             type="button"
                             onClick={() => setSelectedInspectExecution(ex)}
-                            className="p-1.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 transition-all font-bold text-xs inline-flex items-center gap-1.5 cursor-pointer active:scale-95"
-                            title="معاينة تفاصيل البون"
+                            className="p-1.5 px-3 rounded-xl bg-white/5 hover:bg-white/15 text-slate-300 hover:text-white border border-white/10 transition-all font-extrabold text-xs inline-flex items-center gap-1.5 cursor-pointer active:scale-95"
+                            title={t('corrective.breakdownLog.inspectBtnTooltip', 'معاينة تفاصيل البون')}
                           >
                             <Eye className="w-3.5 h-3.5 text-cyan-400" />
-                            <span>معاينة</span>
+                            <span>{t('corrective.breakdownLog.inspectBtn', 'معاينة')}</span>
                           </button>
                         </td>
                       </tr>
@@ -666,119 +714,108 @@ export function BreakdownLogView({ user }: { user: any }) {
             </div>
           ) : (
             /* CARDS VIEW */
-            filteredExecutions.length === 0 ? (
-              <div className="w-full">
-                <EmptyState 
-                  icon={Wrench}
-                  title={t('corrective.log.noBreakdowns', 'لا توجد تدخلات إصلاحية مسجلة')}
-                  description={t('corrective.log.noBreakdownsCardsDesc', 'انقر فوق "تسجيل تدخل طارئ" لبدء إدخال بون جديد.')}
-                  color="rose"
-                  className="py-16 border border-dashed border-white/10 rounded-3xl bg-white/[0.02]"
-                  action={
-                    <Button
-                      onClick={() => setIsWizardOpen(true)}
-                      className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center gap-1.5"
-                    >
-                      <Plus className="w-4 h-4" />
-                      <span>{t('corrective.log.newOrder', 'تسجيل تدخل طارئ جديد')}</span>
-                    </Button>
-                  }
-                />
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {filteredExecutions.map((ex, idx) => {
-                const machine = machinesMap.get(ex.machineId);
-                const sector = machine ? sectorsMap.get(machine.sectorId) : null;
-                const tech = techsMap.get(ex.doneBy || '');
+            <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <AnimatePresence mode="popLayout">
+                  {filteredExecutions.map((ex, idx) => {
+                    const machine = machinesMap.get(ex.machineId);
+                    const sector = machine ? sectorsMap.get(machine.sectorId) : null;
+                    const tech = techsMap.get(ex.doneBy || '');
 
-                return (
-                  <motion.div
-                    key={ex.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: idx * 0.04 }}
-                    className="p-5 bg-[#0a0a0f]/60 hover:bg-[#0a0a0f]/90 border border-white/10 hover:border-white/20 rounded-2xl flex flex-col justify-between gap-4 transition-all shadow-xl backdrop-blur-xl"
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className={cn(
-                        "w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 border font-mono font-bold text-xs",
-                        ex.componentCondition === 'CRITICAL' 
-                          ? "bg-rose-500/10 border-rose-500/30 text-rose-400" 
-                          : "bg-white/10 border-white/20 text-white"
-                      )}>
-                        {ex.domainFamily || 'MEC'}
-                      </div>
-                      
-                      <div className="space-y-1.5 flex-1 text-right">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-sm font-mono font-black text-cyan-400 bg-cyan-500/10 px-2.5 py-0.5 rounded-lg border border-cyan-500/30">
-                            {ex.bonId || `BDC-${ex.id.slice(0, 6)}`}
-                          </span>
-                          
-                          <span className="text-sm font-bold text-white font-mono">
-                            {machine?.referenceCode || 'M-REG'}
-                          </span>
+                    return (
+                      <motion.div
+                        key={ex.id}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
+                        transition={{ delay: idx * 0.03 }}
+                        className="overflow-hidden flex flex-col group relative p-0 hover:border-orange-500/50 transition-all duration-300 border border-white/10 bg-[#0a0b10] rounded-3xl shadow-2xl"
+                      >
+                        <div className="p-6 relative z-10 flex-1 flex flex-col">
+                          <div className="flex justify-between items-start mb-3">
+                            <div className="flex items-center gap-2.5">
+                              <div className={cn(
+                                "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border font-mono font-extrabold text-xs",
+                                ex.componentCondition === 'CRITICAL' 
+                                  ? "bg-rose-500/10 border-rose-500/30 text-rose-400" 
+                                  : "bg-orange-500/10 border-orange-500/20 text-orange-400"
+                              )}>
+                                {ex.domainFamily || 'MEC'}
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="text-xs font-mono font-black text-cyan-400">
+                                  {ex.bonId || `BDC-${ex.id.slice(0, 6)}`}
+                                </span>
+                                <span className="text-sm font-bold text-white group-hover:text-orange-200 transition-colors uppercase font-mono">
+                                  {machine?.referenceCode || 'M-REG'}
+                                </span>
+                              </div>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => setSelectedInspectExecution(ex)}
+                              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 text-slate-300 hover:text-white border border-white/10 transition-colors cursor-pointer"
+                              title={t('corrective.breakdownLog.inspectBtnTooltip', 'معاينة تفاصيل البون')}
+                            >
+                              <Eye className="w-3.5 h-3.5 text-cyan-400" />
+                            </button>
+                          </div>
 
                           {sector && (
-                            <span className="text-[10px] text-slate-400 bg-white/10 px-2 py-0.5 rounded font-mono">
+                            <div className="text-[10px] text-slate-400 bg-white/5 border border-white/10 px-2 py-0.5 rounded font-mono w-fit mb-2">
                               {sector.name}
-                            </span>
+                            </div>
                           )}
 
-                          <span className="text-[10px] font-mono text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded border border-orange-500/20 uppercase font-black">
+                          <p className="text-xs text-slate-300 group-hover:text-white transition-colors duration-300 font-medium line-clamp-2 h-8 leading-relaxed mb-3">
+                            {ex.rootCause || ex.notes}
+                          </p>
+
+                          {ex.operatorSymptom && (
+                            <div className="text-[11px] text-slate-400 italic bg-white/[0.02] border border-white/5 p-2 rounded-xl mb-3">
+                              "{ex.operatorSymptom}"
+                            </div>
+                          )}
+
+                          <div className="mt-auto pt-3 border-t border-white/10 flex items-center justify-between text-[11px]">
+                            <div className="flex items-center gap-1.5 text-slate-300 font-bold">
+                              <User className="w-3.5 h-3.5 text-slate-400" />
+                              <span className="truncate max-w-[110px]">{tech?.name || ex.doneBy || t('corrective.breakdownLog.defaultTech', 'فني الصيانة')}</span>
+                            </div>
+                            <div className="flex items-center gap-1 font-mono text-amber-300 font-extrabold">
+                              <Clock className="w-3.5 h-3.5 text-amber-400" />
+                              <span>{ex.durationMinutes} {t('unit.minute', 'د')}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="bg-white/[0.02] border-t border-white/10 p-3 flex items-center justify-between relative z-10">
+                          <span className={cn(
+                            "text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider",
+                            ex.outcomeStatus === 'COMPLETED'
+                              ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                              : ex.outcomeStatus === 'PENDING_PARTS'
+                                ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                                : "bg-purple-500/20 text-purple-400 border border-purple-500/30"
+                          )}>
+                            {ex.outcomeStatus === 'COMPLETED' 
+                              ? t('corrective.breakdownLog.statusCompleted', 'منجز بالكامل') 
+                              : ex.outcomeStatus === 'PENDING_PARTS' 
+                                ? t('corrective.breakdownLog.statusPendingParts', 'مؤجل لقطعة') 
+                                : t('corrective.breakdownLog.statusWorkshop', 'ورشة التصنيع')}
+                          </span>
+
+                          <span className="text-[10px] font-mono font-bold text-orange-400 bg-orange-500/10 px-2 py-0.5 rounded border border-orange-500/20 uppercase">
                             {ex.actionType || 'REPAIR'}
                           </span>
                         </div>
-
-                        <div className="text-xs text-white font-bold flex items-center gap-2 pt-1">
-                          <span className="text-slate-400 font-mono">السبب:</span>
-                          <span className="text-slate-200">{ex.rootCause || ex.notes}</span>
-                        </div>
-
-                        {ex.operatorSymptom && (
-                          <div className="text-[11px] text-slate-400 italic">
-                            عرض المشكل: "{ex.operatorSymptom}"
-                          </div>
-                        )}
-
-                        <div className="flex items-center gap-4 text-[10px] text-slate-400 font-mono pt-1 flex-wrap">
-                          <span className="flex items-center gap-1">
-                            <User className="w-3.5 h-3.5 text-slate-400" /> {tech?.name || ex.doneBy || 'فني الصيانة'}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Clock className="w-3.5 h-3.5 text-slate-400" /> {ex.durationMinutes} دقيقة
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between border-t border-white/5 pt-3 mt-1">
-                      <span className={cn(
-                        "text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider",
-                        ex.outcomeStatus === 'COMPLETED'
-                          ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                          : ex.outcomeStatus === 'PENDING_PARTS'
-                            ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
-                            : "bg-purple-500/20 text-purple-400 border border-purple-500/30"
-                      )}>
-                        {ex.outcomeStatus === 'COMPLETED' ? 'منجز بالكامل' : ex.outcomeStatus === 'PENDING_PARTS' ? 'مؤجل لقطعة' : 'ورشة التصنيع'}
-                      </span>
-
-                      <button
-                        type="button"
-                        onClick={() => setSelectedInspectExecution(ex)}
-                        className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 transition-all font-bold text-xs flex items-center gap-1.5 cursor-pointer"
-                      >
-                        <Eye className="w-3.5 h-3.5 text-cyan-400" />
-                        <span>التفاصيل</span>
-                      </button>
-                    </div>
-                  </motion.div>
-                );
-              })}
+                      </motion.div>
+                    );
+                  })}
+                </AnimatePresence>
               </div>
-            )
+            </div>
           )}
         </div>
       </GlassCard>

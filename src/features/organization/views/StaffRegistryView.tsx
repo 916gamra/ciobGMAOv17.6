@@ -2,8 +2,12 @@ import { PageHeader } from "@/shared/components/PageHeader";
 import { HeaderBentoCard } from "@/shared/components/HeaderBentoCard";
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence, Variants } from 'motion/react';
-import { Users, UserCircle2, Pocket, Fingerprint, Lock, Edit3, X, Save, Activity, Eye, LayoutGrid, CheckCircle2, XCircle, ShieldCheck } from 'lucide-react';
+import { 
+  Users, UserCircle2, Pocket, Fingerprint, Lock, Edit3, X, Save, Activity, Eye, 
+  LayoutGrid, CheckCircle2, XCircle, ShieldCheck, Binary, UserPlus, KeyRound
+} from 'lucide-react';
 import { GlassCard } from '@/shared/components/GlassCard';
+import { RegistryGuidanceState } from '@/core/ui/RegistryGuidanceState';
 import { UnifiedSearchFilter, FilterGroup } from '@/shared/components/UnifiedSearchFilter';
 import { useAuthSlots } from '@/features/auth/hooks/useAuthSlots';
 import { useNotifications } from '@/shared/hooks/useNotifications';
@@ -157,7 +161,9 @@ export function StaffRegistryView() {
 
       <div className="flex flex-col flex-1 px-6 md:px-8 mt-6 gap-6 min-h-0">
       <motion.div variants={itemVariants} className="flex-1 min-h-0 flex flex-col">
-        <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl h-full flex flex-col bg-[#0a0a0f]/60 backdrop-blur-xl">
+        <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl h-full flex flex-col bg-[#0a0b10]/95 backdrop-blur-xl relative">
+          <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent pointer-events-none" />
+          
           {/* Universal Crystal Command Bar */}
           <div className="p-4 md:p-6 border-b border-white/10 bg-white/[0.02] flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4 shrink-0 relative z-10">
             {/* Right Side (RTL): Context Count */}
@@ -280,110 +286,162 @@ export function StaffRegistryView() {
             </motion.div>
           )}
 
-          <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar bg-[#0a0a0f]/40 p-4 md:p-6">
-            {displayMode === 'table' ? (
-              /* Crystal Table View */
-              <div className="rounded-2xl border border-white/10 overflow-hidden bg-slate-900/60 backdrop-blur-xl shadow-2xl flex flex-col max-h-[600px]">
-                <div className="overflow-x-auto overflow-y-auto custom-scrollbar flex-1">
-                  <table className="w-full text-start border-collapse">
-                    <thead className="bg-[#12141d] border-b-2 border-white/15 text-slate-200 font-extrabold uppercase tracking-wider text-[11px] sticky top-0 z-20 backdrop-blur-md shadow-sm">
-                      <tr>
-                        <th className="py-3.5 px-4 text-start font-bold">{t('staff.thSlotId', 'Slot ID')}</th>
-                        <th className="py-3.5 px-4 text-start font-bold">{t('staff.thNameRole', 'Name & Title')}</th>
-                        <th className="py-3.5 px-4 text-start font-bold">{t('staff.thBadgeId', 'Physical Badge ID')}</th>
-                        <th className="py-3.5 px-4 text-start font-bold">{t('staff.thResponsibility', 'Rank & Responsibility')}</th>
-                        <th className="py-3.5 px-4 text-center font-bold">{t('staff.thStatus', 'Activation Status')}</th>
-                        <th className="py-3.5 px-4 text-center font-bold">{t('staff.thActions', 'Actions')}</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/5 text-xs">
-                      {filteredStaff.map((tech, idx) => (
-                        <tr 
-                          key={tech.id} 
-                          className={cn(
-                            "transition-colors duration-150 group text-start",
-                            idx % 2 === 0 ? "bg-white/[0.015]" : "bg-white/[0.05]",
-                            "hover:bg-indigo-500/15"
+          {/* Content Area - Full Bleed Table / Cards Container */}
+          <div className="flex-1 min-h-0 flex flex-col overflow-hidden bg-transparent relative">
+            {filteredStaff.length === 0 ? (
+              <div className="p-6 md:p-8 flex-1 flex items-center justify-center">
+                <RegistryGuidanceState
+                  id="staff-registry-guidance"
+                  icon={Users}
+                  title={
+                    searchTerm || roleFilter !== 'ALL' || statusFilter !== 'ALL'
+                      ? t('staff.nullResultsTitle', 'لم يتم العثور على أفراد مطابقة')
+                      : t('staff.welcomeTitle', 'سجل الكادر الفني والتشغيلي')
+                  }
+                  subtitle={
+                    searchTerm || roleFilter !== 'ALL' || statusFilter !== 'ALL'
+                      ? t('staff.nullResultsDesc', 'لا توجد مقاعد فنية أو تشغيلية تطابق معايير البحث والفلترة المحددة. يمكنك تصفير الفلاتر أو تفعيل مقعد جديد.')
+                      : t('staff.welcomeDesc', 'إدارة وتخصيص المقاعد الفنية المسبقة (Slots TC-001 / OP-001) وتعيين الشارات الفيزيائية وتتبع حالة التفعيل الميداني.')
+                  }
+                  isSearchActive={Boolean(searchTerm || roleFilter !== 'ALL' || statusFilter !== 'ALL')}
+                  onClearSearch={() => {
+                    setSearchTerm('');
+                    setRoleFilter('ALL');
+                    setStatusFilter('ALL');
+                  }}
+                  primaryAction={{
+                    label: t('staff.configureFirst', 'تهيئة مقعد فني جديد'),
+                    icon: UserPlus,
+                    onClick: () => {
+                      const firstInactive = staffSlots.find(s => !s.isActive) || staffSlots[0];
+                      if (firstInactive) handleEdit(firstInactive);
+                    }
+                  }}
+                  secondaryAction={{
+                    label: t('staff.showAllSlots', 'عرض كافة المقاعد'),
+                    icon: KeyRound,
+                    onClick: () => {
+                      setStatusFilter('ALL');
+                      setRoleFilter('ALL');
+                    }
+                  }}
+                  guidanceCards={[
+                    {
+                      icon: Binary,
+                      title: 'قانون الـ 999 مقعد فني (Dormant Slots)',
+                      description: 'توليد المقاعد مسبقاً برمز تسلسلي (TC-001 إلى TC-999) يضمن التوسع الفوري دون استهلاك موارد قاعدة البيانات.'
+                    },
+                    {
+                      icon: ShieldCheck,
+                      title: 'الشارة الفيزيائية والأمان الميداني',
+                      description: 'ربط المعرف الفيزيائي لكل فني بتسجيلات أوامر العمل يضمن المساءلة الصارمة والأمان في الصيانة الوقائية والعلاجية.'
+                    }
+                  ]}
+                  themeColor="indigo"
+                />
+              </div>
+            ) : displayMode === 'table' ? (
+              /* Crystal High-Contrast Full Table View */
+              <div className="flex-1 overflow-x-auto overflow-y-auto custom-scrollbar w-full min-h-0">
+                <table className="w-full text-start border-collapse">
+                  <thead className="bg-[#12141d] border-b-2 border-white/15 text-slate-200 font-extrabold uppercase tracking-wider text-[11px] sticky top-0 z-20 backdrop-blur-md shadow-sm">
+                    <tr>
+                      <th className="py-4 px-6 text-start font-extrabold">{t('staff.thSlotId', 'Slot ID')}</th>
+                      <th className="py-4 px-6 text-start font-extrabold">{t('staff.thNameRole', 'Name & Title')}</th>
+                      <th className="py-4 px-6 text-start font-extrabold">{t('staff.thBadgeId', 'Physical Badge ID')}</th>
+                      <th className="py-4 px-6 text-start font-extrabold">{t('staff.thResponsibility', 'Rank & Responsibility')}</th>
+                      <th className="py-4 px-6 text-center font-extrabold">{t('staff.thStatus', 'Activation Status')}</th>
+                      <th className="py-4 px-6 text-center font-extrabold">{t('staff.thActions', 'Actions')}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5 text-xs text-slate-300">
+                    {filteredStaff.map((tech, idx) => (
+                      <tr 
+                        key={tech.id} 
+                        className={cn(
+                          "transition-colors duration-150 group text-start cursor-pointer",
+                          idx % 2 === 0 ? "bg-white/[0.015]" : "bg-white/[0.05]",
+                          "hover:bg-indigo-500/15 hover:text-white"
+                        )}
+                      >
+                        {/* Slot ID */}
+                        <td className="py-3.5 px-6 font-mono font-extrabold">
+                          <span className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-white text-[11px] inline-flex items-center gap-2">
+                            <span className={`w-2 h-2 rounded-full ${tech.isActive ? 'bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.8)] animate-pulse' : 'bg-rose-400'}`} />
+                            {tech.id}
+                          </span>
+                        </td>
+
+                        {/* Staff Name & Initials */}
+                        <td className="py-3.5 px-6">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center font-bold text-xs text-white shrink-0">
+                              {tech.initials}
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="font-extrabold text-white text-xs tracking-tight group-hover:text-indigo-200 transition-colors uppercase">
+                                {tech.name}
+                              </span>
+                              <span className="text-[10px] text-slate-400 font-medium">
+                                {tech.role || t('staff.defaultRole', 'Certified Maintenance Tech')}
+                              </span>
+                            </div>
+                          </div>
+                        </td>
+
+                        {/* Physical Badge ID */}
+                        <td className="py-3.5 px-6">
+                          <div className="flex items-center gap-2">
+                            <Fingerprint className="w-3.5 h-3.5 text-slate-400" />
+                            <span className="font-mono text-xs font-bold text-slate-200 bg-white/5 px-2.5 py-1 rounded-md border border-white/10">
+                              {tech.realBadgeId || t('staff.unassignedBadge', 'Not Configured')}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Role / Responsibility */}
+                        <td className="py-3.5 px-6">
+                          <span className="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-slate-300 text-[11px] font-bold inline-flex items-center gap-1">
+                            <Pocket className="w-3 h-3 text-slate-400" />
+                            {tech.role}
+                          </span>
+                        </td>
+
+                        {/* Active Status */}
+                        <td className="py-3.5 px-6 text-center">
+                          {tech.isActive ? (
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 inline-flex items-center gap-1">
+                              <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                              {t('staff.badgeFieldActive', 'Field Active')}
+                            </span>
+                          ) : (
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20 inline-flex items-center gap-1">
+                              <XCircle className="w-3 h-3 text-rose-400" />
+                              {t('staff.badgeDormant', 'Dormant Slot')}
+                            </span>
                           )}
-                        >
-                          {/* Slot ID */}
-                          <td className="py-3.5 px-4 font-mono font-bold">
-                            <span className="px-2.5 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[11px] inline-flex items-center gap-1.5">
-                              <span className={`w-1.5 h-1.5 rounded-full ${tech.isActive ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'}`} />
-                              {tech.id}
-                            </span>
-                          </td>
+                        </td>
 
-                          {/* Staff Name & Initials */}
-                          <td className="py-3.5 px-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center font-bold text-xs text-white shrink-0">
-                                {tech.initials}
-                              </div>
-                              <div className="flex flex-col">
-                                <span className="font-extrabold text-white text-xs tracking-tight group-hover:text-indigo-300 transition-colors uppercase">
-                                  {tech.name}
-                                </span>
-                                <span className="text-[10px] text-slate-400 font-medium">
-                                  {tech.role || t('staff.defaultRole', 'Certified Maintenance Tech')}
-                                </span>
-                              </div>
-                            </div>
-                          </td>
-
-                          {/* Physical Badge ID */}
-                          <td className="py-3.5 px-4">
-                            <div className="flex items-center gap-2">
-                              <Fingerprint className="w-3.5 h-3.5 text-slate-400" />
-                              <span className="font-mono text-xs font-bold text-slate-300 bg-white/5 px-2.5 py-1 rounded-md border border-white/10">
-                                {tech.realBadgeId || t('staff.unassignedBadge', 'Not Configured')}
-                              </span>
-                            </div>
-                          </td>
-
-                          {/* Role / Responsibility */}
-                          <td className="py-3.5 px-4">
-                            <span className="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-slate-300 text-[11px] font-bold inline-flex items-center gap-1">
-                              <Pocket className="w-3 h-3 text-slate-400" />
-                              {tech.role}
-                            </span>
-                          </td>
-
-                          {/* Active Status */}
-                          <td className="py-3.5 px-4 text-center">
-                            {tech.isActive ? (
-                              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 inline-flex items-center gap-1">
-                                <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                                {t('staff.badgeFieldActive', 'Field Active')}
-                              </span>
-                            ) : (
-                              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-400 border border-rose-500/20 inline-flex items-center gap-1">
-                                <XCircle className="w-3 h-3 text-rose-400" />
-                                {t('staff.badgeDormant', 'Dormant Slot')}
-                              </span>
-                            )}
-                          </td>
-
-                          {/* Actions */}
-                          <td className="py-3.5 px-4 text-center">
-                            <button 
-                              onClick={() => handleEdit(tech)}
-                              className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/15 text-slate-300 hover:text-white border border-white/10 transition-colors inline-flex items-center gap-1.5 text-xs font-bold cursor-pointer"
-                              title={t('staff.configureTooltip', 'Configure Slot')}
-                            >
-                              <Edit3 className="w-3.5 h-3.5" />
-                              <span>{t('staff.configureBtn', 'Configure')}</span>
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                        {/* Actions */}
+                        <td className="py-3.5 px-6 text-center" onClick={(e) => e.stopPropagation()}>
+                          <button 
+                            onClick={() => handleEdit(tech)}
+                            className="px-3 py-1.5 rounded-lg bg-white text-slate-950 hover:bg-slate-200 font-extrabold transition-colors inline-flex items-center gap-1.5 text-xs cursor-pointer shadow-sm"
+                            title={t('staff.configureTooltip', 'Configure Slot')}
+                          >
+                            <Edit3 className="w-3.5 h-3.5 text-slate-950" />
+                            <span>{t('staff.configureBtn', 'Configure')}</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             ) : (
               /* Cards View */
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 <AnimatePresence mode="popLayout">
                   {filteredStaff.map((tech) => (
                       <motion.div 
@@ -435,13 +493,7 @@ export function StaffRegistryView() {
                     )
                   )}
                 </AnimatePresence>
-                {filteredStaff.length === 0 && (
-                  <div className="col-span-full py-20 flex flex-col items-center justify-center border border-dashed border-white/10 rounded-3xl bg-white/[0.02]">
-                    <Users className="w-12 h-12 text-slate-600 mb-4" />
-                    <p className="text-sm text-slate-400 font-bold uppercase tracking-widest">{t('staff.noPersonnelTitle', 'No Active Personnel')}</p>
-                    <p className="text-xs text-slate-500 mt-2">{t('staff.noPersonnelDesc', 'Active slots list is currently empty.')}</p>
-                  </div>
-                )}
+                </div>
               </div>
             )}
           </div>

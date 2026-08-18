@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence, Variants } from 'motion/react';
 import { 
-  Search, Folder, Layers, Hash, Plus, Trash2, Database, 
+  Search, Folder, Layers, Hash, Plus, Trash2, Database, FlaskConical,
   RefreshCw, Component, ChevronDown, ChevronRight, Eye, LayoutGrid,
   Wrench, Droplet, Wind, Zap, Box, Cpu, BookOpen, Sparkles
 } from 'lucide-react';
@@ -20,10 +20,11 @@ import { HeaderBentoCard } from '@/shared/components/HeaderBentoCard';
 import type { User } from '@/core/db';
 import { cn, EMPTY_ARRAY } from '@/shared/utils';
 import { useTranslation } from 'react-i18next';
+import { EngineViewSkeleton } from '@/shared/components/EngineViewSkeleton';
 
 export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: User | null }) {
   const { t } = useTranslation();
-  const { families, templates, blueprints, blueprintCounts } = useMachineLibrary();
+  const { families, templates, blueprints, blueprintCounts, isLoading } = useMachineLibrary();
   const [isSyncing, setIsSyncing] = useState(false);
   const [showSyncModal, setShowSyncModal] = useState(false);
   const [deleteContext, setDeleteContext] = useState<{ type: ModalType, id: string } | null>(null);
@@ -185,13 +186,18 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
     }
   };
 
+  if (isLoading) {
+    return <EngineViewSkeleton mode="lab" themeColor="indigo" />;
+  }
+
   return (
-    <div className="flex flex-col h-full bg-[#08080c] text-slate-100 custom-scrollbar overflow-y-auto" dir="ltr">      {/* Page Header */}
+    <div className="flex flex-col h-full bg-[#08080c] text-slate-100 custom-scrollbar overflow-y-auto">
+      {/* Page Header */}
       <div className="px-6 md:px-8 pt-6">
         <PageHeader
           title={t('lab.title', 'Engineering Classification & Modeling Lab')}
           subtitle={t('lab.subtitle', 'Manage and classify engineering families, specification templates, and physical blueprints')}
-          icon={<Database className="w-7 h-7 text-indigo-400" />}
+          icon={<FlaskConical className="w-7 h-7 text-indigo-400" />}
           badgeText={t('lab.badge', 'Engineering Lab')}
           badgeColor="indigo"
         >
@@ -239,11 +245,11 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
         />
 
         {/* Split-Pane Structure */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 flex-1 min-h-0 gap-6 items-stretch">
+        <div className="flex flex-col lg:flex-row flex-1 min-h-0 gap-6">
           
-          {/* Left Sidebar - Machine Taxonomy Tree */}
-          <div className="lg:col-span-4 xl:col-span-4 flex flex-col min-h-[450px] lg:min-h-0">
-            <div className="flex flex-col flex-1 p-0 border border-indigo-500/30 rounded-3xl overflow-hidden shadow-[0_10px_30px_rgba(99,102,241,0.12)] bg-gradient-to-b from-indigo-950/40 via-[#0a0a0f]/95 to-[#0a0a0f]/98 backdrop-blur-xl relative h-full">
+          {/* Left Sidebar - Machine Taxonomy Tree (Chapter 12 Constitution) */}
+          <div className="w-full lg:w-[380px] shrink-0 flex flex-col gap-4">
+            <div className="flex flex-col flex-1 min-h-[420px] p-0 border border-indigo-500/30 rounded-3xl overflow-hidden shadow-[0_10px_30px_rgba(99,102,241,0.12)] bg-gradient-to-b from-indigo-950/40 via-[#0a0a0f]/95 to-[#0a0a0f]/98 backdrop-blur-xl relative h-full">
               
               {/* Background ambient engine accent glow */}
               <div className="absolute -top-12 -right-12 w-48 h-48 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none" />
@@ -278,15 +284,15 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
                   <span>{t('lab.addFamilyBtn', 'Add New Machine Family')}</span>
                 </button>
 
-                {/* Sidebar Search Bar */}
+                {/* Sidebar Search Bar - Crystal High Contrast */}
                 <div className="relative w-full shrink-0 group">
-                  <Search className="w-4 h-4 absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-600 transition-colors pointer-events-none" />
+                  <Search className="w-4 h-4 absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-400 transition-colors pointer-events-none" />
                   <input 
                     type="text" 
                     placeholder={t('lab.searchPlaceholder', 'Search families, templates, or codes...')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-3 rtl:pr-9 rtl:pl-3 py-2.5 text-xs text-slate-950 placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all text-start font-bold shadow-sm"
+                    className="w-full bg-[#0a0a0f] border border-white/10 rounded-xl pl-9 pr-3 rtl:pr-9 rtl:pl-3 py-2.5 text-xs text-white placeholder:text-slate-500 focus:border-indigo-500/50 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all text-start font-medium shadow-inner"
                   />
                 </div>
 
@@ -442,9 +448,12 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
         </div>
 
         {/* Right Main Workspace Canvas */}
-          <div className="lg:col-span-8 xl:col-span-8 flex flex-col min-h-[500px] lg:min-h-0 min-w-0 w-full">
+          <div className="flex-1 flex flex-col min-h-0 min-w-0">
             <GlassCard className="flex flex-col flex-1 !p-0 border-white/10 overflow-hidden shadow-2xl bg-[#0a0b10]/95 backdrop-blur-xl relative w-full h-full min-h-0">
               
+              {/* Engine Accent Line */}
+              <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent pointer-events-none z-20" />
+
               {/* Ambient Engine Accent Rays & Glows (Positioned strictly in background layer behind content) */}
               <div className="absolute -top-12 -right-12 sm:-top-20 sm:-right-20 w-64 h-64 sm:w-80 sm:h-80 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none z-0" />
               <div className="absolute -bottom-12 -left-12 sm:-bottom-20 sm:-left-20 w-64 h-64 sm:w-80 sm:h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none z-0" />

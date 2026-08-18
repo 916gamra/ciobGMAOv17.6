@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  AlertTriangle, Settings2, Plus, Search,
-  Wrench, Zap, Droplets, Wind, Cpu, ShieldAlert,
-  ChevronRight, Activity, Filter, CheckCircle2, FolderTree,
-  Trash2, HelpCircle, Sparkles, RefreshCw, Info, LayoutGrid, Eye,
-  Clock, ArrowRight
+  AlertTriangle, Plus, Search,
+  Wrench, Zap, Droplets, Wind, Cpu,
+  ChevronRight, Activity, Trash2, Sparkles, LayoutGrid, Eye,
+  ArrowRight, Layers, ShieldCheck, CheckCircle2, BookOpen
 } from 'lucide-react';
 import { useFailureCatalog } from '../hooks/useFailureCatalog';
 import { useNotifications } from '@/shared/hooks/useNotifications';
@@ -14,43 +13,37 @@ import { HeaderBentoCard } from '@/shared/components/HeaderBentoCard';
 import { cn } from '@/shared/utils';
 import { useTranslation } from 'react-i18next';
 import { GlassCard } from '@/shared/components/GlassCard';
+import { useTabStore } from '@/app/store';
 
 export function FailureCatalogView() {
   const { t } = useTranslation();
-  const { categories, templates, seedDefaultCategories, addCategory, addTemplate, deleteCategory, deleteTemplate } = useFailureCatalog();
+  const { openTab } = useTabStore();
+  const { categories, templates, seedDefaultCategories, addCategory, deleteCategory, addTemplate, deleteTemplate } = useFailureCatalog();
   const { showSuccess, showError } = useNotifications();
 
+  // Selection state - start as null to show Welcome / Empty State by default (matching EngineeringLabView)
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  
+  // Search states for faults and categories with dedicated clear buttons
   const [searchTerm, setSearchTerm] = useState('');
+  const [categorySearch, setCategorySearch] = useState('');
+
+  // Modals
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
   
   const [isAddingTemplate, setIsAddingTemplate] = useState(false);
   const [newTemplateName, setNewTemplateName] = useState('');
   const [newTemplateDesc, setNewTemplateDesc] = useState('');
-  const [newTemplateSeverity, setNewTemplateSeverity] = useState<'low'|'medium'|'high'|'critical'>('medium');
+  const [newTemplateSeverity, setNewTemplateSeverity] = useState<'low' | 'medium' | 'high' | 'critical'>('medium');
 
-  // Lab View Layout & Display Mode States (Table vs Cards)
-  const [displayMode, setDisplayMode] = useState<'table' | 'cards'>('table');
-  const [activeTab, setActiveTab] = useState<'catalog' | 'diagnostic'>('catalog');
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+  // Display Mode: Table vs Cards (matches EngineeringLabView standard)
+  const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
 
-  // Diagnostic simulator states
-  const [diagnosticStep, setDiagnosticStep] = useState<number | string>(1);
-  const [diagnosticAnswers, setDiagnosticAnswers] = useState<Record<string, string>>({});
-  const [diagnosticOutput, setDiagnosticOutput] = useState<any | null>(null);
-
-  // Seed defaults on mount
+  // Seed defaults on mount if empty
   useEffect(() => {
     seedDefaultCategories();
-  }, []);
-
-  // Select first category by default if none selected
-  useEffect(() => {
-    if (categories.length > 0 && !selectedCategoryId) {
-      setSelectedCategoryId(categories[0].id);
-    }
-  }, [categories, selectedCategoryId]);
+  }, [seedDefaultCategories]);
 
   const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,9 +53,24 @@ export function FailureCatalogView() {
       setNewCategoryName('');
       setIsAddingCategory(false);
       setSelectedCategoryId(id);
-      showSuccess('تم إضافة العائلة بنجاح');
-    } catch (err) {
-      showError('فشل إضافة العائلة');
+      showSuccess(t('corrective.failureCatalog.familyAddedSuccess', 'تم إضافة العائلة بنجاح'));
+    } catch {
+      showError(t('corrective.failureCatalog.familyAddFailed', 'فشل إضافة العائلة'));
+    }
+  };
+
+  const handleDeleteCategory = async (categoryId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (window.confirm(t('corrective.failureCatalog.deleteFamilyConfirm', 'هل أنت متأكد من حذف هذه العائلة وكافة الأعطال المسجلة تحتها نهائياً؟'))) {
+      try {
+        await deleteCategory(categoryId);
+        if (selectedCategoryId === categoryId) {
+          setSelectedCategoryId(null);
+        }
+        showSuccess(t('corrective.failureCatalog.familyDeletedSuccess', 'تم حذف العائلة بنجاح'));
+      } catch {
+        showError(t('corrective.failureCatalog.familyDeleteFailed', 'فشل حذف العائلة'));
+      }
     }
   };
 
@@ -70,285 +78,133 @@ export function FailureCatalogView() {
     e.preventDefault();
     if (!newTemplateName.trim() || !selectedCategoryId) return;
     try {
-      const id = await addTemplate(selectedCategoryId, newTemplateName, newTemplateDesc, newTemplateSeverity);
+      await addTemplate(selectedCategoryId, newTemplateName, newTemplateDesc, newTemplateSeverity);
       setNewTemplateName('');
       setNewTemplateDesc('');
       setNewTemplateSeverity('medium');
       setIsAddingTemplate(false);
-      setSelectedTemplateId(id);
-      showSuccess('تم تسجيل العطل بنجاح في الكتالوج');
-    } catch (err) {
-      showError('فشل تسجيل العطل');
+      showSuccess(t('corrective.failureCatalog.faultSavedSuccess', 'تم تسجيل العطل بنجاح في الكتالوج'));
+    } catch {
+      showError(t('corrective.failureCatalog.faultSaveFailed', 'فشل تسجيل العطل'));
     }
   };
+
+  const handleDeleteTemplate = async (templateId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (window.confirm(t('corrective.failureCatalog.deleteFaultConfirm', 'هل أنت متأكد من حذف هذا العطل من كشوفات المصنع نهائياً؟'))) {
+      try {
+        await deleteTemplate(templateId);
+        showSuccess(t('corrective.failureCatalog.faultDeletedSuccess', 'تم حذف العطل من كتالوج النظام'));
+      } catch {
+        showError(t('common.deleteError', 'فشل الحذف'));
+      }
+    }
+  };
+
+  const selectedCategory = useMemo(() => {
+    return categories.find(c => c.id === selectedCategoryId) || null;
+  }, [categories, selectedCategoryId]);
+
+  const filteredCategories = useMemo(() => {
+    if (!categorySearch.trim()) return categories;
+    const q = categorySearch.toLowerCase();
+    return categories.filter(c => c.name.toLowerCase().includes(q) || (c.description && c.description.toLowerCase().includes(q)));
+  }, [categories, categorySearch]);
 
   const filteredTemplates = useMemo(() => {
     if (!selectedCategoryId) return [];
     let list = templates.filter(t => t.categoryId === selectedCategoryId);
-    if (searchTerm) {
+    if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
-      list = list.filter(t => t.name.toLowerCase().includes(term) || t.description?.toLowerCase().includes(term));
+      list = list.filter(t => 
+        t.name.toLowerCase().includes(term) || 
+        (t.description && t.description.toLowerCase().includes(term)) ||
+        t.id.toLowerCase().includes(term)
+      );
     }
     return list;
   }, [templates, selectedCategoryId, searchTerm]);
 
-  const selectedCategory = categories.find(c => c.id === selectedCategoryId);
-
-  // Automatically select first template when switching tabs/categories to ensure diagnostic labs are loaded
-  useEffect(() => {
-    if (filteredTemplates.length > 0) {
-      if (!selectedTemplateId || !filteredTemplates.some(t => t.id === selectedTemplateId)) {
-        setSelectedTemplateId(filteredTemplates[0].id);
-      }
-    } else {
-      setSelectedTemplateId(null);
-    }
-  }, [filteredTemplates, selectedCategoryId]);
-
-  const selectedTemplate = templates.find(t => t.id === selectedTemplateId);
-
-  // Dynamic content based on active template for the "Diagnostic Simulator"
-  const activeDiagnosticConfig = useMemo(() => {
-    if (!selectedTemplate) return null;
-    const name = selectedTemplate.name.toLowerCase();
-    
-    if (name.includes('fuite') || name.includes('تسرب') || name.includes('leak') || name.includes('mecanique') || name.includes('ميكانيك')) {
-      return {
-        symptom: 'تسرّب هيدروليكي مرئي أو انخفاض في رصيد خزان تزييت المحور الميكانيكي الرئيسي.',
-        steps: [
-          {
-            id: 'step1',
-            question: 'ما هي طبيعة ولون الزيت المتسرب وسرعة تدفقه الملاحظة؟',
-            options: [
-              { label: 'زيت داكن لزج مع تدفق مستمر تحت الضغط', next: 'leak_active' },
-              { label: 'قطرات زيت خفيفة متقطعة عند توقف الآلة فقط', next: 'leak_static' }
-            ]
-          },
-          {
-            id: 'leak_active',
-            question: 'هل يسجل مقياس الضغط الهيدروليكي (Pressure Gauge) انخفاضاً حاداً؟',
-            options: [
-              { label: 'نعم، الضغط ينخفض لأقل من 120 بار (الحد المسموح)', value: 'CRITICAL_LEAK', parts: ['JNT-005', 'OIL-H46'] },
-              { label: 'لا، الضغط مستقر عند مستواه الطبيعي', value: 'VALVE_SEAL_WEAR', parts: ['JNT-012'] }
-            ]
-          },
-          {
-            id: 'leak_static',
-            question: 'هل قمت بفحص جلبة عمود الإدارة الرئيسي (Gasket / Shaft Lip Seal)؟',
-            options: [
-              { label: 'نعم، تظهر عليها علامات تشقق وجفاف مادي', value: 'SHAFT_SEAL_REPLACE', parts: ['JNT-088'] },
-              { label: 'لا، تظهر سليمة والترشيح جانبي من البراغي', value: 'BOLT_LOOSENING_ADJUST', parts: [] }
-            ]
-          }
-        ],
-        results: {
-          CRITICAL_LEAK: {
-            title: 'عطل حرج في مانع التسرب المكبسي النشط',
-            cause: 'تآكل كلي لمانع تسرب المكبس الرئيسي تحت الضغط العالي بسبب التعب المادي للقطعة (Fatigue).',
-            action: 'إيقاف خط الإنتاج فوراً، إفراغ ضغط الـ Accumulator، استبدال طقم موانع التسرب وإضافة زيت هيدروليكي للتعويض.',
-            parts: ['مانع تسرب هيدروليكي معتمد (JNT-005)', 'زيت هيدروليكي ناقل 46 (OIL-H46)']
-          },
-          VALVE_SEAL_WEAR: {
-            title: 'تآكل مانع تسرب الصمام الجانبي',
-            cause: 'تآكل ميكانيكي تدريجي في حلقة إحكام الصمامات الجانبية للموزع.',
-            action: 'جدولة استبدال الحلقة عند التوقف المبرمج القادم، ومراقبة معدل النقص اليومي للزيت.',
-            parts: ['حلقة مانعة للتسرب قياس 12مم (JNT-012)']
-          },
-          SHAFT_SEAL_REPLACE: {
-            title: 'تلف مانع التسرب الدوار لعمود المحرك',
-            cause: 'الاحتكاك المباشر الطويل للسرعات العالية وجفاف مادة الـ Elastomer.',
-            action: 'فك العمود الرئيسي واستبدال جلبة الإحكام الدائرية للعمود لمنع زيادة التسرب للملفات الكهربائية.',
-            parts: ['جلبة إحكام العمود الدوار (JNT-088)']
-          },
-          BOLT_LOOSENING_ADJUST: {
-            title: 'ارتخاء براغي التثبيت وغطاء الخزان',
-            cause: 'الاهتزازات الدائمة للماكينة أدت لخلخلة براغي شد الغطاء الجانبي.',
-            action: 'شد البراغي وفقاً لعزم الدوران القياسي (Torque Table) وتنظيف جسم الماكينة ومتابعة الترشيح.',
-            parts: []
-          }
-        }
-      };
-    }
-
-    if (name.includes('temp') || name.includes('حرار') || name.includes('surchauffe') || name.includes('electrique') || name.includes('كهربا')) {
-      return {
-        symptom: 'ارتفاع غير معتاد في درجة حرارة الملفات أو علبة التروس (تتجاوز 85 درجة مئوية).',
-        steps: [
-          {
-            id: 'step1',
-            question: 'ما هو مصدر الحرارة الرئيسي الذي تم رصده بالحساس الحراري؟',
-            options: [
-              { label: 'الملفات النحاسية وصندوق التوصيلات الكهربائية للمحرك', next: 'motor_coil' },
-              { label: 'علبة التروس الميكانيكية ونقاط كراسي التحميل (Bearings)', next: 'gearbox_bearing' }
-            ]
-          },
-          {
-            id: 'motor_coil',
-            question: 'عند قياس شدة التيار بالأمبيرمتر، هل هناك عدم توازن في الأطوار (Phase Unbalance)؟',
-            options: [
-              { label: 'نعم، طور واحد يسحب تياراً أعلى بـ 15% من البقية', value: 'PHASE_UNBALANCE_CRITICAL', parts: ['CON-SCH09', 'RLY-OVR12'] },
-              { label: 'لا، شدة التيار طبيعية في الأطوار الثلاثة', value: 'MOTOR_FAN_CLOGGED', parts: [] }
-            ]
-          },
-          {
-            id: 'gearbox_bearing',
-            question: 'هل يصدر صوت صفير أو ضوضاء حادة من كرسي التحميل الدوار؟',
-            options: [
-              { label: 'نعم، صوت احتكاك معدني واضح وجاف', value: 'BEARING_DESTRUCTION_RISK', parts: ['ROB-001'] },
-              { label: 'لا، الصوت طبيعي ولكن درجة الزيت متدنية جداً', value: 'OIL_LACK_GREASE', parts: ['GRS-M2'] }
-            ]
-          }
-        ],
-        results: {
-          PHASE_UNBALANCE_CRITICAL: {
-            title: 'عدم اتزان أطوار التيار وحمل زائد ميكانيكي',
-            cause: 'ضعف عزل أحد الملفات أو ارتخاء في تلامسات الموصل المغناطيسي (Contactor).',
-            action: 'فحص ملامسات الكونتاكتور واستبداله، وضبط ريليه الحماية الحرارية لدرء تلف المحرك الكلي.',
-            parts: ['موصل مغناطيسي شنايدر 9 أمبير (CON-SCH09)', 'مرحل حماية حرارية زائدة (RLY-OVR12)']
-          },
-          MOTOR_FAN_CLOGGED: {
-            title: 'انسداد ممرات التهوية أو مروحة التبريد للخلفية',
-            cause: 'تراكم الغبار الصناعي والزيوت على شبكة التبريد الخلفية للمحرك مما يعيق التبادل الحراري.',
-            action: 'إيقاف المحرك، تنظيف الشفرات وضمان تدفق الهواء الطبيعي حول جسم المبدد الحراري.',
-            parts: []
-          },
-          BEARING_DESTRUCTION_RISK: {
-            title: 'تلف داخلي في كريات كرسي التحميل الميكانيكي',
-            cause: 'انتهاء العمر الافتراضي أو تشوه المسارات الداخلية لكريات التحميل مسبباً احتكاكاً هائلاً.',
-            action: 'استبدال المحمل الكروي التالف بالكامل لتفادي تدمير العمود الدوار (Shaft Axis).',
-            parts: ['محمل كروي معتمد ذو صف دبل (ROB-001)']
-          },
-          OIL_LACK_GREASE: {
-            title: 'نقص التزييت وجفاف الشحوم التشغيلية',
-            cause: 'تبخر الشحوم القديمة أو تسرب الزيت الملين لعلبة التروس.',
-            action: 'إعادة حقن الشحوم المخصصة للسرعات العالية ومراجعة مستويات الزيت بانتظام.',
-            parts: ['شحم صناعي مخصص للحرارة والسرعة (GRS-M2)']
-          }
-        }
-      };
-    }
-
-    // Default Fallback Scenario for custom created items
-    return {
-      symptom: 'فشل تشغيلي مفاجئ يتسبب في توقف أو تراجع كفاءة الماكنة مجهول السبب.',
-      steps: [
-        {
-          id: 'step1',
-          question: 'ما هي الاستجابة الأولى للآلة عند الضغط على زر التشغيل الرئيسي؟',
-          options: [
-            { label: 'لا توجد استجابة تامة، والشاشة مطفأة ولا توجد أصوات', next: 'power_lost' },
-            { label: 'يصدر صوت محاولة إقلاع ثم تفصل لوحة الحماية فوراً', next: 'overload_trip' }
-          ]
-        },
-        {
-          id: 'power_lost',
-          question: 'هل قمت بفحص وجود الجهد (380V/220V) في مدخل قاطع اللوحة الرئيسي؟',
-          options: [
-            { label: 'نعم، الجهد مفقود بالكامل من المصدر الخارجي', value: 'GRID_POWER_FAULT', parts: [] },
-            { label: 'نعم الجهد موجود، ومصهر التحكم (Control Fuse) تالف', value: 'FUSE_BLOWN_REPLACE', parts: ['FUS-02A'] }
-          ]
-        },
-        {
-          id: 'overload_trip',
-          question: 'عند تدوير عمود الماكنة يدوياً (والكهرباء مفصولة)، هل يدور بسلاسة؟',
-          options: [
-            { label: 'لا، العمود مصلد ومستعصي تماماً عن الدوران (Grippage)', value: 'MECHANICAL_JAM_BLOCK', parts: [] },
-            { label: 'نعم يدور بسلاسة، ولكن ريليه زيادة الحمل مضبوط بشكل منخفض للغاية', value: 'RELAY_ADJUSTMENT_FAULT', parts: [] }
-          ]
-        }
-      ],
-      results: {
-        GRID_POWER_FAULT: {
-          title: 'انقطاع تيار الشبكة الصناعية الرئيسي',
-          cause: 'خلل في خط التغذية الفرعي للمصنع أو فصل القاطع العمومي في غرفة المحولات.',
-          action: 'الاتصال بفنيي الكهرباء بقسم البنية التحتية لفحص القواطع الكبرى واستعادة التغذية.',
-          parts: []
-        },
-        FUSE_BLOWN_REPLACE: {
-          title: 'تلف مصهر حماية دائرة التحكم والمنطق',
-          cause: 'حدوث دائرة قصر مؤقتة (Short Circuit) في صمام مغناطيسي أو سلك تحكم ملامس للهيكل.',
-          action: 'البحث عن سلك التماس وعزله، ثم استبدال الفتيل التالف بآخر معتمد بنفس السعة.',
-          parts: ['مصهر زجاجي سريع الفصل 2 أمبير (FUS-02A)']
-        },
-        MECHANICAL_JAM_BLOCK: {
-          title: 'استعصاء ميكانيكي حاد في الآليات المتحركة',
-          cause: 'دخول جسم غريب أو كسر جزء داخلي (ترس أو ذراع ميكانيكي) مما قفل حركة العمود.',
-          action: 'تفكيك الغطاء الواقي، الكشف عن سبب الانحشار وإصلاح الأجزاء المكسورة وتنظيف المسار.',
-          parts: []
-        },
-        RELAY_ADJUSTMENT_FAULT: {
-          title: 'خطأ في معيرة تيار الحماية ضد زيادة الحمل',
-          cause: 'تعديل غير دقيق لتدريج الأمبير في ريليه الأوفرلود مما يجعله يتحسس لتيار بدء الإقلاع الطبيعي.',
-          action: 'إعادة ضبط ريليه الأوفرلود وفقاً لبطاقة المحرك الاسمية ونسبة 1.1 من تيار الخدمة.',
-          parts: []
-        }
-      }
-    };
-  }, [selectedTemplate]);
-
-  // Handle Diagnostic Navigation
-  const currentStepData = useMemo(() => {
-    if (!activeDiagnosticConfig) return null;
-    return activeDiagnosticConfig.steps.find(s => s.id === (diagnosticStep === 1 ? 'step1' : diagnosticStep));
-  }, [activeDiagnosticConfig, diagnosticStep]);
-
-  const handleDiagnosticOption = (next: string | undefined, finalValue?: string) => {
-    if (finalValue && activeDiagnosticConfig) {
-      setDiagnosticOutput(activeDiagnosticConfig.results[finalValue]);
-      setDiagnosticStep(4); // Final Output step
-    } else if (next) {
-      setDiagnosticStep(next as any);
-    }
+  const getCategoryIcon = (name: string) => {
+    const lower = (name || '').toLowerCase();
+    if (lower.includes('méc') || lower.includes('ميكانيك') || lower.includes('mechanical')) return <Wrench className="w-4 h-4" />;
+    if (lower.includes('élec') || lower.includes('كهرباء') || lower.includes('electric')) return <Zap className="w-4 h-4" />;
+    if (lower.includes('hydr') || lower.includes('هيدروليك') || lower.includes('hydraulic')) return <Droplets className="w-4 h-4" />;
+    if (lower.includes('pneu') || lower.includes('نيوماتيك') || lower.includes('pneumatic')) return <Wind className="w-4 h-4" />;
+    if (lower.includes('électron') || lower.includes('إلكترونيك') || lower.includes('electronic')) return <Cpu className="w-4 h-4" />;
+    return <Layers className="w-4 h-4" />;
   };
 
-  const resetDiagnosticSimulator = () => {
-    setDiagnosticStep(1);
-    setDiagnosticAnswers({});
-    setDiagnosticOutput(null);
+  const getSeverityBadge = (severity: string) => {
+    switch (severity) {
+      case 'critical':
+        return (
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-300 border border-rose-500/20 font-mono">
+            {t('corrective.failureCatalog.severityCritical', 'حرج')}
+          </span>
+        );
+      case 'high':
+        return (
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-300 border border-amber-500/20 font-mono">
+            {t('corrective.failureCatalog.severityHigh', 'عالي')}
+          </span>
+        );
+      case 'medium':
+        return (
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 font-mono">
+            {t('corrective.failureCatalog.severityMedium', 'متوسط')}
+          </span>
+        );
+      default:
+        return (
+          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-500/10 text-slate-300 border border-slate-500/20 font-mono">
+            {t('corrective.failureCatalog.severityLow', 'منخفض')}
+          </span>
+        );
+    }
   };
-
 
   return (
-    <div className="flex flex-col h-full bg-[#0a0a0f] rounded-3xl border border-white/5 shadow-2xl text-slate-200 font-sans pb-4 overflow-hidden">
-      {/* Header Cockpit */}
-      <div className="p-6 md:p-8 pb-0">
+    <div className="flex flex-col h-full bg-[#08080c] text-slate-100 custom-scrollbar overflow-y-auto">
+      {/* Page Header */}
+      <div className="px-6 md:px-8 pt-6">
         <PageHeader
-          title={t('corrective.failureCatalog.title', 'مختبر الأعطال والشجرة التشخيصية')}
-          subtitle={t('corrective.failureCatalog.subtitle', 'الانتقال من التوثيق الجاف إلى التحليل المتقدم وهندسة الموثوقية الصناعية (RAMS & FMEA) لأصول المصنع.')}
-          icon={<AlertTriangle className="w-7 h-7 text-orange-400" />}
-          badgeText={t('corrective.failureCatalog.badge', 'مختبر الأعطال والتشخيص v17.1')}
+          title={t('corrective.failureCatalog.title', 'كتالوج الأعطال ومصفوفات التشخيص')}
+          subtitle={t('corrective.failureCatalog.subtitle', 'توثيق وتصنيف الأعطال الصناعية ومصفوفات الأعراض وتحديد مستويات الخطورة لربطها بالتدخلات العلاجية وقطع الغيار.')}
+          icon={<Wrench className="w-7 h-7 text-orange-400" />}
+          badgeText={t('corrective.failureCatalog.badge', 'كتالوج الأعطال v17.1')}
           badgeColor="orange"
         >
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <HeaderBentoCard
               title={t('corrective.failureCatalog.statFamilies', 'العائلات الصناعية')}
-              subtitle="CATEGORIES"
+              subtitle="FAMILIES"
               value={categories.length}
               valueUnit={t('unit.family', 'عائلة')}
-              icon={<FolderTree className="w-3.5 h-3.5" />}
+              icon={<Layers className="w-3.5 h-3.5" />}
               color="orange"
             />
             <HeaderBentoCard
               title={t('corrective.failureCatalog.statFailures', 'أنواع الأعطال')}
               subtitle="FAILURES"
               value={templates.length}
-              valueUnit={t('unit.type', 'نوع')}
+              valueUnit={t('unit.type', 'عطل')}
               icon={<AlertTriangle className="w-3.5 h-3.5" />}
               color="amber"
             />
             <HeaderBentoCard
-              title={t('corrective.failureCatalog.statReliability', 'مستوى الموثوقية')}
-              subtitle="RELIABILITY"
-              value="94.2%"
-              valueUnit={t('unit.excellent', 'ممتاز')}
-              icon={<Activity className="w-3.5 h-3.5" />}
+              title={t('corrective.failureCatalog.statReliability', 'تغطية التصنيف')}
+              subtitle="COVERAGE"
+              value="100%"
+              valueUnit="ISO"
+              icon={<ShieldCheck className="w-3.5 h-3.5" />}
               color="emerald"
             />
             <HeaderBentoCard
-              title={t('corrective.failureCatalog.statTreeStatus', 'حالة شجرة التشخيص')}
-              subtitle="DIAGNOSTIC STATUS"
-              value="100%"
-              valueUnit={t('unit.ready', 'جاهزة')}
+              title={t('corrective.failureCatalog.statTreeStatus', 'جاهزية الكتالوج')}
+              subtitle="READINESS"
+              value="READY"
+              valueUnit="v17.1"
               icon={<CheckCircle2 className="w-3.5 h-3.5" />}
               color="blue"
             />
@@ -356,841 +212,501 @@ export function FailureCatalogView() {
         </PageHeader>
       </div>
 
-      {/* Core Workspace Area: Twin Cards Architecture (Left Sidebar + Right Workspace Pane) */}
-      <div className="flex-1 flex flex-col md:flex-row gap-6 p-6 md:p-8 pt-0 overflow-hidden min-h-0">
+      {/* Main Workspace Area: Split-Pane Twin Panels */}
+      <div className="flex-1 flex flex-col lg:flex-row gap-6 p-6 md:p-8 pt-0 overflow-hidden min-h-0">
         
-        {/* Left Navigation Card (RTL): Categories & Target Failure Sub-selector */}
-        <div className="w-full md:w-80 bg-gradient-to-b from-orange-950/40 via-[#0a0a0f]/95 to-[#0a0a0f]/98 backdrop-blur-xl border border-white/10 shadow-2xl rounded-3xl overflow-y-auto custom-scrollbar shrink-0 p-5 flex flex-col justify-between relative">
-          
-          {/* Background ambient engine accent glow */}
-          <div className="absolute -top-12 -right-12 w-48 h-48 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
-
-          <div className="relative z-10 space-y-5">
-            {/* Header Title & Subtitle */}
-            <div className="flex items-center justify-between border-b border-white/10 pb-4">
-              <div>
-                <h3 className="text-xs font-black text-white uppercase tracking-wider">{t('corrective.failureCatalog.familiesAndSectors', 'العائلات والقطاعات')}</h3>
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest block mt-0.5">CATEGORIES & SECTORS</span>
-              </div>
-              <span className="text-[10px] bg-white/10 text-white font-mono px-2.5 py-1 rounded-full border border-white/15 font-bold">
-                {categories.length} Cat
-              </span>
-            </div>
-
-            {/* Prominent Action Button */}
-            <button 
-              type="button"
-              onClick={() => setIsAddingCategory(true)}
-              className="w-full bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-3 py-2.5 text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
-            >
-              <Plus className="w-4 h-4 text-slate-950" />
-              <span>{t('corrective.failureCatalog.newFamilyBtn', 'إضافة عائلة أعطال جديدة')}</span>
-            </button>
+        {/* Left Navigation Panel: Categories & Sectors (Chapter 12 Constitution) */}
+        <div className="w-full lg:w-[360px] shrink-0 flex flex-col gap-4">
+          <div className="flex flex-col flex-1 min-h-[460px] p-0 border border-orange-500/30 rounded-3xl overflow-hidden shadow-[0_10px_30px_rgba(249,115,22,0.12)] bg-gradient-to-b from-orange-950/40 via-[#0a0a0f]/95 to-[#0a0a0f]/98 backdrop-blur-xl relative h-full">
             
-            {/* Categories List */}
-            <div className="space-y-2 pt-1">
-              {categories.map(cat => {
-                const isSelected = selectedCategoryId === cat.id;
-                return (
-                  <button
-                    key={cat.id}
-                    type="button"
-                    onClick={() => {
-                      setSelectedCategoryId(cat.id);
-                      resetDiagnosticSimulator();
-                    }}
-                    className={cn(
-                      "w-full flex items-center justify-between p-3 rounded-xl border transition-all text-xs font-bold cursor-pointer text-start",
-                      isSelected 
-                        ? "bg-white/10 border-white/20 text-white font-extrabold shadow-md"
-                        : "bg-white/[0.03] border-white/10 text-slate-300 hover:bg-white/[0.06] hover:text-white"
-                    )}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={cn(
-                        "p-2 rounded-lg border transition-colors",
-                        isSelected 
-                          ? "bg-white/15 border-white/25 text-white" 
-                          : "bg-white/5 border-white/10 text-slate-300"
-                      )}>
-                        {cat.name.includes('Mécanique') || cat.name.includes('ميكانيك') ? <Wrench className="w-4 h-4" /> :
-                         cat.name.includes('Électrique') || cat.name.includes('كهرباء') ? <Zap className="w-4 h-4" /> :
-                         cat.name.includes('Hydraulique') || cat.name.includes('هيدروليك') ? <Droplets className="w-4 h-4" /> :
-                         cat.name.includes('Pneumatique') || cat.name.includes('نيوماتيك') ? <Wind className="w-4 h-4" /> :
-                         cat.name.includes('Électronique') || cat.name.includes('إلكترونيك') ? <Cpu className="w-4 h-4" /> :
-                         <Settings2 className="w-4 h-4" />}
-                      </div>
-                      <span>{cat.name}</span>
-                    </div>
-                    <ChevronRight className={cn(
-                      "w-4 h-4 transition-transform",
-                      isSelected ? "opacity-100 text-white" : "opacity-40 text-slate-500"
-                    )} />
-                  </button>
-                );
-              })}
-            </div>
+            {/* Background ambient engine accent glow */}
+            <div className="absolute -top-12 -right-12 w-48 h-48 bg-orange-500/15 rounded-full blur-3xl pointer-events-none" />
 
-            {/* Sub-Selector for Failure Templates */}
-            {selectedCategory && (
-              <div className="mt-6 pt-5 border-t border-white/10 space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-black text-white uppercase tracking-wider text-start">العطل المستهدف للدراسة</h3>
-                  <span className="text-[10px] font-mono font-bold text-white bg-white/10 px-2 py-0.5 rounded border border-white/15">
-                    {filteredTemplates.length}
+            <div className="p-5 relative z-10 flex flex-col h-full space-y-4">
+              
+              {/* Title & Badge */}
+              <div className="flex items-center justify-between border-b border-white/10 pb-4 shrink-0">
+                <div>
+                  <h3 className="text-xs font-black text-white uppercase tracking-wider text-start">
+                    {t('corrective.failureCatalog.familiesAndSectors', 'العائلات والقطاعات')}
+                  </h3>
+                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest block mt-0.5 text-start">
+                    CATEGORIES & SECTORS
                   </span>
                 </div>
-                <div className="space-y-2">
-                  {filteredTemplates.map(tmpl => {
-                    const isSelected = selectedTemplateId === tmpl.id;
-                    return (
-                      <button
-                        key={tmpl.id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedTemplateId(tmpl.id);
-                          resetDiagnosticSimulator();
-                        }}
-                        className={cn(
-                          "w-full text-start p-3 rounded-xl text-xs font-bold border transition-all flex items-center justify-between cursor-pointer",
-                          isSelected
-                            ? "bg-white text-slate-950 border-white shadow-md font-extrabold"
-                            : "bg-white/[0.03] text-slate-300 border-white/10 hover:text-white hover:bg-white/[0.06]"
-                        )}
-                      >
-                        <span className="truncate">{tmpl.name}</span>
-                        <span className={cn(
-                          "w-2.5 h-2.5 rounded-full shrink-0 mr-2 border border-black/20",
-                          tmpl.severity === 'critical' ? 'bg-rose-500' :
-                          tmpl.severity === 'high' ? 'bg-orange-500' :
-                          tmpl.severity === 'medium' ? 'bg-amber-500' : 'bg-emerald-500'
-                        )} />
-                      </button>
-                    );
-                  })}
-                  {filteredTemplates.length === 0 && (
-                    <p className="text-xs text-slate-400 text-center py-4 font-medium">يرجى تسجيل عطل أولاً</p>
-                  )}
-                </div>
+                <span className="text-[10px] bg-white/10 text-white font-mono px-2.5 py-1 rounded-full border border-white/15 font-bold">
+                  {categories.length} {t('corrective.failureCatalog.families', 'عائلة')}
+                </span>
               </div>
-            )}
+
+              {/* Category Search Input with Clear Button */}
+              <div className="relative shrink-0">
+                <Search className="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+                <input
+                  type="text"
+                  value={categorySearch}
+                  onChange={(e) => setCategorySearch(e.target.value)}
+                  placeholder={t('corrective.failureCatalog.searchFamilies', 'بحث في العائلات والقطاعات...')}
+                  className="w-full bg-[#111218] border border-white/10 rounded-xl py-2 pl-9 pr-8 rtl:pr-9 rtl:pl-8 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-orange-500/50 transition-colors shadow-inner text-start"
+                />
+                {categorySearch && (
+                  <button
+                    type="button"
+                    onClick={() => setCategorySearch('')}
+                    className="absolute right-2.5 rtl:right-auto rtl:left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white flex items-center justify-center text-[10px] cursor-pointer transition-colors"
+                    title={t('common.clear', 'مسح البحث')}
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+
+              {/* Action Buttons: High-contrast Add Family + Simulator Link */}
+              <div className="space-y-2 shrink-0">
+                <button 
+                  type="button"
+                  onClick={() => setIsAddingCategory(true)}
+                  className="w-full bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                >
+                  <Plus className="w-4 h-4 text-slate-950" />
+                  <span>{t('corrective.failureCatalog.newFamilyBtn', 'إضافة عائلة أعطال جديدة')}</span>
+                </button>
+
+                <button 
+                  type="button"
+                  onClick={() => openTab({ id: 'diagnostic-simulator', portalId: 'CORRECTIVE', title: 'شجرة التشخيص الميداني', component: 'diagnostic-simulator' })}
+                  className="w-full bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 hover:text-white border border-white/10 font-bold rounded-xl px-4 py-2.5 text-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Activity className="w-3.5 h-3.5 text-orange-400" />
+                  <span>{t('corrective.failureCatalog.openSimulatorBtn', 'تشغيل شجرة التشخيص الميداني')}</span>
+                  <ArrowRight className="w-3.5 h-3.5 text-slate-400 rtl:rotate-180" />
+                </button>
+              </div>
+
+              {/* Categories List */}
+              <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-0.5">
+                {filteredCategories.map(cat => {
+                  const isSelected = selectedCategoryId === cat.id;
+                  const catTemplatesCount = templates.filter(t => t.categoryId === cat.id).length;
+                  return (
+                    <div
+                      key={cat.id}
+                      onClick={() => setSelectedCategoryId(isSelected ? null : cat.id)}
+                      className={cn(
+                        "w-full flex items-center justify-between p-3 rounded-2xl border transition-all text-xs font-bold cursor-pointer text-start group",
+                        isSelected 
+                          ? "bg-white/10 border-white/20 text-white font-extrabold shadow-md"
+                          : "bg-white/[0.02] border-white/5 text-slate-300 hover:bg-white/[0.05] hover:text-white"
+                      )}
+                    >
+                      <div className="flex items-center gap-3 overflow-hidden">
+                        <div className={cn(
+                          "p-2 rounded-xl border transition-colors shrink-0",
+                          isSelected 
+                            ? "bg-orange-500/20 border-orange-500/30 text-orange-300" 
+                            : "bg-white/5 border-white/10 text-slate-400"
+                        )}>
+                          {getCategoryIcon(cat.name)}
+                        </div>
+                        <div className="overflow-hidden">
+                          <span className="block text-white font-bold truncate">{cat.name}</span>
+                          <span className="text-[10px] text-slate-400 font-mono">
+                            {catTemplatesCount} {t('corrective.failureCatalog.activeFailuresCount', 'عطل مسجل')}
+                          </span>
+                        </div>
+                      </div>
+                      <ChevronRight className={cn(
+                        "w-4 h-4 transition-transform rtl:rotate-180 shrink-0",
+                        isSelected ? "opacity-100 text-orange-400" : "opacity-30 text-slate-500"
+                      )} />
+                    </div>
+                  );
+                })}
+
+                {filteredCategories.length === 0 && (
+                  <div className="text-center py-10 text-xs text-slate-500 italic space-y-2">
+                    <p>{t('corrective.failureCatalog.noMatchingFamilies', 'لا توجد عائلات مطابقة للبحث')}</p>
+                    <button
+                      type="button"
+                      onClick={() => setCategorySearch('')}
+                      className="px-3 py-1 bg-white/5 hover:bg-white/10 text-slate-300 rounded-lg text-[11px] border border-white/10 cursor-pointer"
+                    >
+                      {t('common.clearFilter', 'إلغاء التصفية')}
+                    </button>
+                  </div>
+                )}
+              </div>
+
+            </div>
           </div>
         </div>
 
-        {/* Right Workspace Pane (RTL): Black Crystal Glass Shell Container */}
-        <div className="flex-1 bg-[#0a0b10]/90 backdrop-blur-xl border border-white/10 shadow-2xl rounded-3xl overflow-hidden relative z-10 flex flex-col min-h-0">
-          
-          {/* Ambient Engine Accent Rays & Glows */}
-          <div className="absolute -top-16 -right-16 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-16 -left-16 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-
-          {/* Fixed Glass Workspace Header */}
-          {selectedCategory ? (
-            <div className="p-6 border-b border-white/10 bg-white/[0.02] space-y-4 shrink-0 relative z-10">
-              {/* Category Info Header Banner */}
-              <div className="flex flex-col sm:flex-row justify-between items-start border-b border-white/10 pb-5 gap-4 text-start">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-orange-500/10 border border-orange-500/25 flex items-center justify-center shrink-0 text-orange-400 shadow-inner">
-                    {selectedCategory.name.includes('Mécanique') || selectedCategory.name.includes('ميكانيك') ? <Wrench className="w-6 h-6" /> :
-                     selectedCategory.name.includes('Électrique') || selectedCategory.name.includes('كهرباء') ? <Zap className="w-6 h-6" /> :
-                     selectedCategory.name.includes('Hydraulique') || selectedCategory.name.includes('هيدروليك') ? <Droplets className="w-6 h-6" /> :
-                     selectedCategory.name.includes('Pneumatique') || selectedCategory.name.includes('نيوماتيك') ? <Wind className="w-6 h-6" /> :
-                     selectedCategory.name.includes('Électronique') || selectedCategory.name.includes('إلكترونيك') ? <Cpu className="w-6 h-6" /> :
-                     <AlertTriangle className="w-6 h-6" />}
-                  </div>
-                  <div className="text-start">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-mono font-bold bg-white/10 text-white px-2 py-0.5 rounded border border-white/15">
-                        {selectedCategory.id.substring(0, 4).toUpperCase()}
-                      </span>
-                      <h3 className="text-lg font-extrabold text-white tracking-tight">
-                        {selectedCategory.name}
-                      </h3>
-                      <span className="text-[10px] font-mono font-bold bg-orange-500/20 text-orange-300 border border-orange-500/30 px-2 py-0.5 rounded-full">
-                        {filteredTemplates.length} عطل مسجل
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider">
-                      {selectedTemplate 
-                        ? `العطل النشط: ${selectedTemplate.name} (TR-${(selectedTemplate.id.substring(0,4)).toUpperCase()})` 
-                        : 'كتالوج الأعطال ومصفوفات التشخيص الحركي الميداني'}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2.5 self-end sm:self-auto flex-wrap">
-                  {/* Primary Add Fault Action */}
-                  <button 
-                    type="button"
-                    onClick={() => setIsAddingTemplate(true)}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-white hover:bg-slate-200 text-slate-950 font-extrabold rounded-xl transition-all shadow-lg text-xs cursor-pointer active:scale-95 shrink-0"
-                  >
-                    <Plus className="w-4 h-4 text-slate-950" />
-                    <span>تسجيل عطل جديد</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Navigation Tabs Bar */}
-              <div className="flex items-center gap-6 mt-6 border-b border-white/10 w-full overflow-x-auto custom-scrollbar">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('catalog')}
-                  className={cn(
-                    "pb-3 text-sm font-bold transition-all whitespace-nowrap flex items-center justify-center gap-2 cursor-pointer border-b-2 relative",
-                    activeTab === 'catalog' 
-                      ? "text-white border-orange-500" 
-                      : "text-slate-500 border-transparent hover:text-slate-300 hover:border-white/20"
-                  )}
-                >
-                  <FolderTree className={cn("w-4 h-4", activeTab === 'catalog' ? "text-orange-400" : "text-slate-500")} />
-                  <span>كتالوج الأعطال</span>
-                  <span className={cn(
-                    "px-1.5 py-0.5 rounded text-[10px] font-mono border",
-                    activeTab === 'catalog' ? "bg-orange-500/20 border-orange-500/30 text-orange-300" : "bg-white/5 border-white/10 text-slate-500"
-                  )}>
-                    {filteredTemplates.length}
-                  </span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('diagnostic')}
-                  className={cn(
-                    "pb-3 text-sm font-bold transition-all whitespace-nowrap flex items-center justify-center gap-2 cursor-pointer border-b-2 relative",
-                    activeTab === 'diagnostic' 
-                      ? "text-white border-orange-500" 
-                      : "text-slate-500 border-transparent hover:text-slate-300 hover:border-white/20"
-                  )}
-                >
-                  <Activity className={cn("w-4 h-4", activeTab === 'diagnostic' ? "text-orange-400" : "text-slate-500")} />
-                  <span>شجرة التشخيص الميداني</span>
-                </button>
-              </div>
-            </div>
-          ) : null}
-
-          {/* Workspace Body Content (Scrollable) */}
-          <div className="flex-1 p-6 md:p-8 space-y-6 overflow-y-auto custom-scrollbar relative z-10 flex flex-col min-h-0">
-            <AnimatePresence mode="wait">
-
-            {/* WELCOME / EMPTY SELECTION EXPLORER STATE */}
-            {!selectedCategory ? (
-              <motion.div
-                key="welcome-explorer"
-                initial={{ opacity: 0, scale: 0.98, y: 15 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.98, y: -15 }}
-                transition={{ duration: 0.3 }}
-                className="flex flex-col items-center justify-center py-10 md:py-16 text-center max-w-4xl mx-auto space-y-8"
-              >
-                {/* Glowing Engine Icon Container */}
-                <div className="relative">
-                  <div className="w-20 h-20 rounded-3xl bg-orange-500/10 border border-orange-500/25 flex items-center justify-center text-orange-400 shadow-[0_0_40px_rgba(249,115,22,0.2)]">
-                    <ShieldAlert className="w-10 h-10" />
-                  </div>
-                  <div className="absolute -bottom-2 -right-2 w-8 h-8 rounded-xl bg-slate-900 border border-orange-500/40 flex items-center justify-center text-orange-300 shadow-md">
-                    <Sparkles className="w-4 h-4" />
-                  </div>
-                </div>
-
-                <div className="space-y-3 max-w-2xl">
-                  <h2 className="text-2xl md:text-3xl font-black text-white tracking-tight">
-                    مستكشف الأعطال والشجرة التشخيصية
-                  </h2>
-                  <p className="text-sm text-slate-300 leading-relaxed font-medium">
-                    المركز الهندسي الذكي لكتالوج الأعطال، ومصفوفات التشخيص الحركي الميداني.
-                  </p>
-                </div>
-
-                {/* Quick Action Buttons */}
-                <div className="flex items-center gap-3 flex-wrap justify-center">
-                  <button
-                    type="button"
-                    onClick={() => setIsAddingCategory(true)}
-                    className="px-6 py-3 bg-white text-slate-950 font-extrabold rounded-2xl shadow-xl hover:bg-slate-200 transition-all flex items-center gap-2 text-xs cursor-pointer active:scale-95"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>إضافة عائلة أعطال جديدة</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={seedDefaultCategories}
-                    className="px-6 py-3 bg-white/[0.05] hover:bg-white/10 text-white font-bold rounded-2xl border border-white/10 transition-all flex items-center gap-2 text-xs cursor-pointer"
-                  >
-                    <RefreshCw className="w-4 h-4 text-orange-400" />
-                    <span>تحديث واستعادة الكتالوج القياسي</span>
-                  </button>
-                </div>
-
-                {/* Bento Grid Feature Highlight Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full text-start pt-6">
-                  
-                  <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/10 hover:border-orange-500/30 transition-all duration-300 space-y-2 group">
-                    <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-400 flex items-center justify-center">
-                      <FolderTree className="w-5 h-5" />
-                    </div>
-                    <h4 className="text-sm font-bold text-white group-hover:text-orange-300 transition-colors">1. الكتالوج والتصنيف الصناعي</h4>
-                    <p className="text-xs text-slate-400 leading-relaxed">
-                      تصنيف الأعطال حسب القطاعات الهندسية (ميكانيك، كهرباء، هيدروليك، نيوماتيك) مع كود معايرة معتمد ومستوى خطورة لكل عَرَض.
-                    </p>
-                  </div>
-
-                  <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/10 hover:border-orange-500/30 transition-all duration-300 space-y-2 group">
-                    <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-400 flex items-center justify-center">
-                      <Activity className="w-5 h-5" />
-                    </div>
-                    <h4 className="text-sm font-bold text-white group-hover:text-orange-300 transition-colors">2. الشجرة التشخيصية التفاعلية</h4>
-                    <p className="text-xs text-slate-400 leading-relaxed">
-                      محاكاة خطوة بخطوة للفحص الميداني واختبارات القياس، لتحديد السبب الحركي المادي والقطع الواجب سحبها من المخزن.
-                    </p>
-                  </div>
-
-                </div>
-              </motion.div>
-            ) : null}
+        {/* Right Main Workspace Canvas (Exact architectural parity with EngineeringLabView) */}
+        <div className="flex-1 flex flex-col min-h-0 min-w-0">
+          <GlassCard className="flex flex-col flex-1 !p-0 border-white/10 overflow-hidden shadow-2xl bg-[#0a0b10]/95 backdrop-blur-xl relative w-full h-full min-h-0">
             
-            {/* VIEWMODE 1: CLASSIC FAILURE CATALOG (Table or Cards View) */}
-            {selectedCategory && activeTab === 'catalog' && (
-              <motion.div
-                key="catalog"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="flex-1 flex flex-col min-h-0 space-y-4 text-start"
-              >
-                {/* Crystal Container Toolbar */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-[#0a0a0f]/90 p-3 rounded-2xl border border-white/10 shadow-xl">
-                  
-                  {/* Right Side (RTL): Count Text */}
-                  <div className="flex items-center gap-3 shrink-0">
-                    <span className="text-xs font-bold text-slate-200 bg-white/[0.04] px-4 py-2 rounded-xl border border-white/10">
-                      {filteredTemplates.length} أعطال ضمن <strong className="text-white font-black">{selectedCategory.name}</strong>
-                    </span>
-                  </div>
+            {/* Engine Accent Line */}
+            <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-transparent via-orange-500/30 to-transparent pointer-events-none z-20" />
 
-                  {/* Center: Search filter for failures */}
-                  <div className="flex-1 max-w-md w-full">
-                    <div className="relative w-full">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                      <input 
-                        type="text" 
-                        placeholder={t('corrective.failures.search', "Search failures...")}
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full bg-[#161821] hover:bg-[#1a1c26] border border-white/10 hover:border-white/20 rounded-xl py-2 pl-10 pr-4 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-orange-500/50 focus:bg-slate-900 transition-colors shadow-inner text-left"
-                      />
+            {/* Ambient Engine Accent Rays & Glows (Positioned strictly in background) */}
+            <div className="absolute -top-12 -right-12 sm:-top-20 sm:-right-20 w-64 h-64 sm:w-80 sm:h-80 bg-orange-500/15 rounded-full blur-3xl pointer-events-none z-0" />
+            <div className="absolute -bottom-12 -left-12 sm:-bottom-20 sm:-left-20 w-64 h-64 sm:w-80 sm:h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none z-0" />
+
+            {/* Foreground Content Container with relative z-10 */}
+            <div className="relative z-10 flex flex-col flex-1 min-h-0 w-full h-full">
+              
+              <AnimatePresence mode="wait">
+                {selectedCategory ? (
+                  <motion.div
+                    key={`category-${selectedCategory.id}`}
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -15 }}
+                    className="flex flex-col h-full min-h-0 p-6 md:p-8"
+                  >
+                    {/* Category Header info (Header & Actions matching EngineeringLabView standard) */}
+                    <div className="flex flex-col sm:flex-row justify-between items-start border-b border-white/10 pb-6 mb-6 gap-4 text-start">
+                      <div className="flex items-start gap-4">
+                        <div className="w-12 h-12 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shadow-inner shrink-0 text-orange-400">
+                          {getCategoryIcon(selectedCategory.name)}
+                        </div>
+                        <div className="text-start">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-mono font-bold bg-white/10 text-white px-2 py-0.5 rounded border border-white/15">
+                              {templates.filter(t => t.categoryId === selectedCategory.id).length} {t('corrective.failureCatalog.activeFailuresCount', 'عطل')}
+                            </span>
+                            <h3 className="text-lg font-bold text-white tracking-tight">{selectedCategory.name}</h3>
+                          </div>
+                          <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider">
+                            {selectedCategory.description || t('corrective.failureCatalog.categoryHeaderSubtitle', 'كتالوج الأعطال ومصفوفات الأعراض الميدانية')}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Top Action Buttons: View Switcher, Add Fault, Delete Category */}
+                      <div className="flex items-center gap-2">
+                        {/* View Switcher matching EngineeringLab standard */}
+                        <div className="flex items-center gap-1.5 p-1 bg-[#08080c] rounded-xl border border-white/10">
+                          <button
+                            type="button"
+                            onClick={() => setViewMode('table')}
+                            className={cn(
+                              "p-1.5 rounded-lg transition-all cursor-pointer",
+                              viewMode === 'table' ? "bg-white text-slate-950 shadow-sm" : "text-slate-400 hover:text-white"
+                            )}
+                            title={t('common.tableView', 'عرض الجدول الكريستالي')}
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setViewMode('cards')}
+                            className={cn(
+                              "p-1.5 rounded-lg transition-all cursor-pointer",
+                              viewMode === 'cards' ? "bg-white text-slate-950 shadow-sm" : "text-slate-400 hover:text-white"
+                            )}
+                            title={t('common.cardsView', 'عرض البطاقات')}
+                          >
+                            <LayoutGrid className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        {/* Add Fault Primary Button */}
+                        <button 
+                          type="button"
+                          onClick={() => setIsAddingTemplate(true)}
+                          className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
+                        >
+                          <Plus className="w-3.5 h-3.5 text-slate-950" />
+                          <span>{t('corrective.failureCatalog.addFaultBtn', 'تسجيل عطل جديد')}</span>
+                        </button>
+                        
+                        {/* Delete Category Button */}
+                        <button 
+                          type="button"
+                          onClick={(e) => handleDeleteCategory(selectedCategory.id, e)}
+                          className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500/20 transition-all cursor-pointer"
+                          title={t('common.delete', 'حذف العائلة')}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Left Side (RTL): View Switcher */}
-                  <div className="flex items-center gap-1 p-1 bg-[#161821] rounded-xl border border-white/10 shrink-0">
-                    <button
-                      type="button"
-                      onClick={() => setDisplayMode('table')}
-                      className={cn(
-                        "p-1.5 rounded-lg transition-all cursor-pointer",
-                        displayMode === 'table' ? "bg-white text-slate-950 shadow-sm" : "text-slate-500 hover:text-white"
-                      )}
-                      title="عرض الجدول"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setDisplayMode('cards')}
-                      className={cn(
-                        "p-1.5 rounded-lg transition-all cursor-pointer",
-                        displayMode === 'cards' ? "bg-white text-slate-950 shadow-sm" : "text-slate-500 hover:text-white"
-                      )}
-                      title="عرض البطاقات"
-                    >
-                      <LayoutGrid className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
+                    {/* Sub-bar: Title & Search with Clear Button */}
+                    <div className="flex-1 flex flex-col min-h-0 text-start">
+                      <div className="flex items-center justify-between mb-4 flex-col sm:flex-row gap-3">
+                        <div className="text-sm font-bold text-slate-200">
+                          {t('corrective.failureCatalog.failuresUnderFamilyTitle', 'الأعطال المسجلة ضمن هذه العائلة')} ({filteredTemplates.length})
+                        </div>
 
-                {filteredTemplates.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-20 text-center border border-dashed border-white/10 rounded-3xl bg-white/[0.01]">
-                    <div className="w-16 h-16 rounded-2xl bg-orange-500/10 flex items-center justify-center mb-4 border border-orange-500/20 text-orange-400">
-                      <AlertTriangle className="w-8 h-8" />
-                    </div>
-                    <h3 className="text-base font-bold text-white mb-1">لا توجد أعطال مسجلة</h3>
-                    <p className="text-xs text-slate-400 max-w-sm mb-6">لم يتم تسجيل أي أعطال في هذه العائلة بعد، أو لم يتم العثور على نتائج للبحث.</p>
-                    <button 
-                      type="button"
-                      onClick={() => setIsAddingTemplate(true)}
-                      className="px-5 py-2.5 bg-white text-slate-950 font-extrabold rounded-xl shadow-md transition-all text-xs cursor-pointer"
-                    >
-                      إضافة العطل الأول
-                    </button>
-                  </div>
-                ) : displayMode === 'table' ? (
-                  /* Crystal High-Contrast Table View */
-                  <div className="rounded-2xl border border-white/10 bg-[#0a0b10]/90 backdrop-blur-xl shadow-2xl overflow-hidden">
-                    <table className="w-full text-start border-collapse">
-                      <thead className="bg-white/[0.04] border-b border-white/10 text-slate-300 font-bold text-xs uppercase tracking-wider text-start">
-                        <tr>
-                          <th className="p-4 text-start">اسم العطل والأعراض الملاحظة</th>
-                          <th className="p-4 text-start">رمز المعايرة</th>
-                          <th className="p-4 text-start">مستوى الخطورة</th>
-                          <th className="p-4 text-start">شجرة التشخيص</th>
-                          <th className="p-4 text-end">إجراءات</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-white/5 text-xs">
-                        {filteredTemplates.map(template => {
-                          const isSelected = selectedTemplateId === template.id;
-                          return (
-                            <tr 
-                              key={template.id} 
-                              onClick={() => setSelectedTemplateId(template.id)}
-                              className={cn(
-                                "hover:bg-white/[0.04] transition-colors cursor-pointer text-start",
-                                isSelected ? "bg-orange-500/10" : ""
-                              )}
+                        {/* Search Input Bar with Clear Button (زر المسح) */}
+                        <div className="relative w-full sm:w-72">
+                          <Search className="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
+                          <input
+                            type="text"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            placeholder={t('corrective.failureCatalog.searchPlaceholder', 'بحث باسم العطل أو الأعراض...')}
+                            className="w-full bg-[#111218] border border-white/10 rounded-xl py-2 pl-9 pr-8 rtl:pr-9 rtl:pl-8 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-orange-500/50 transition-colors shadow-inner text-start"
+                          />
+                          {searchTerm && (
+                            <button
+                              type="button"
+                              onClick={() => setSearchTerm('')}
+                              className="absolute right-2.5 rtl:right-auto rtl:left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white flex items-center justify-center text-[10px] cursor-pointer transition-colors"
+                              title={t('common.clear', 'مسح')}
                             >
-                              <td className="p-4 font-bold text-white">
-                                <div className="flex flex-col">
-                                  <span className="text-sm font-extrabold text-white">{template.name}</span>
-                                  {template.description && (
-                                    <span className="text-slate-400 font-normal text-xs line-clamp-1 mt-0.5">{template.description}</span>
+                              ✕
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Main List / Table / Empty States */}
+                      <div className="flex-1 overflow-y-auto custom-scrollbar">
+                        {templates.filter(t => t.categoryId === selectedCategory.id).length === 0 ? (
+                          /* Empty state when NO templates exist under this category - matching EngineeringLabView */
+                          <div className="p-12 border border-dashed border-white/10 rounded-2xl text-center bg-white/[0.01]">
+                            <AlertTriangle className="w-10 h-10 text-slate-600 mx-auto mb-2" />
+                            <p className="text-xs text-slate-400">{t('corrective.failureCatalog.noFaultsFound', 'لا توجد أعطال مسجلة ضمن هذه العائلة حتى الآن.')}</p>
+                            <button 
+                              type="button"
+                              onClick={() => setIsAddingTemplate(true)}
+                              className="mt-4 bg-white text-slate-950 hover:bg-slate-200 font-extrabold text-xs rounded-xl px-4 py-2 transition-all inline-flex items-center gap-1.5 shadow-md cursor-pointer"
+                            >
+                              <Plus className="w-3.5 h-3.5" />
+                              <span>{t('corrective.failureCatalog.addFirstFaultBtn', 'إضافة أول عطل')}</span>
+                            </button>
+                          </div>
+                        ) : filteredTemplates.length === 0 ? (
+                          /* Empty state when search filters everything out */
+                          <div className="p-12 border border-dashed border-white/10 rounded-2xl text-center bg-white/[0.01]">
+                            <Search className="w-10 h-10 text-slate-600 mx-auto mb-2" />
+                            <p className="text-xs text-slate-400">{t('corrective.failureCatalog.nullResultsDesc', 'لا توجد أعطال تطابق معايير البحث المحددة.')}</p>
+                            <button 
+                              type="button"
+                              onClick={() => setSearchTerm('')}
+                              className="mt-4 px-4 py-2 bg-white/5 hover:bg-white/10 text-white font-bold rounded-xl border border-white/10 text-xs transition-all cursor-pointer"
+                            >
+                              {t('corrective.failureCatalog.resetSearch', 'إلغاء التصفية ومسح البحث')}
+                            </button>
+                          </div>
+                        ) : viewMode === 'cards' ? (
+                          /* Cards Grid View - Styled like EngineeringLabView */
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4">
+                            {filteredTemplates.map(item => (
+                              <div 
+                                key={item.id}
+                                className="bg-[#08080c]/80 border border-white/10 hover:border-white/20 rounded-2xl p-5 hover:bg-white/[0.03] transition-all relative overflow-hidden group text-start flex flex-col justify-between shadow-lg"
+                              >
+                                <div>
+                                  <div className="flex items-start justify-between mb-4 flex-row">
+                                    <div className="flex items-center gap-2">
+                                      <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                                        <AlertTriangle className="w-4 h-4 text-orange-400" />
+                                      </div>
+                                      <span className="text-xs font-mono font-bold text-white uppercase tracking-wider bg-white/5 border border-white/10 px-2.5 py-1 rounded-lg">
+                                        {item.id.length > 8 ? `TR-${item.id.slice(-4).toUpperCase()}` : item.id}
+                                      </span>
+                                    </div>
+                                    
+                                    <div className="flex items-center gap-1.5">
+                                      {getSeverityBadge(item.severity || 'medium')}
+                                      <button 
+                                        type="button"
+                                        onClick={(e) => handleDeleteTemplate(item.id, e)}
+                                        className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/25 text-red-400 border border-white/5 transition-colors cursor-pointer"
+                                        title={t('common.delete', 'حذف')}
+                                      >
+                                        <Trash2 className="w-3.5 h-3.5" />
+                                      </button>
+                                    </div>
+                                  </div>
+
+                                  <h4 className="text-sm font-bold text-white mb-2">{item.name}</h4>
+
+                                  {item.description && (
+                                    <p className="text-xs text-slate-400 leading-relaxed line-clamp-2 mb-3">
+                                      {item.description}
+                                    </p>
                                   )}
                                 </div>
-                              </td>
 
-                              <td className="p-4">
-                                <span className="font-mono text-xs font-bold text-white bg-white/10 px-2 py-0.5 rounded border border-white/15">
-                                  TR-{(template.id.substring(0,4)).toUpperCase()}
-                                </span>
-                              </td>
-
-                              <td className="p-4">
-                                <span className={cn(
-                                  "px-2.5 py-1 rounded text-[10px] font-bold border font-mono tracking-wider",
-                                  template.severity === 'critical' ? "bg-rose-500/20 text-rose-300 border-rose-500/30" :
-                                  template.severity === 'high' ? "bg-orange-500/20 text-orange-300 border-orange-500/30" :
-                                  template.severity === 'medium' ? "bg-amber-500/20 text-amber-300 border-amber-500/30" :
-                                  "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
-                                )}>
-                                  {template.severity === 'critical' ? 'CRITICAL / حرج' :
-                                   template.severity === 'high' ? 'HIGH / عالي' :
-                                   template.severity === 'medium' ? 'MEDIUM / متوسط' : 'LOW / منخفض'}
-                                </span>
-                              </td>
-
-                              <td className="p-4">
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setSelectedTemplateId(template.id);
-                                    resetDiagnosticSimulator();
-                                    setActiveTab('diagnostic');
-                                  }}
-                                  className="px-3 py-1.5 rounded-xl bg-orange-500/15 hover:bg-orange-500/25 text-orange-300 border border-orange-500/30 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
-                                >
-                                  <Activity className="w-3.5 h-3.5" />
-                                  <span>تشخيص العطل ⚡</span>
-                                </button>
-                              </td>
-
-                              <td className="p-4 text-end">
-                                <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
+                                <div className="border-t border-white/5 pt-3 mt-3 flex justify-between items-center text-xs">
                                   <button
                                     type="button"
-                                    onClick={async () => {
-                                      if (window.confirm('هل أنت متأكد من حذف هذا العطل من كشوفات المصنع نهائياً؟')) {
-                                        await deleteTemplate(template.id);
-                                        showSuccess('تم حذف العطل من كتالوج النظام');
-                                      }
-                                    }}
-                                    className="p-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 hover:bg-rose-500/20 transition-all cursor-pointer"
-                                    title="حذف العطل"
+                                    onClick={() => openTab({ id: 'diagnostic-simulator', portalId: 'CORRECTIVE', title: 'شجرة التشخيص الميداني', component: 'diagnostic-simulator' })}
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-500/10 hover:bg-orange-500/20 text-orange-300 border border-orange-500/25 font-bold transition-all cursor-pointer"
                                   >
-                                    <Trash2 className="w-3.5 h-3.5" />
+                                    <Activity className="w-3.5 h-3.5" />
+                                    <span>{t('corrective.failureCatalog.diagnoseAction', 'تشخيص العطل')}</span>
                                   </button>
+                                  <span className="text-[10px] text-slate-500 font-mono">ISO 14224</span>
                                 </div>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                ) : (
-                  /* Cards Grid View */
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {filteredTemplates.map(template => {
-                      const isSelected = selectedTemplateId === template.id;
-                      return (
-                        <div
-                          key={template.id}
-                          onClick={() => setSelectedTemplateId(template.id)}
-                          className={cn(
-                            "p-5 rounded-2xl border transition-all duration-300 relative overflow-hidden cursor-pointer group text-start flex flex-col justify-between shadow-lg",
-                            isSelected 
-                              ? "bg-white/[0.06] border-orange-500 shadow-[0_0_25px_rgba(249,115,22,0.2)] scale-[1.01]" 
-                              : "bg-[#08080c]/80 border-white/10 text-slate-300 hover:border-orange-500/30 hover:bg-white/[0.03]"
-                          )}
-                        >
-                          {/* Selected Glow ray */}
-                          {isSelected && (
-                            <div className="bg-orange-500/20 rounded-full blur-xl absolute -bottom-10 left-1/2 -translate-x-1/2 w-28 h-16 pointer-events-none z-0" />
-                          )}
-
-                          <div className="relative z-10 w-full h-full flex flex-col justify-between space-y-4">
-                            <div>
-                              <div className="flex items-start justify-between gap-2 mb-2">
-                                <h4 className="text-base font-bold text-white group-hover:text-orange-300 transition-colors">
-                                  {template.name}
-                                </h4>
-                                
-                                <button
-                                  type="button"
-                                  onClick={async (e) => {
-                                    e.stopPropagation();
-                                    if (window.confirm('هل أنت متأكد من حذف هذا العطل من كشوفات المصنع نهائياً؟')) {
-                                      await deleteTemplate(template.id);
-                                      showSuccess('تم حذف العطل من كتالوج النظام');
-                                    }
-                                  }}
-                                  className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all opacity-0 group-hover:opacity-100 shrink-0 cursor-pointer"
-                                  title="حذف العطل"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
                               </div>
-
-                              {template.description && (
-                                <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">{template.description}</p>
-                              )}
-                            </div>
-
-                            <div className="pt-3 border-t border-white/5 flex items-center justify-between gap-2 flex-wrap">
-                              <span className={cn(
-                                "px-2.5 py-0.5 rounded text-[10px] font-bold border font-mono tracking-wider",
-                                template.severity === 'critical' ? "bg-rose-500/20 text-rose-300 border-rose-500/30" :
-                                template.severity === 'high' ? "bg-orange-500/20 text-orange-300 border-orange-500/30" :
-                                template.severity === 'medium' ? "bg-amber-500/20 text-amber-300 border-amber-500/30" :
-                                "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
-                              )}>
-                                {template.severity === 'critical' ? 'CRITICAL / حرج' :
-                                 template.severity === 'high' ? 'HIGH / عالي' :
-                                 template.severity === 'medium' ? 'MEDIUM / متوسط' : 'LOW / منخفض'}
-                              </span>
-
-                              <div className="flex items-center gap-2">
-                                <span className="text-[10px] font-mono text-slate-400 bg-white/5 border border-white/10 px-2 py-0.5 rounded">
-                                  TR-{(template.id.substring(0,4)).toUpperCase()}
-                                </span>
-
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setSelectedTemplateId(template.id);
-                                    resetDiagnosticSimulator();
-                                    setActiveTab('diagnostic');
-                                  }}
-                                  className="px-2.5 py-1 rounded-lg bg-orange-500/15 hover:bg-orange-500/25 text-orange-300 border border-orange-500/30 text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer"
-                                >
-                                  <Activity className="w-3 h-3" />
-                                  <span>تشخيص العطل ⚡</span>
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </motion.div>
-            )}
-
-            {/* VIEWMODE 2: RICH & COMPLETE INTERACTIVE DIAGNOSTIC SIMULATOR LAB */}
-            {selectedCategory && activeTab === 'diagnostic' && (
-              <motion.div
-                key="diagnostic"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="space-y-6 flex-1 flex flex-col min-h-0 text-start"
-              >
-                {/* Diagnostic Control Toolbar */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-[#0a0a0f]/90 p-3 rounded-2xl border border-white/10 shadow-xl">
-                  
-                  {/* Right Side (RTL): Title & Count */}
-                  <div className="flex items-center gap-3 shrink-0">
-                    <div className="flex items-center gap-2 px-4 py-2 bg-white/[0.04] rounded-xl border border-white/10">
-                      <Activity className="w-4 h-4 text-orange-400" />
-                      <span className="text-xs font-black text-white uppercase tracking-wider">المحاكي الميداني ISO 14224</span>
-                    </div>
-                    <span className="hidden sm:block text-[10px] font-mono font-bold bg-white/10 text-slate-300 px-2.5 py-1 rounded-lg border border-white/10">
-                      {filteredTemplates.length} أعطال
-                    </span>
-                  </div>
-
-                  {/* Center: Search/Filter for Carousel */}
-                  <div className="flex-1 max-w-md w-full">
-                    <div className="relative w-full">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-                      <input 
-                        type="text" 
-                        placeholder={t('corrective.failures.filterSimulator', "Filter simulator failures...")}
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full bg-[#161821] border border-white/10 rounded-xl py-2 pl-10 pr-4 text-xs text-slate-300 placeholder-slate-600 focus:outline-none focus:border-orange-500/50 transition-colors shadow-inner text-left opacity-70 hover:opacity-100"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Left Side: Refresh Button */}
-                  <div className="flex items-center gap-2 shrink-0">
-                    <button
-                      type="button"
-                      onClick={resetDiagnosticSimulator}
-                      className="px-4 py-2 bg-[#161821] hover:bg-white/10 rounded-xl border border-white/10 text-xs font-bold text-slate-300 flex items-center gap-2 cursor-pointer transition-all active:scale-95 hover:text-white"
-                    >
-                      <RefreshCw className="w-4 h-4 text-orange-400" />
-                      <span>تهيئة المحاكي</span>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Fault Quick Selection Carousel / Horizontal Matrix */}
-                {filteredTemplates.length > 0 && (
-                  <div className="space-y-3 bg-[#0a0b10]/60 p-4 rounded-2xl border border-white/10 backdrop-blur-md">
-                    <div className="flex items-center justify-between text-xs px-1">
-                      <span className="font-bold text-slate-300 flex items-center gap-2">
-                        <Zap className="w-3.5 h-3.5 text-amber-400" />
-                        حدد العطل المستهدف لتشغيل شجرة القرار:
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1 pt-1">
-                      {filteredTemplates.map(tmpl => {
-                        const isSelected = selectedTemplateId === tmpl.id;
-                        return (
-                          <button
-                            key={tmpl.id}
-                            type="button"
-                            onClick={() => {
-                              setSelectedTemplateId(tmpl.id);
-                              resetDiagnosticSimulator();
-                            }}
-                            className={cn(
-                              "px-3.5 py-2 rounded-xl border text-xs font-bold whitespace-nowrap flex items-center gap-2 transition-all cursor-pointer shrink-0",
-                              isSelected
-                                ? "bg-white text-slate-950 border-white shadow-lg font-black scale-105"
-                                : "bg-[#08080c]/80 text-slate-300 border-white/10 hover:bg-white/[0.06] hover:text-white"
-                            )}
-                          >
-                            <span className={cn(
-                              "w-2 h-2 rounded-full shrink-0",
-                              tmpl.severity === 'critical' ? 'bg-rose-500' :
-                              tmpl.severity === 'high' ? 'bg-orange-500' :
-                              tmpl.severity === 'medium' ? 'bg-amber-500' : 'bg-emerald-500'
-                            )} />
-                            <span>{tmpl.name}</span>
-                            <span className={cn(
-                              "text-[9px] font-mono px-1.5 py-0.5 rounded border",
-                              isSelected ? "bg-slate-900 text-white border-slate-700" : "bg-white/10 text-slate-400 border-white/15"
-                            )}>
-                              TR-{(tmpl.id.substring(0,4)).toUpperCase()}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {selectedTemplate ? (
-                  <div className="space-y-6 flex-1 flex flex-col min-h-0">
-                    {/* Active Target Banner with Engineering Instrumentation Specs */}
-                    <div className="bg-[#08080c]/90 rounded-2xl border border-white/10 p-5 space-y-4 shadow-xl">
-                      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 border-b border-white/10 pb-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-400 font-bold shrink-0">
-                            <Activity className="w-5 h-5" />
-                          </div>
-                          <div>
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <h4 className="text-base font-extrabold text-white">{selectedTemplate.name}</h4>
-                              <span className={cn(
-                                "px-2 py-0.5 rounded text-[9px] font-mono font-bold border",
-                                selectedTemplate.severity === 'critical' ? "bg-rose-500/20 text-rose-300 border-rose-500/30" :
-                                selectedTemplate.severity === 'high' ? "bg-orange-500/20 text-orange-300 border-orange-500/30" :
-                                selectedTemplate.severity === 'medium' ? "bg-amber-500/20 text-amber-300 border-amber-500/30" :
-                                "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
-                              )}>
-                                {selectedTemplate.severity.toUpperCase()}
-                              </span>
-                              <span className="text-[10px] font-mono font-bold bg-white/10 text-white px-2 py-0.5 rounded border border-white/15">
-                                TR-{(selectedTemplate.id.substring(0,4)).toUpperCase()}
-                              </span>
-                            </div>
-                            <p className="text-xs text-slate-400 mt-1">
-                              {selectedTemplate.description || 'فحص واختبار ميكانيكي / كهربائي تخصصي لتحديد السبب المادي الحركي والقطع الاستهلاكية'}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-[10px] font-mono text-slate-300 bg-white/5 border border-white/10 px-2.5 py-1 rounded-lg">
-                            STANDARD: ISO-14224-RCA
-                          </span>
-                          <span className="text-[10px] font-mono text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 rounded-lg font-bold">
-                            LOTO LOCKOUT REQUIRED
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Tooling & Measuring Instruments Badges */}
-                      <div className="flex items-center gap-2 flex-wrap text-xs text-slate-400">
-                        <span className="text-[11px] font-bold text-slate-300">أجهزة القياس والفحص الموصى بها:</span>
-                        <span className="px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/10 text-slate-300 text-[11px] flex items-center gap-1.5 font-mono">
-                          <Zap className="w-3 h-3 text-amber-400" /> Multimeter / كاشف الجهد
-                        </span>
-                        <span className="px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/10 text-slate-300 text-[11px] flex items-center gap-1.5 font-mono">
-                          <Droplets className="w-3 h-3 text-cyan-400" /> Manometer / مقياس الضغط
-                        </span>
-                        <span className="px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/10 text-slate-300 text-[11px] flex items-center gap-1.5 font-mono">
-                          <Activity className="w-3 h-3 text-orange-400" /> Vibrometer / حساس الاهتزاز
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Step wizard container */}
-                    <div className="bg-[#08080c]/90 rounded-3xl border border-white/10 p-6 md:p-8 min-h-[360px] flex flex-col justify-between relative overflow-hidden flex-1 shadow-2xl">
-                      
-                      {/* Symptom Panel */}
-                      {diagnosticStep === 1 && (
-                        <div className="mb-6 bg-white/[0.03] border border-white/10 p-4 rounded-2xl flex items-start gap-3 text-start">
-                          <Info className="w-5 h-5 text-orange-400 shrink-0 mt-0.5" />
-                          <div>
-                            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">العَرَض الملاحظ في ساحة العمل:</span>
-                            <p className="text-sm text-slate-200 font-bold leading-relaxed mt-1">{activeDiagnosticConfig?.symptom}</p>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Diagnostic Active Question */}
-                      {diagnosticStep !== 4 && currentStepData ? (
-                        <div className="flex-1 flex flex-col justify-center py-6 text-center">
-                          <span className="text-[10px] font-mono text-white bg-white/10 px-3 py-1 rounded-full border border-white/15 uppercase tracking-widest mb-4 inline-block mx-auto font-black">
-                            مرحلة البحث والقياس الميداني - الخطوة {diagnosticStep === 1 ? 'الأولى' : 'الثانية'}
-                          </span>
-                          <h3 className="text-xl font-extrabold text-white max-w-2xl mx-auto leading-relaxed mb-8">
-                            {currentStepData.question}
-                          </h3>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto w-full">
-                            {currentStepData.options.map((opt, i) => (
-                              <button
-                                key={i}
-                                type="button"
-                                onClick={() => handleDiagnosticOption(opt.next, opt.value)}
-                                className="p-4 rounded-2xl border border-white/10 hover:border-orange-500/50 bg-white/[0.03] hover:bg-white/[0.08] text-slate-200 hover:text-white text-xs font-extrabold leading-relaxed transition-all duration-200 cursor-pointer active:scale-95 text-center shadow-lg group flex flex-col items-center justify-center gap-2"
-                              >
-                                <span className="w-6 h-6 rounded-full bg-white/5 group-hover:bg-orange-500/20 text-slate-400 group-hover:text-orange-300 flex items-center justify-center text-[10px] font-mono">
-                                  {i + 1}
-                                </span>
-                                <span>{opt.label}</span>
-                              </button>
                             ))}
                           </div>
-                        </div>
-                      ) : null}
-
-                      {/* Final Diagnostic Resolution Output */}
-                      {diagnosticStep === 4 && diagnosticOutput && (
-                        <div className="flex-1 space-y-6 py-4">
-                          <div className="text-center mb-6">
-                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-bold uppercase tracking-wider mb-2">
-                              <CheckCircle2 className="w-3.5 h-3.5" />
-                              اكتمل التشخيص الهندسي بنجاح (Diagnostic Completed)
-                            </span>
-                            <h3 className="text-2xl font-black text-white">{diagnosticOutput.title}</h3>
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="bg-rose-500/10 p-5 rounded-2xl border border-rose-500/20 space-y-2 text-start">
-                              <span className="text-xs text-rose-300 font-bold block">السبب المادي الحركي (Root Cause):</span>
-                              <p className="text-xs text-slate-200 leading-relaxed font-semibold">{diagnosticOutput.cause}</p>
+                        ) : (
+                          /* Crystal High-Contrast Table - Styled like EngineeringLabView */
+                          <div className="rounded-2xl border border-white/10 bg-[#0a0b10]/95 backdrop-blur-xl shadow-2xl overflow-hidden flex flex-col">
+                            <div className="overflow-x-auto overflow-y-auto custom-scrollbar flex-1">
+                              <table className="w-full text-start border-collapse">
+                                <thead className="bg-[#12141d] border-b-2 border-white/15 text-slate-200 font-extrabold uppercase tracking-wider text-xs text-start sticky top-0 z-20 backdrop-blur-md shadow-sm">
+                                  <tr>
+                                    <th className="p-4 text-start">{t('corrective.failureCatalog.thFaultName', 'اسم العطل والأعراض الملاحظة')}</th>
+                                    <th className="p-4 text-start">{t('corrective.failureCatalog.thCalibrationCode', 'رمز المعايرة')}</th>
+                                    <th className="p-4 text-center">{t('corrective.failureCatalog.thSeverity', 'مستوى الخطورة')}</th>
+                                    <th className="p-4 text-center">{t('corrective.failureCatalog.thDiagnosticTree', 'شجرة التشخيص')}</th>
+                                    <th className="p-4 text-end">{t('common.actions', 'الإجراءات')}</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-white/5 text-xs text-slate-300">
+                                  {filteredTemplates.map((item, idx) => (
+                                    <tr 
+                                      key={item.id}
+                                      className={cn(
+                                        "transition-colors duration-150 text-start",
+                                        idx % 2 === 0 ? "bg-white/[0.015]" : "bg-white/[0.05]",
+                                        "hover:bg-orange-500/10 hover:text-white"
+                                      )}
+                                    >
+                                      <td className="p-4 text-start">
+                                        <div className="flex items-center gap-2.5">
+                                          <span className="w-2 h-2 rounded-full bg-orange-400 shrink-0 inline-block" />
+                                          <div>
+                                            <span className="font-bold text-white block">{item.name}</span>
+                                            {item.description && (
+                                              <span className="text-[11px] text-slate-400 line-clamp-1 mt-0.5">
+                                                {item.description}
+                                              </span>
+                                            )}
+                                          </div>
+                                        </div>
+                                      </td>
+                                      <td className="p-4 font-mono font-extrabold text-white uppercase text-start">
+                                        {item.id.length > 8 ? `TR-${item.id.slice(-4).toUpperCase()}` : item.id}
+                                      </td>
+                                      <td className="p-4 text-center">
+                                        {getSeverityBadge(item.severity || 'medium')}
+                                      </td>
+                                      <td className="p-4 text-center">
+                                        <button
+                                          type="button"
+                                          onClick={() => openTab({ id: 'diagnostic-simulator', portalId: 'CORRECTIVE', title: 'شجرة التشخيص الميداني', component: 'diagnostic-simulator' })}
+                                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-500/10 hover:bg-orange-500/20 text-orange-300 border border-orange-500/25 text-xs font-bold transition-all cursor-pointer"
+                                        >
+                                          <Activity className="w-3.5 h-3.5" />
+                                          <span>{t('corrective.failureCatalog.diagnoseAction', 'تشخيص')}</span>
+                                        </button>
+                                      </td>
+                                      <td className="p-4 text-end">
+                                        <button 
+                                          type="button"
+                                          onClick={(e) => handleDeleteTemplate(item.id, e)}
+                                          className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors cursor-pointer inline-flex items-center justify-center"
+                                          title={t('common.delete', 'حذف')}
+                                        >
+                                          <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
                             </div>
-
-                            <div className="bg-emerald-500/10 p-5 rounded-2xl border border-emerald-500/20 space-y-2 text-start">
-                              <span className="text-xs text-emerald-300 font-bold block">الإجراء العلاجي المقترح (Corrective Action):</span>
-                              <p className="text-xs text-slate-200 leading-relaxed font-semibold">{diagnosticOutput.action}</p>
-                            </div>
                           </div>
-
-                          {/* Parts Required */}
-                          {diagnosticOutput.parts && diagnosticOutput.parts.length > 0 && (
-                            <div className="bg-white/[0.03] border border-white/10 p-5 rounded-2xl text-start">
-                              <span className="text-xs text-white font-bold block mb-3">قطع الغيار المطلوب سحبها من المخزن فوراً (PDR):</span>
-                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                {diagnosticOutput.parts.map((p: string, idx: number) => (
-                                  <div key={idx} className="flex items-center justify-between p-3 rounded-xl bg-slate-900/80 border border-white/10 font-sans">
-                                    <span className="text-xs text-slate-200 font-bold">{p}</span>
-                                    <span className="text-[10px] font-mono bg-white/10 text-white border border-white/15 px-2 py-0.5 rounded">
-                                      {p.match(/\(([^)]+)\)/)?.[1] || 'ROB-001'}
-                                    </span>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                          <div className="flex justify-center gap-3 pt-4 border-t border-white/5 flex-wrap">
-                            <button
-                              type="button"
-                              onClick={resetDiagnosticSimulator}
-                              className="px-6 py-2.5 bg-white text-slate-950 font-extrabold rounded-xl text-xs transition-all flex items-center gap-2 cursor-pointer shadow-md active:scale-95"
-                            >
-                              <RefreshCw className="w-4 h-4 text-slate-950" />
-                              <span>فحص عَرَض آخر للآلة</span>
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() => showSuccess('تم توثيق بروتوكول التشخيص وربطه بأمر الصيانة')}
-                              className="px-5 py-2.5 bg-orange-500/20 hover:bg-orange-500/30 text-orange-200 border border-orange-500/40 font-bold rounded-xl text-xs transition-all flex items-center gap-2 cursor-pointer"
-                            >
-                              <CheckCircle2 className="w-4 h-4 text-orange-400" />
-                              <span>اعتماد التقرير الميداني</span>
-                            </button>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Footer Progress Tracker */}
-                      {diagnosticStep !== 4 && (
-                        <div className="mt-8 border-t border-white/5 pt-4 flex items-center justify-between text-xs text-slate-500">
-                          <span className="text-[10px] font-mono">ISO 14224 DECISION BRANCH</span>
-                          <div className="flex gap-1.5">
-                            <div className={cn("w-6 h-1.5 rounded-full", diagnosticStep === 1 || typeof diagnosticStep === 'string' ? "bg-white" : "bg-white/10")} />
-                            <div className={cn("w-6 h-1.5 rounded-full", diagnosticStep === 'motor_coil' || diagnosticStep === 'gearbox_bearing' || diagnosticStep === 'leak_active' || diagnosticStep === 'leak_static' ? "bg-white" : "bg-white/10")} />
-                            <div className={cn("w-6 h-1.5 rounded-full animate-pulse", diagnosticStep === 4 ? "bg-white" : "bg-white/10")} />
-                          </div>
-                        </div>
-                      )}
+                        )}
+                      </div>
                     </div>
-                  </div>
+                  </motion.div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center py-20 text-center border border-white/10 rounded-2xl bg-white/[0.01]">
-                    <Activity className="w-12 h-12 text-slate-500 mb-3" />
-                    <p className="text-slate-400 text-sm font-bold">يرجى تسجيل وتحديد عطل من القائمة لبدء تشغيل محاكي شجرة التشخيص الميداني.</p>
-                  </div>
-                )}
-              </motion.div>
-            )}
+                  /* Default Welcome / Empty state matching EngineeringLabView */
+                  <motion.div
+                    key="default-welcome"
+                    initial={{ opacity: 0, scale: 0.98, y: 15 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.98, y: -15 }}
+                    transition={{ duration: 0.3 }}
+                    className="flex-1 flex flex-col items-center justify-center p-6 md:p-10 text-center w-full space-y-6 relative z-10 overflow-y-auto custom-scrollbar min-h-0 box-border"
+                  >
+                    {/* Glowing Engine Icon Container */}
+                    <div className="relative shrink-0">
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-orange-500/10 border border-orange-500/25 flex items-center justify-center text-orange-400 shadow-[0_0_40px_rgba(249,115,22,0.25)]">
+                        <Wrench className="w-8 h-8 sm:w-10 sm:h-10" />
+                      </div>
+                      <div className="absolute -bottom-2 -right-2 w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-slate-900 border border-orange-500/40 flex items-center justify-center text-orange-300 shadow-md">
+                        <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2 max-w-xl">
+                      <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tight">
+                        {t('corrective.failureCatalog.welcomeTitle', 'مستكشف ومحرر كتالوج الأعطال')}
+                      </h2>
+                      <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-medium">
+                        {t('corrective.failureCatalog.welcomeDesc', 'المركز الهندسي الموحد لتصنيف الأعطال الصناعية، وتأطير مصفوفات الأعراض الملاحظة لربطها بقطع الغيار والخطط الوقائية.')}
+                      </p>
+                    </div>
 
-            </AnimatePresence>
-          </div>
+                    {/* Quick Action Buttons */}
+                    <div className="flex items-center gap-3 flex-wrap justify-center shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => setIsAddingCategory(true)}
+                        className="px-5 py-2.5 sm:px-6 sm:py-3 bg-white text-slate-950 font-extrabold rounded-2xl shadow-xl hover:bg-slate-200 transition-all flex items-center gap-2 text-xs cursor-pointer active:scale-95"
+                      >
+                        <Plus className="w-4 h-4 text-slate-950" />
+                        <span>{t('corrective.failureCatalog.newFamilyBtn', 'إضافة عائلة أعطال جديدة')}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (categories.length > 0) {
+                            setSelectedCategoryId(categories[0].id);
+                          } else {
+                            seedDefaultCategories();
+                          }
+                        }}
+                        className="px-5 py-2.5 sm:px-6 sm:py-3 bg-white/[0.05] hover:bg-white/10 text-white font-bold rounded-2xl border border-white/10 transition-all flex items-center gap-2 text-xs cursor-pointer"
+                      >
+                        <BookOpen className="w-4 h-4 text-orange-400" />
+                        <span>{t('corrective.failureCatalog.browseFirstAssetBtn', 'استعراض أول عائلة')}</span>
+                      </button>
+                    </div>
+
+                    {/* Bento Grid Feature Highlight Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-3xl text-start pt-2">
+                      <div className="p-4 sm:p-5 rounded-2xl bg-white/[0.02] border border-white/10 hover:border-orange-500/30 transition-all duration-300 space-y-2 group backdrop-blur-md">
+                        <div className="w-9 h-9 rounded-xl bg-orange-500/10 border border-orange-500/20 text-orange-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                          <Layers className="w-4 h-4" />
+                        </div>
+                        <h4 className="text-xs sm:text-sm font-bold text-white group-hover:text-orange-300 transition-colors">
+                          {t('corrective.failureCatalog.guidanceCatalogTitle', 'التصنيف والتأطير الهندسي')}
+                        </h4>
+                        <p className="text-[11px] sm:text-xs text-slate-400 leading-relaxed">
+                          {t('corrective.failureCatalog.guidanceCatalogDesc', 'تصنيف الأعطال حسب التخصصات الهندسية مع رمز معايرة موحد ومستوى خطورة قياسي لكل عَرَض.')}
+                        </p>
+                      </div>
+
+                      <div className="p-4 sm:p-5 rounded-2xl bg-white/[0.02] border border-white/10 hover:border-orange-500/30 transition-all duration-300 space-y-2 group backdrop-blur-md">
+                        <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                          <ShieldCheck className="w-4 h-4" />
+                        </div>
+                        <h4 className="text-xs sm:text-sm font-bold text-white group-hover:text-emerald-300 transition-colors">
+                          {t('corrective.failureCatalog.guidancePdrTitle', 'الربط مع قطع الغيار الاستهلاكية')}
+                        </h4>
+                        <p className="text-[11px] sm:text-xs text-slate-400 leading-relaxed">
+                          {t('corrective.failureCatalog.guidancePdrDesc', 'ربط مخرجات تشخيص الأعطال مباشرة مع بصمات المخزن لسحب قطع الغيار اللازمة للإصلاح فوراً.')}
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+            </div>
+          </GlassCard>
         </div>
 
       </div>
@@ -1208,34 +724,39 @@ export function FailureCatalogView() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="w-full max-w-md bg-[#0f111a] border border-white/10 rounded-2xl shadow-2xl p-6 text-start"
+              className="w-full max-w-md bg-[#0f111a] border border-orange-500/30 rounded-2xl shadow-2xl p-6 relative overflow-hidden text-start"
             >
-              <h3 className="text-xl font-bold text-white mb-6">إضافة عائلة أعطال جديدة</h3>
-              <form onSubmit={handleAddCategory} className="space-y-4">
+              <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500/0 via-orange-500 to-orange-500/0" />
+              
+              <h3 className="text-xl font-bold text-white mb-2">{t('corrective.failureCatalog.modalAddFamilyTitle', 'إضافة عائلة أعطال جديدة')}</h3>
+              
+              <form onSubmit={handleAddCategory} className="space-y-4 mt-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-2">اسم العائلة</label>
+                  <label className="block text-sm font-medium text-slate-400 mb-2">{t('corrective.failureCatalog.modalFamilyNameLabel', 'اسم العائلة')}</label>
                   <input
                     type="text"
                     required
                     value={newCategoryName}
                     onChange={(e) => setNewCategoryName(e.target.value)}
                     className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-500/50 text-start"
-                    placeholder="مثال: ميكانيك، هيدروليك..."
+                    placeholder={t('corrective.failureCatalog.modalFamilyNamePlaceholder', 'مثال: ميكانيك، هيدروليك، كهرباء...')}
                   />
                 </div>
-                <div className="flex gap-3 mt-8">
+
+                <div className="flex gap-3 mt-6 pt-4 border-t border-white/10">
                   <button
                     type="submit"
-                    className="flex-1 px-4 py-3 bg-white hover:bg-slate-200 text-slate-950 rounded-xl font-extrabold transition-all shadow-md text-xs cursor-pointer"
+                    className="flex-1 px-4 py-3 bg-white hover:bg-slate-200 text-slate-950 rounded-xl font-extrabold transition-all shadow-md flex items-center justify-center gap-2 text-xs cursor-pointer"
                   >
-                    إضافة العائلة
+                    <Plus className="w-4 h-4 text-slate-950" />
+                    <span>{t('corrective.failureCatalog.modalAddFamilyBtn', 'إضافة العائلة')}</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setIsAddingCategory(false)}
                     className="flex-1 px-4 py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl font-bold text-xs transition-all cursor-pointer"
                   >
-                    إلغاء
+                    {t('common.cancel', 'إلغاء')}
                   </button>
                 </div>
               </form>
@@ -1261,45 +782,45 @@ export function FailureCatalogView() {
             >
               <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-500/0 via-orange-500 to-orange-500/0" />
               
-              <h3 className="text-xl font-bold text-white mb-2">تسجيل عطل جديد</h3>
+              <h3 className="text-xl font-bold text-white mb-2">{t('corrective.failureCatalog.modalNewFaultTitle', 'تسجيل عطل جديد')}</h3>
               <p className="text-sm text-slate-400 mb-6">
-                ضمن عائلة: <strong className="text-orange-400">{selectedCategory?.name}</strong>
+                {t('corrective.failureCatalog.modalUnderFamily', 'ضمن عائلة')}: <strong className="text-orange-400">{selectedCategory?.name}</strong>
               </p>
 
               <form onSubmit={handleAddTemplate} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-2">اسم العطّل (Symptom / Problem)</label>
+                  <label className="block text-sm font-medium text-slate-400 mb-2">{t('corrective.failureCatalog.modalFaultNameLabel', 'اسم العطل والأعراض الملاحظة')}</label>
                   <input
                     type="text"
                     required
                     value={newTemplateName}
                     onChange={(e) => setNewTemplateName(e.target.value)}
                     className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-500/50 text-start"
-                    placeholder="مثال: تسرب هيدروليكي، ارتفاع الحرارة..."
+                    placeholder={t('corrective.failureCatalog.modalFaultNamePlaceholder', 'مثال: تسرب هيدروليكي، ارتفاع الحرارة...')}
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-2">وصف العطل وسياق الفحص (اختياري)</label>
+                  <label className="block text-sm font-medium text-slate-400 mb-2">{t('corrective.failureCatalog.modalFaultDescLabel', 'وصف العطل وسياق الفحص (اختياري)')}</label>
                   <textarea
                     value={newTemplateDesc}
                     onChange={(e) => setNewTemplateDesc(e.target.value)}
                     className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-500/50 h-24 resize-none text-start"
-                    placeholder="تفاصيل إضافية حول هذا العطل لتوجيه الفني..."
+                    placeholder={t('corrective.failureCatalog.modalFaultDescPlaceholder', 'تفاصيل إضافية حول هذا العطل لتوجيه الفني...')}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-400 mb-2">مستوى الخطورة الافتراضي</label>
+                  <label className="block text-sm font-medium text-slate-400 mb-2">{t('corrective.failureCatalog.modalFaultSeverityLabel', 'مستوى الخطورة الافتراضي')}</label>
                   <select
                     value={newTemplateSeverity}
                     onChange={(e) => setNewTemplateSeverity(e.target.value as any)}
                     className="w-full bg-[#0a0a0f]/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-orange-500/50 text-start appearance-none"
                   >
-                    <option value="low">منخفض (Low)</option>
-                    <option value="medium">متوسط (Medium)</option>
-                    <option value="high">عالي (High)</option>
-                    <option value="critical">حرج (Critical)</option>
+                    <option value="low">{t('corrective.failureCatalog.severityLow', 'منخفض')}</option>
+                    <option value="medium">{t('corrective.failureCatalog.severityMedium', 'متوسط')}</option>
+                    <option value="high">{t('corrective.failureCatalog.severityHigh', 'عالي')}</option>
+                    <option value="critical">{t('corrective.failureCatalog.severityCritical', 'حرج')}</option>
                   </select>
                 </div>
 
@@ -1308,15 +829,15 @@ export function FailureCatalogView() {
                     type="submit"
                     className="flex-1 px-4 py-3 bg-white hover:bg-slate-200 text-slate-950 rounded-xl font-extrabold transition-all shadow-md flex items-center justify-center gap-2 text-xs cursor-pointer"
                   >
-                    <Plus className="w-5 h-5" />
-                    <span>حفظ في الكتالوج</span>
+                    <Plus className="w-5 h-5 text-slate-950" />
+                    <span>{t('corrective.failureCatalog.saveInCatalogBtn', 'حفظ في الكتالوج')}</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setIsAddingTemplate(false)}
                     className="flex-1 px-4 py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl font-bold text-xs transition-all cursor-pointer"
                   >
-                    إلغاء
+                    {t('common.cancel', 'إلغاء')}
                   </button>
                 </div>
               </form>

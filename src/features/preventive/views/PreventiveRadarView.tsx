@@ -55,6 +55,7 @@ import { useAuthStore } from "@/app/store/useAuthStore";
 import { isUserAdmin } from "@/core/permissions";
 import { useAuditTrail } from "@/features/system/hooks/useAuditTrail";
 import { toast } from "sonner";
+import { EngineViewSkeleton } from "@/shared/components/EngineViewSkeleton";
 
 type ViewMode = "CALENDAR" | "GRID" | "LIST" | "BULK_BOARD";
 
@@ -586,6 +587,10 @@ export function PreventiveRadarView() {
       toast.error("Failed to commit service log: " + err.message);
     }
   };
+
+  if (!radarData) {
+    return <EngineViewSkeleton mode="registry" themeColor="emerald" />;
+  }
 
   return (
     <div className="flex flex-col h-full bg-[#0a0a0f] p-6 text-slate-200 relative overflow-hidden custom-scrollbar">

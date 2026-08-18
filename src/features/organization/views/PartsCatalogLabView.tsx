@@ -4,6 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence, Variants } from 'motion/react';
 import { 
   FolderTree, 
+  FlaskConical,
   Component, 
   Search, 
   Plus, 
@@ -22,7 +23,10 @@ import {
   BookOpen,
   Zap,
   Eye,
-  LayoutGrid
+  LayoutGrid,
+  ChevronDown,
+  ChevronRight,
+  RefreshCw
 } from 'lucide-react';
 import { useMasterCatalogEngine } from '../hooks/useMasterCatalogEngine';
 import { useNotifications } from '@/shared/hooks/useNotifications';
@@ -32,6 +36,7 @@ import { generatePdrSlotId } from '@/core/config/pdrMatrix';
 import { db } from '@/core/db';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
+import { EngineViewSkeleton } from '@/shared/components/EngineViewSkeleton';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -130,6 +135,12 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
   const { t, i18n } = useTranslation();
   const { families, templates, blueprints, isLoading } = useMasterCatalogEngine();
   const { showSuccess, showError } = useNotifications();
+
+  const getGroupName = (meta: GroupMeta) => {
+    if (i18n.language === 'ar') return meta.nameAr;
+    if (i18n.language === 'fr') return meta.nameFr;
+    return meta.nameEn;
+  };
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedGroupFilter, setSelectedGroupFilter] = useState<FamilyGroup | 'all'>('all');
@@ -290,12 +301,7 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
   };
 
   if (isLoading) {
-    return (
-      <div className="p-12 text-slate-400 flex flex-col items-center justify-center h-full min-h-[400px]">
-        <Cpu className="w-12 h-12 text-amber-500 animate-pulse mb-4" />
-        <p className="font-mono text-sm uppercase tracking-widest text-slate-500">جاري استعلام مصفوفة الكتالوج الرئيسي...</p>
-      </div>
-    );
+    return <EngineViewSkeleton mode="lab" themeColor="amber" />;
   }
 
   return (
@@ -309,7 +315,7 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
       <PageHeader
         title={t('partsCatalogLab.title', 'مختبر عائلات وقوالب قطع الغيار')}
         subtitle={t('partsCatalogLab.subtitle', 'المساحة المركزية لتصميم عائلات التصنيف والقوالب القياسية لقطع الغيار والمكونات تحت قاعدة الـ 999 مقعداً.')}
-        icon={<FolderTree className="w-7 h-7 text-amber-400" />}
+        icon={<FlaskConical className="w-7 h-7 text-amber-400" />}
         badgeText={t('partsCatalogLab.badgeText', 'مختبر الكتالوج')}
         badgeColor="amber"
       >
@@ -329,12 +335,12 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
             };
 
             const groupTitle = i18n.language === 'en' ? cfg.nameEn : i18n.language === 'fr' ? cfg.nameFr : cfg.nameAr;
+            const subtitleText = i18n.language === 'fr' ? undefined : undefined;
 
             return (
               <HeaderBentoCard
                 key={grpKey}
                 title={groupTitle}
-                subtitle={cfg.nameFr}
                 value={count}
                 valueUnit={t('unit.family', 'عائلة')}
                 icon={<Icon className="w-3.5 h-3.5" />}
@@ -353,16 +359,29 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
         className="flex-1 flex flex-col md:flex-row gap-6 min-h-0 min-w-0"
       >
         {/* Navigation Panel */}
-        <div className="w-full md:w-80 border border-amber-500/30 rounded-3xl overflow-hidden shadow-[0_10px_30px_rgba(245,158,11,0.12)] bg-gradient-to-b from-amber-950/40 via-[#0a0a0f]/95 to-[#0a0a0f]/98 backdrop-blur-xl relative flex flex-col p-5 shrink-0 gap-3.5 text-start">
+        <div className="w-full lg:w-[380px] border border-amber-500/30 rounded-3xl overflow-hidden shadow-[0_10px_30px_rgba(245,158,11,0.12)] bg-gradient-to-b from-amber-950/40 via-[#0a0a0f]/95 to-[#0a0a0f]/98 backdrop-blur-xl relative flex flex-col p-5 shrink-0 gap-3.5 text-start">
           
           {/* Background ambient engine accent glow */}
           <div className="absolute -top-12 -right-12 w-48 h-48 bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
-          <div className="flex flex-col shrink-0">
-            <span className="text-white font-black uppercase tracking-wider block">
-              {t('corrective.failureCatalog.families', 'عائلات التصنيف')}
-            </span>
+          
+          {/* Header Title & Sync Control */}
+          <div className="flex flex-col shrink-0 relative">
+            <div className="flex items-center justify-between">
+              <span className="text-white font-black uppercase tracking-wider block">
+                {t('pdr.familiesTitle', 'عائلات التصنيف والقوالب')}
+              </span>
+              <button 
+                onClick={() => {
+                  toast.success(t('partsCatalogLab.synced', 'تمت مزامنة وقواعد بيانات القوالب بنجاح'));
+                }}
+                className="p-1.5 px-2 rounded-xl bg-white/[0.04] text-slate-300 hover:bg-white/[0.08] hover:text-white border border-white/10 text-xs transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
+                title={t('pdr.syncData', 'مزامنة وتحديث البيانات')}
+              >
+                <RefreshCw className="w-3.5 h-3.5 text-amber-400" />
+              </button>
+            </div>
             <span className="text-slate-400 text-[10px] uppercase tracking-widest mt-0.5">
-              {t('partsCatalogLab.familiesSubtitle', 'إدارة وتصنيف العائلات')}
+              {t('partsCatalogLab.familiesSubtitle', 'إدارة وتصنيف العائلات ومقاعد الـ 999')}
             </span>
           </div>
 
@@ -376,18 +395,18 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
             className="w-full bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-3 py-2.5 text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95 shrink-0"
           >
             <Plus className="w-4 h-4 text-slate-950" />
-            <span>إضافة عائلة جديدة</span>
+            <span>{t('pdr.addNewFamily', 'إضافة عائلة جديدة')}</span>
           </button>
 
           {/* Quick Search - Crystal Dark */}
           <div className="relative w-full shrink-0">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search className="w-4 h-4 absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
             <input 
               type="text" 
-              placeholder="البحث في العائلات..." 
+              placeholder={t('pdr.searchFamiliesPlaceholder', 'البحث في العائلات...')} 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full bg-slate-950/80 border border-white/10 rounded-xl pl-9 pr-3 py-2.5 text-xs text-white placeholder:text-slate-400 focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/30 outline-none transition-all text-start font-bold shadow-inner"
+              className="w-full bg-[#0a0a0f]/80 border border-white/10 rounded-xl pl-9 pr-3 rtl:pr-9 rtl:pl-3 py-2.5 text-xs text-white placeholder:text-slate-500 focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/30 outline-none transition-all text-start font-bold shadow-inner"
             />
           </div>
 
@@ -423,7 +442,7 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                       )}>
                         <GroupIcon className="w-3.5 h-3.5" />
                       </div>
-                      <span className="truncate max-w-[120px] text-start">{fam.name}</span>
+                      <span className="truncate max-w-[140px] text-start">{fam.name}</span>
                     </div>
                     <div className="flex items-center gap-1.5">
                       <span className={cn(
@@ -432,18 +451,19 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                       )}>
                         {tCount}
                       </span>
-                      <ArrowRight className={cn(
-                        "w-3 h-3 transition-transform rotate-180",
-                        isSelected ? "opacity-100 translate-x-0 text-amber-300" : "opacity-30 translate-x-1"
-                      )} />
+                      {isSelected ? (
+                        <ChevronDown className="w-3.5 h-3.5 text-amber-300" />
+                      ) : (
+                        <ChevronRight className="w-3.5 h-3.5 text-slate-500 rtl:rotate-180" />
+                      )}
                     </div>
                   </button>
 
                   {/* Sub-Selector for templates inside selected family */}
                   {isSelected && (
-                    <div className="ml-4 pl-3 border-l border-white/10 space-y-1 py-1.5">
+                    <div className="ml-4 pl-3 border-l rtl:ml-0 rtl:mr-4 rtl:pl-0 rtl:pr-3 rtl:border-l-0 rtl:border-r border-white/10 space-y-1 py-1.5">
                       <div className="flex items-center justify-between mb-1.5">
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">قوالب المواصفات</span>
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{t('pdr.specTemplates', 'قوالب المواصفات')}</span>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
@@ -454,7 +474,7 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                           }}
                           className="text-[9px] font-bold text-slate-300 hover:text-white flex items-center gap-1 cursor-pointer"
                         >
-                          <Plus className="w-2.5 h-2.5" /> قالب جديد
+                          <Plus className="w-2.5 h-2.5" /> {t('pdr.newTemplate', 'قالب جديد')}
                         </button>
                       </div>
 
@@ -485,7 +505,7 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                       })}
 
                       {templates.filter(t => t.familyId === fam.id).length === 0 && (
-                        <p className="text-[10px] text-slate-500 italic text-center py-2">لا توجد قوالب مواصفات فنية</p>
+                        <p className="text-[10px] text-slate-500 italic text-center py-2">{t('pdr.noSpecTemplates', 'لا توجد قوالب مواصفات فنية')}</p>
                       )}
                     </div>
                   )}
@@ -494,14 +514,25 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
             })}
 
             {filteredFamilies.length === 0 && (
-              <p className="text-xs text-slate-500 text-center py-8">لا توجد عائلات تصنيف حالية</p>
+              <p className="text-xs text-slate-500 text-center py-8">{t('pdr.noFamiliesCurrent', 'لا توجد عائلات تصنيف حالية')}</p>
             )}
           </div>
         </div>
 
-        {/* Right Workspace - Crystal Glass Shell */}
-        <div className="flex-1 bg-[#0a0b10]/90 backdrop-blur-xl border border-white/10 shadow-2xl rounded-3xl overflow-y-auto custom-scrollbar p-6 md:p-8 text-right relative min-h-0">
-          <AnimatePresence mode="wait">
+        {/* Right Main Workspace Canvas */}
+        <div className="flex-1 flex flex-col min-h-0 min-w-0">
+          <GlassCard className="flex flex-col flex-1 !p-0 border-white/10 overflow-hidden shadow-2xl bg-[#0a0b10]/95 backdrop-blur-xl relative w-full h-full min-h-0">
+            
+            {/* Engine Accent Line */}
+            <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-transparent via-amber-500/30 to-transparent pointer-events-none z-20" />
+
+            {/* Ambient Engine Accent Rays & Glows */}
+            <div className="absolute -top-12 -right-12 sm:-top-20 sm:-right-20 w-64 h-64 sm:w-80 sm:h-80 bg-amber-500/15 rounded-full blur-3xl pointer-events-none z-0" />
+            <div className="absolute -bottom-12 -left-12 sm:-bottom-20 sm:-left-20 w-64 h-64 sm:w-80 sm:h-80 bg-amber-500/10 rounded-full blur-3xl pointer-events-none z-0" />
+            
+            {/* Foreground Content Container */}
+            <div className="relative z-10 flex flex-col flex-1 min-h-0 w-full h-full p-6 md:p-8 overflow-y-auto custom-scrollbar text-right">
+              <AnimatePresence mode="wait">
             {/* Case 1: Create Family Form */}
             {isAddingFamily && (
               <motion.div
@@ -514,12 +545,12 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                 <GlassCard className="!p-8 border-white/10 bg-white/[0.01]">
                   <h3 className="text-lg font-bold text-white uppercase tracking-widest mb-6 flex items-center gap-2 flex-row-reverse">
                     <FolderTree className="w-5 h-5 text-amber-500" /> 
-                    <span>إنشاء عائلة تصنيف جديدة لقطع الغيار</span>
+                    <span>{t('pdr.addFamilyTitle', 'إنشاء عائلة تصنيف جديدة لقطع الغيار')}</span>
                   </h3>
                   <form onSubmit={handleCreateFamily} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-5 items-end">
                       <div className="space-y-2 text-right">
-                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">مجموعة التصنيف</label>
+                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">{t('pdr.classificationGroup', 'مجموعة التصنيف')}</label>
                         <select 
                           value={newFamilyGroup} 
                           onChange={e => setNewFamilyGroup(e.target.value as FamilyGroup)}
@@ -527,27 +558,27 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                         >
                           {(Object.keys(GROUP_CONFIG) as FamilyGroup[]).map(gk => (
                             <option key={gk} value={gk} className="bg-[#141624]">
-                              {GROUP_CONFIG[gk].nameFr} - {GROUP_CONFIG[gk].nameAr}
+                              {getGroupName(GROUP_CONFIG[gk])}
                             </option>
                           ))}
                         </select>
                       </div>
                       
                       <div className="space-y-2 col-span-2 text-right">
-                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">اسم عائلة التصنيف (الاسم الفني)</label>
+                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">{t('pdr.familyNameLabel', 'اسم عائلة التصنيف')}</label>
                         <input 
                           required value={newFamilyName} onChange={e => setNewFamilyName(e.target.value)} 
-                          placeholder="مثال: BEARINGS, BELTS, VALVES, CYLINDERS, PLC MODULES..." 
-                          className="titan-input uppercase py-2.5 text-slate-100 font-bold w-full"
+                          placeholder={t('pdr.familyNamePlaceholder', 'مثال: المحامل الكروية، السيور الناقلة، الصمامات الهيدروليكية، وحدات الـ PLC...')} 
+                          className="titan-input py-2.5 text-slate-100 font-bold w-full"
                         />
                       </div>
                     </div>
 
                     <div className="space-y-2 text-right">
-                      <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">النطاق / الوصف الهندسي</label>
+                      <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">{t('pdr.familyScopeLabel', 'الوصف الهندسي والنطاق الفني')}</label>
                       <input 
                         value={newFamilyDesc} onChange={e => setNewFamilyDesc(e.target.value)} 
-                        placeholder="حدد النطاق الفني التفصيلي أو المبادئ التوجيهية الهندسية لهذه العائلة" 
+                        placeholder={t('pdr.familyScopePlaceholder', 'حدد النطاق الفني التفصيلي أو المبادئ التوجيهية الهندسية لهذه العائلة')} 
                         className="titan-input py-2.5 text-slate-200 w-full"
                       />
                     </div>
@@ -557,14 +588,14 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                         type="submit" 
                         className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-6 py-2.5 text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
                       >
-                        تفعيل وتجسيد العائلة
+                        {t('pdr.activateFamily', 'تفعيل وتجسيد العائلة')}
                       </button>
                       <button 
                         type="button" 
                         onClick={() => setIsAddingFamily(false)}
                         className="bg-white/[0.04] text-slate-300 hover:bg-white/[0.08] hover:text-white border border-white/10 font-bold rounded-xl px-5 py-2.5 text-xs transition-all flex items-center gap-2 cursor-pointer"
                       >
-                        إلغاء
+                        {t('common.cancel', 'إلغاء')}
                       </button>
                     </div>
                   </form>
@@ -584,34 +615,34 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                 <GlassCard className="!p-8 border-white/10 bg-white/[0.01]">
                   <h3 className="text-lg font-bold text-white uppercase tracking-widest mb-6 flex items-center gap-2 flex-row-reverse">
                     <Component className="w-5 h-5 text-amber-500" />
-                    <span>تفعيل قالب هندسي ومواصفات تقنية لقطع الغيار</span>
+                    <span>{t('pdr.addTemplateTitle', 'تفعيل قالب هندسي ومواصفات تقنية لقطع الغيار')}</span>
                   </h3>
                   <form onSubmit={handleCreateTemplate} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                       <div className="space-y-2 text-right">
-                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">الترميز والرمز الأساسي (SKU Base)</label>
+                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">{t('pdr.skuBaseLabel', 'الرمز المعياري الأساسي')}</label>
                         <input 
                           required value={newTemplateSku} onChange={e => setNewTemplateSku(e.target.value)} 
-                          placeholder="مثال: ROB-ROU, PNE-VLV, MEC-VBT" 
+                          placeholder={t('pdr.skuBasePlaceholder', 'مثال: ROB-001, PNE-001, MEC-001')} 
                           className="titan-input uppercase py-2.5 text-white font-mono font-bold w-full"
                         />
                       </div>
                       
                       <div className="space-y-2 text-right">
-                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">اسم قالب المواصفات الفنية</label>
+                        <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">{t('pdr.templateNameLabel', 'اسم قالب مواصفات قطعة الغيار')}</label>
                         <input 
                           required value={newTemplateName} onChange={e => setNewTemplateName(e.target.value)} 
-                          placeholder="مثال: ROULEMENT A BILLES DE PRECISION" 
+                          placeholder={t('pdr.templateNamePlaceholder', 'مثال: محمل كروي دقيق عالي السرعة')} 
                           className="titan-input py-2.5 text-slate-100 font-bold w-full"
                         />
                       </div>
                     </div>
 
                     <div className="space-y-2 text-right">
-                      <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">الدليل والمواصفات الفنية القياسية للقطعة</label>
+                      <label className="block text-xs font-bold text-slate-400 uppercase tracking-widest">{t('pdr.templateSpecsLabel', 'المواصفات الفنية القياسية المعيارية')}</label>
                       <textarea 
                         value={newTemplateDesc} onChange={e => setNewTemplateDesc(e.target.value)} 
-                        placeholder="اكتب المعايير القياسية للقطعة (الأقطار، السرعات، درجات الحرارة والضغوط...)" 
+                        placeholder={t('pdr.templateSpecsPlaceholder', 'اكتب المعايير القياسية للقطعة (الأقطار، السرعات، درجات الحرارة والضغوط...)')} 
                         className="titan-input py-2.5 text-slate-200 w-full min-h-[100px]"
                       />
                     </div>
@@ -621,14 +652,14 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                         type="submit" 
                         className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-6 py-2.5 text-xs shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
                       >
-                        تفعيل القالب الهندسي
+                        {t('pdr.activateTemplate', 'تفعيل القالب الهندسي')}
                       </button>
                       <button 
                         type="button" 
                         onClick={() => setIsAddingTemplate(false)}
                         className="bg-white/[0.04] text-slate-300 hover:bg-white/[0.08] hover:text-white border border-white/10 font-bold rounded-xl px-5 py-2.5 text-xs transition-all flex items-center gap-2 cursor-pointer"
                       >
-                        إلغاء
+                        {t('common.cancel', 'إلغاء')}
                       </button>
                     </div>
                   </form>
@@ -658,25 +689,25 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                       <div className="text-right flex-1 space-y-1">
                         <div className="flex items-center gap-2 justify-end mb-1">
                           <span className="px-3 py-1 bg-white/10 border border-white/15 rounded-xl text-xs font-mono text-white font-extrabold uppercase tracking-wider">
-                            الرمز الأساسي: {tmpl.skuBase}
+                            {t('pdr.skuBase', 'الرمز الأساسي')}: {tmpl.skuBase}
                           </span>
                           <span className="text-xs uppercase font-extrabold text-slate-300 flex items-center gap-1 bg-white/5 border border-white/10 px-2.5 py-1 rounded-xl">
                             <FolderTree className="w-3.5 h-3.5 text-amber-400" />
-                            {parentFamily?.name || 'عام'}
+                            {parentFamily?.name || t('common.general', 'عام')}
                           </span>
                         </div>
                         <h2 className="text-2xl font-extrabold text-white uppercase tracking-tight">
                           {tmpl.name}
                         </h2>
                         <p className="text-xs text-slate-300 leading-relaxed max-w-2xl">
-                          "{tmpl.description || 'لا توجد قواعد مواصفات تقنية محددة لهذه القطعة.'}"
+                          "{tmpl.description || t('pdr.noSpecsRules', 'لا توجد قواعد مواصفات تقنية محددة لهذه القطعة.')}"
                         </p>
                       </div>
 
                       <button
                         onClick={() => handleDeleteItem('template', tmpl.id)}
                         className="p-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 transition-all cursor-pointer active:scale-95"
-                        title="حذف القالب"
+                        title={t('pdr.deleteTemplate', 'حذف القالب')}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -686,18 +717,18 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                       <div className="flex flex-col md:flex-row-reverse justify-between items-center gap-4 mb-4">
                         <div className="text-right">
                           <h4 className="text-xs font-extrabold text-white uppercase tracking-wider flex items-center gap-1.5 justify-end mb-1">
-                            <Grid className="w-4 h-4 text-amber-400" /> خريطة الـ 999 مقعداً الافتراضية
+                            <Grid className="w-4 h-4 text-amber-400" /> {t('pdr.slotsMapTitle', 'خريطة الـ 999 مقعداً الافتراضية')}
                           </h4>
                           <p className="text-[11px] text-slate-300">
-                            استيعاب مسبق وتلقائي لـ 999 مقعدًا مع استهلاك صفري لقاعدة البيانات حتى تفعيل القطع.
+                            {t('pdr.slotsMapDesc', 'استيعاب مسبق وتلقائي لـ 999 مقعدًا مع استهلاك صفري لقاعدة البيانات حتى تفعيل القطع.')}
                           </p>
                         </div>
                         <div className="flex gap-2 font-mono text-xs">
                           <span className="px-3 py-1 rounded-lg bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-extrabold">
-                            {bCount} نشط
+                            {bCount} {t('pdr.active', 'نشط')}
                           </span>
                           <span className="px-3 py-1 rounded-lg bg-white/10 text-slate-300 border border-white/15 font-extrabold">
-                            {999 - bCount} شاغر ومجمد
+                            {999 - bCount} {t('pdr.dormant', 'شاغر ومجمد')}
                           </span>
                         </div>
                       </div>
@@ -717,14 +748,14 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                                   ? "bg-emerald-500/20 border-emerald-500/50 text-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.2)]" 
                                   : "bg-white/[0.02] border-white/5 hover:border-white/20 text-slate-500"
                               )}
-                              title={isFilled ? `مقعد نشط: ${slotId}` : `مقعد مجمد ${slotNum}: ${slotId}`}
+                              title={isFilled ? `${t('pdr.activeSlot', 'مقعد نشط')}: ${slotId}` : `${t('pdr.dormantSlot', 'مقعد مجمد')} ${slotNum}: ${slotId}`}
                             >
                               {slotNum}
                             </div>
                           );
                         })}
                         <div className="col-span-full text-center py-2 text-[10px] font-mono text-slate-400 font-extrabold uppercase tracking-widest mt-2 border-t border-white/5">
-                          + 959 مقعد شاغر ومجمد متبقي في هذا القالب
+                          + 959 {t('pdr.remainingSlotsText', 'مقعد شاغر ومجمد متبقي في هذا القالب')}
                         </div>
                       </div>
                     </div>
@@ -753,23 +784,47 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                   {/* Family Header info */}
                   <div className="flex flex-col sm:flex-row justify-between items-start border-b border-white/10 pb-6 gap-4 text-start">
                     <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center shadow-inner shrink-0 text-amber-400">
+                      <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shadow-inner shrink-0 text-amber-400">
                         <GroupIcon className="w-6 h-6" />
                       </div>
                       <div className="text-start space-y-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-mono font-extrabold bg-white/10 text-white px-2.5 py-0.5 rounded-lg border border-white/15">
-                            {meta.nameFr}
+                          <span className="text-xs font-mono font-extrabold bg-amber-500/15 text-amber-300 px-2.5 py-0.5 rounded-lg border border-amber-500/30">
+                            {getGroupName(meta)}
                           </span>
                           <h3 className="text-2xl font-extrabold text-white tracking-tight">{fam.name}</h3>
                         </div>
                         <p className="text-xs text-slate-300 uppercase tracking-wider">
-                          {fam.description || 'لم يتم تحديد نطاق فني لهذه العائلة الهيكلية.'}
+                          {fam.description || t('pdr.noFamilyScope', 'لم يتم تحديد نطاق فني لهذه العائلة الهيكلية.')}
                         </p>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2 flex-wrap">
+                      {/* View Switcher - Standard Header Crystal Component */}
+                      <div className="flex items-center gap-1.5 p-1 bg-[#08080c] rounded-xl border border-white/10">
+                        <button
+                          onClick={() => setViewMode('table')}
+                          className={cn(
+                            "p-1.5 rounded-lg transition-all cursor-pointer",
+                            viewMode === 'table' ? "bg-white text-slate-950 shadow-sm" : "text-slate-400 hover:text-white"
+                          )}
+                          title={t('pdr.tableViewTitle', 'عرض الجدول الكريستالي')}
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => setViewMode('cards')}
+                          className={cn(
+                            "p-1.5 rounded-lg transition-all cursor-pointer",
+                            viewMode === 'cards' ? "bg-white text-slate-950 shadow-sm" : "text-slate-400 hover:text-white"
+                          )}
+                          title={t('pdr.cardsViewTitle', 'عرض شبكة البطاقات')}
+                        >
+                          <LayoutGrid className="w-4 h-4" />
+                        </button>
+                      </div>
+
                       <button 
                         onClick={() => {
                           setSelectedFamilyId(fam.id);
@@ -778,12 +833,12 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                         className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
                       >
                         <Plus className="w-3.5 h-3.5" />
-                        <span>قالب جديد</span>
+                        <span>{t('pdr.newTemplate', 'قالب جديد')}</span>
                       </button>
                       <button 
                         onClick={() => handleDeleteItem('family', fam.id)}
                         className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 hover:bg-rose-500/20 transition-all cursor-pointer active:scale-95"
-                        title="حذف العائلة"
+                        title={t('pdr.deleteFamily', 'حذف العائلة')}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -795,33 +850,7 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                     <div className="flex items-center justify-between flex-row border-b border-white/10 pb-3">
                       <div className="text-sm font-extrabold text-white uppercase tracking-wider flex items-center gap-2">
                         <Component className="w-4 h-4 text-amber-400" />
-                        <span>القوالب الفنية النشطة تحت هذه العائلة ({familyTemplates.length})</span>
-                      </div>
-
-                      {/* View Switcher - Crystal Container */}
-                      <div className="flex items-center gap-1.5 p-1 bg-slate-950/80 rounded-xl border border-white/10">
-                        <button
-                          onClick={() => setViewMode('table')}
-                          className={cn(
-                            "px-2.5 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 text-xs font-bold",
-                            viewMode === 'table' ? "bg-white text-slate-950 shadow-sm" : "text-slate-400 hover:text-white"
-                          )}
-                          title="عرض الجدول"
-                        >
-                          <Eye className="w-3.5 h-3.5" />
-                          <span className="hidden sm:inline">جدول</span>
-                        </button>
-                        <button
-                          onClick={() => setViewMode('cards')}
-                          className={cn(
-                            "px-2.5 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 text-xs font-bold",
-                            viewMode === 'cards' ? "bg-white text-slate-950 shadow-sm" : "text-slate-400 hover:text-white"
-                          )}
-                          title="عرض البطاقات"
-                        >
-                          <LayoutGrid className="w-3.5 h-3.5" />
-                          <span className="hidden sm:inline">بطاقات</span>
-                        </button>
+                        <span>{t('pdr.activeTemplatesUnderFamily', 'قوالب المواصفات الفنية النشطة تحت هذه العائلة')} ({familyTemplates.length})</span>
                       </div>
                     </div>
 
@@ -829,7 +858,7 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                       {familyTemplates.length === 0 ? (
                         <div className="p-12 border border-dashed border-white/10 rounded-2xl text-center bg-white/[0.01]">
                           <Component className="w-10 h-10 text-slate-500 mx-auto mb-2" />
-                          <p className="text-xs text-slate-300 mb-4">لا توجد قوالب مواصفات مسجلة لهذه العائلة.</p>
+                          <p className="text-xs text-slate-300 mb-4">{t('pdr.noRegisteredTemplates', 'لا توجد قوالب مواصفات مسجلة لهذه العائلة.')}</p>
                           <button
                             onClick={() => {
                               setSelectedFamilyId(fam.id);
@@ -838,51 +867,60 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                             className="bg-white text-slate-950 hover:bg-slate-200 text-xs font-extrabold rounded-xl px-4 py-2 transition-all inline-flex items-center gap-1.5 cursor-pointer shadow-md"
                           >
                             <Plus className="w-3.5 h-3.5" />
-                            إضافة قالب أول
+                            {t('pdr.addFirstTemplate', 'إضافة قالب أول')}
                           </button>
                         </div>
                       ) : viewMode === 'table' ? (
-                        <div className="rounded-2xl border border-white/10 bg-[#0a0b10]/90 backdrop-blur-xl shadow-2xl overflow-hidden">
-                          <table className="w-full text-start border-collapse">
-                            <thead className="bg-white/[0.04] border-b border-white/10 text-slate-300 font-extrabold uppercase tracking-wider text-xs">
-                              <tr>
-                                <th className="p-4 text-start">الرمز المعياري Base SKU</th>
-                                <th className="p-4 text-start">قالب مواصفات قطع الغيار</th>
-                                <th className="p-4 text-start">القطع النشطة</th>
-                                <th className="p-4 text-end">إجراءات</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-white/5 text-xs text-slate-300">
-                              {familyTemplates.map(tmpl => {
-                                const bCount = blueprintCounts.get(tmpl.id) || 0;
-                                return (
-                                  <tr 
-                                    key={tmpl.id}
-                                    onClick={() => setSelectedTemplateForSlots(tmpl.id)}
-                                    className="hover:bg-white/[0.04] cursor-pointer transition-colors"
-                                  >
-                                    <td className="p-4 font-mono font-extrabold text-white uppercase text-start">{tmpl.skuBase}</td>
-                                    <td className="p-4 font-extrabold text-white text-start">{tmpl.name}</td>
-                                    <td className="p-4 font-mono text-start">
-                                      <span className="text-amber-400 font-extrabold">{bCount}</span> <span className="text-slate-300 font-bold">مقعد نشط</span>
-                                    </td>
-                                    <td className="p-4 text-end" onClick={(e) => e.stopPropagation()}>
-                                      <button 
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleDeleteItem('template', tmpl.id);
-                                        }}
-                                        className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 transition-colors cursor-pointer"
-                                        title="حذف القالب"
-                                      >
-                                        <Trash2 className="w-3.5 h-3.5" />
-                                      </button>
-                                    </td>
-                                  </tr>
-                                );
-                              })}
-                            </tbody>
-                          </table>
+                        <div className="rounded-2xl border border-white/10 bg-[#0a0b10]/95 backdrop-blur-xl shadow-2xl overflow-hidden flex flex-col max-h-[500px]">
+                          <div className="overflow-x-auto overflow-y-auto custom-scrollbar flex-1">
+                            <table className="w-full text-start border-collapse">
+                              <thead className="bg-[#12141d] border-b-2 border-white/15 text-slate-200 font-extrabold uppercase tracking-wider text-xs text-start sticky top-0 z-20 backdrop-blur-md shadow-sm">
+                                <tr>
+                                  <th className="p-4 text-start">{t('pdr.baseSkuHeader', 'الرمز المعياري الأساسي')}</th>
+                                  <th className="p-4 text-start">{t('pdr.templateNameHeader', 'اسم قالب مواصفات القطعة')}</th>
+                                  <th className="p-4 text-start">{t('pdr.activeSlotsHeader', 'المقاعد النشطة (999 مقعد)')}</th>
+                                  <th className="p-4 text-end">{t('common.actions', 'الإجراءات')}</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-white/5 text-xs text-slate-300">
+                                {familyTemplates.map((tmpl, idx) => {
+                                  const bCount = blueprintCounts.get(tmpl.id) || 0;
+                                  return (
+                                    <tr 
+                                      key={tmpl.id}
+                                      onClick={() => setSelectedTemplateForSlots(tmpl.id)}
+                                      className={cn(
+                                        "cursor-pointer transition-colors duration-150 text-start",
+                                        idx % 2 === 0 ? "bg-white/[0.015]" : "bg-white/[0.05]",
+                                        "hover:bg-amber-500/15 hover:text-white"
+                                      )}
+                                    >
+                                      <td className="p-4 font-mono font-extrabold text-white uppercase text-start flex items-center gap-2">
+                                        <span className="w-2 h-2 rounded-full bg-amber-400 shrink-0 inline-block" />
+                                        {tmpl.skuBase}
+                                      </td>
+                                      <td className="p-4 font-extrabold text-white text-start">{tmpl.name}</td>
+                                      <td className="p-4 font-mono text-start">
+                                        <span className="text-amber-400 font-extrabold">{bCount}</span> <span className="text-slate-300 font-bold">{t('pdr.activeSlotsLabel', 'مقعد نشط')}</span>
+                                      </td>
+                                      <td className="p-4 text-end" onClick={(e) => e.stopPropagation()}>
+                                        <button 
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDeleteItem('template', tmpl.id);
+                                          }}
+                                          className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 transition-colors cursor-pointer"
+                                          title={t('pdr.deleteTemplate', 'حذف القالب')}
+                                        >
+                                          <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
                         </div>
                       ) : (
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -921,7 +959,7 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                                         handleDeleteItem('template', tmpl.id);
                                       }}
                                       className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 transition-colors cursor-pointer"
-                                      title="حذف القالب"
+                                      title={t('pdr.deleteTemplate', 'حذف القالب')}
                                     >
                                       <Trash2 className="w-3.5 h-3.5" />
                                     </button>
@@ -935,10 +973,10 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                                     
                                     <div className="border-t border-white/10 pt-3 mt-3 flex justify-between items-center">
                                       <span className="text-[10px] text-slate-400 font-mono font-bold flex items-center gap-1">
-                                        <Grid className="w-3 h-3 text-amber-400" /> 999 مقعد
+                                        <Grid className="w-3 h-3 text-amber-400" /> {t('pdr.slotsTotal', '999 مقعد')}
                                       </span>
                                       <span className="px-2.5 py-1 rounded-lg bg-amber-500/15 border border-amber-500/30 text-[10px] font-mono font-extrabold text-amber-400">
-                                        {bCount} {bCount === 1 ? 'مقعد نشط' : 'مقاعد نشطة'}
+                                        {bCount} {bCount === 1 ? t('pdr.activeSlotLabel', 'مقعد نشط') : t('pdr.activeSlotsCountLabel', 'مقاعد نشطة')}
                                       </span>
                                     </div>
                                   </div>
@@ -965,9 +1003,11 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                 <div className="w-16 h-16 rounded-3xl bg-white/10 border border-white/20 flex items-center justify-center mb-6 shadow-lg text-amber-400">
                   <FolderTree className="w-8 h-8" />
                 </div>
-                <h3 className="text-2xl font-extrabold text-white uppercase tracking-wider mb-3">مستكشف الكتالوج وقوالب قطع الغيار</h3>
+                <h3 className="text-2xl font-extrabold text-white uppercase tracking-wider mb-3">
+                  {t('pdr.greetingTitle', 'مستكشف الكتالوج وقوالب قطع الغيار')}
+                </h3>
                 <p className="text-xs text-slate-300 leading-relaxed max-w-lg mb-6 font-medium">
-                  يرجى تصفح أو اختيار إحدى عائلات التصنيف الفني من القائمة اليمنى الذكية للوصول إلى قوالب المواصفات والـ 999 مقعداً المرتبطة بها.
+                  {t('pdr.greetingDesc', 'يرجى تصفح أو اختيار إحدى عائلات التصنيف الفني من القائمة الهيكلية للوصول إلى قوالب المواصفات والـ 999 مقعداً المرتبطة بها.')}
                 </p>
                 <div className="flex gap-3 flex-row-reverse">
                   <button
@@ -978,7 +1018,7 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                     }}
                     className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-5 py-2.5 text-xs shadow-lg transition-all flex items-center gap-2 cursor-pointer active:scale-95"
                   >
-                    <Plus className="w-4 h-4" /> إضافة عائلة جديدة
+                    <Plus className="w-4 h-4" /> {t('pdr.addNewFamily', 'إضافة عائلة جديدة')}
                   </button>
                   <button
                     onClick={() => {
@@ -990,7 +1030,7 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                     }}
                     className="bg-white/[0.04] text-slate-300 hover:bg-white/[0.08] hover:text-white border border-white/10 font-bold rounded-xl px-5 py-2.5 text-xs transition-all flex items-center gap-2 cursor-pointer"
                   >
-                    <BookOpen className="w-4 h-4 text-slate-300" /> تصفح العائلة الأولى
+                    <BookOpen className="w-4 h-4 text-slate-300" /> {t('pdr.browseFirstFamily', 'تصفح العائلة الأولى')}
                   </button>
                 </div>
 
@@ -998,26 +1038,28 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                   <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-white/20 transition-all shadow-lg">
                     <div className="flex items-center gap-2 mb-2 justify-start">
                       <Grid className="w-4 h-4 text-amber-400" />
-                      <span className="text-xs font-extrabold text-white">قانون الـ 999 مقعداً الافتراضية للـ PDR</span>
+                      <span className="text-xs font-extrabold text-white">{t('pdr.rule999Title', 'قانون الـ 999 مقعداً الافتراضية لقطع الغيار')}</span>
                     </div>
                     <p className="text-[11px] text-slate-300 leading-relaxed">
-                      يولد النظام تلقائياً 999 مقعداً شاغراً رياضياً فور إنشاء أي قالب، تضمن الترقيم المتسلسل والمنهجي التلقائي بمرونة عالية ودون استهلاك حجم قاعدة البيانات.
+                      {t('pdr.rule999Desc', 'يولد النظام تلقائياً 999 مقعداً شاغراً رياضياً فور إنشاء أي قالب، تضمن الترقيم المتسلسل والمنهجي التلقائي بمرونة عالية ودون استهلاك حجم قاعدة البيانات.')}
                     </p>
                   </div>
 
                   <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-white/20 transition-all shadow-lg">
                     <div className="flex items-center gap-2 mb-2 justify-start">
                       <FolderTree className="w-4 h-4 text-emerald-400" />
-                      <span className="text-xs font-extrabold text-white">استقلالية ونطاق مسؤول المخزن</span>
+                      <span className="text-xs font-extrabold text-white">{t('pdr.activationTitle', 'استقلالية ونطاق مسؤول المخزن')}</span>
                     </div>
                     <p className="text-[11px] text-slate-300 leading-relaxed">
-                      يركز محرك الكتالوج على الرصيد المادي لقطع الغيار وحركات الصرف، الإيداع، الجرد والتسوية لضمان تلبية احتياجات التدخلات الوقائية والعلاجية بكفاءة.
+                      {t('pdr.activationDesc', 'يركز محرك الكتالوج على الرصيد المادي لقطع الغيار وحركات الصرف، الإيداع، الجرد والتسوية لضمان تلبية احتياجات التدخلات الوقائية والعلاجية بكفاءة.')}
                     </p>
                   </div>
                 </div>
               </motion.div>
             )}
-          </AnimatePresence>
+              </AnimatePresence>
+            </div>
+          </GlassCard>
         </div>
       </motion.div>
     </motion.div>

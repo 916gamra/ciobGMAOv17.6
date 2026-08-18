@@ -3,7 +3,7 @@ import { GlassCard } from '@/shared/components/GlassCard';
 import { Box, Hash, Layers, Folder, Package, MapPin, Activity, CalendarClock, ArrowUpRight, ArrowDownRight, RefreshCcw } from 'lucide-react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/core/db';
-import { PdrPageSkeleton } from '../components/PdrPageSkeleton';
+import { EngineViewSkeleton } from '@/shared/components/EngineViewSkeleton';
 import { motion, AnimatePresence } from 'motion/react';
 
 export function PartDetail({ tabId }: { tabId: string }) {
@@ -28,7 +28,7 @@ export function PartDetail({ tabId }: { tabId: string }) {
   }, [blueprintId]);
 
   if (data === undefined) {
-    return <PdrPageSkeleton />;
+    return <EngineViewSkeleton mode="split-pane" themeColor="cyan" />;
   }
 
   if (data === null) {

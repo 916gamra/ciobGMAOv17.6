@@ -2,14 +2,19 @@ import { PageHeader } from "@/shared/components/PageHeader";
 import { HeaderBentoCard } from "@/shared/components/HeaderBentoCard";
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence, Variants } from 'motion/react';
-import { Network, Plus, Trash2, Edit3, Save, Activity, Users, Cpu, Layers, Eye, LayoutGrid, ShieldCheck } from 'lucide-react';
+import { 
+  Network, Plus, Trash2, Edit3, Save, Activity, Users, Cpu, Layers, Eye, 
+  LayoutGrid, ShieldCheck, Binary, MapPin, Wrench
+} from 'lucide-react';
+import { GlassCard } from '@/shared/components/GlassCard';
+import { RegistryGuidanceState } from '@/core/ui/RegistryGuidanceState';
 import { UnifiedSearchFilter, FilterGroup } from '@/shared/components/UnifiedSearchFilter';
 import { useOrganizationEngine } from '../hooks/useOrganizationEngine';
 import { useAuthSlots } from '@/features/auth/hooks/useAuthSlots';
 import { useNotifications } from '@/shared/hooks/useNotifications';
-import { GlassCard } from '@/shared/components/GlassCard';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/shared/utils';
+import { EngineViewSkeleton } from '@/shared/components/EngineViewSkeleton';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -23,7 +28,7 @@ const itemVariants: Variants = {
 
 export function SectorRegistryView() {
   const { t } = useTranslation();
-  const { sectors, machines, createSector, updateSector, deleteSector } = useOrganizationEngine();
+  const { sectors, machines, createSector, updateSector, deleteSector, isLoading } = useOrganizationEngine();
   const allStaff = useAuthSlots();
   const activeTechnicians = allStaff.filter(s => s.isActive && (s.id.startsWith('TC') || s.id.startsWith('OP')));
   
@@ -145,6 +150,10 @@ export function SectorRegistryView() {
     setPreventiveTechId('');
   };
 
+  if (isLoading) {
+    return <EngineViewSkeleton mode="registry" themeColor="indigo" />;
+  }
+
   return (
     <div className="flex flex-col h-full bg-white dark:bg-[#0a0a0f] rounded-3xl border border-slate-200 dark:border-white/5 shadow-2xl text-slate-800 dark:text-slate-200 font-sans pb-4 overflow-hidden overflow-y-auto custom-scrollbar dir-ltr" dir="ltr">
       <div className="p-6 md:p-8 pb-0 shrink-0">
@@ -190,7 +199,9 @@ export function SectorRegistryView() {
       
       <div className="flex flex-col flex-1 px-6 md:px-8 mt-6 gap-6 min-h-0">
       <motion.div variants={itemVariants} className="flex-1 min-h-0 flex flex-col">
-        <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl h-full flex flex-col bg-[#0a0a0f]/60 backdrop-blur-xl">
+        <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl h-full flex flex-col bg-[#0a0b10]/95 backdrop-blur-xl relative">
+          <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent pointer-events-none" />
+          
           {/* Universal Crystal Command Bar */}
           <div className="p-4 md:p-6 border-b border-white/10 bg-white/[0.02] flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4 shrink-0 relative z-10">
             {/* Right Side (RTL): Context Count */}
@@ -341,141 +352,190 @@ export function SectorRegistryView() {
             </motion.div>
           )}
 
-          <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar bg-[#0a0a0f]/40 p-4 md:p-6">
-            {displayMode === 'table' ? (
-              /* Crystal Table View */
-              <div className="rounded-2xl border border-white/10 overflow-hidden bg-slate-900/60 backdrop-blur-xl shadow-2xl flex flex-col max-h-[600px]">
-                <div className="overflow-x-auto overflow-y-auto custom-scrollbar flex-1">
-                  <table className="w-full text-start border-collapse">
-                    <thead className="bg-[#12141d] border-b-2 border-white/15 text-slate-200 font-extrabold uppercase tracking-wider text-[11px] sticky top-0 z-20 backdrop-blur-md shadow-sm">
-                      <tr>
-                        <th className="py-3.5 px-4 text-start font-bold">{t('sectors.thCode', 'Zone Code')}</th>
-                        <th className="py-3.5 px-4 text-start font-bold">{t('sectors.thDesignation', 'Designation & Details')}</th>
-                        <th className="py-3.5 px-4 text-start font-bold">{t('sectors.thManager', 'Sector Manager')}</th>
-                        <th className="py-3.5 px-4 text-start font-bold">{t('sectors.thPmTech', 'Preventive Tech')}</th>
-                        <th className="py-3.5 px-4 text-center font-bold">{t('sectors.thMachines', 'Machines')}</th>
-                        <th className="py-3.5 px-4 text-center font-bold">{t('sectors.thPersonnel', 'Staff')}</th>
-                        <th className="py-3.5 px-4 text-center font-bold">{t('sectors.thStatus', 'Status')}</th>
-                        <th className="py-3.5 px-4 text-center font-bold">{t('sectors.thActions', 'Actions')}</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/5 text-xs">
-                      {filteredSectors.map((sector, idx) => {
-                        const zoneTechs = activeTechnicians.filter(t => t.id === sector.preventiveTechId).length;
-                        const zoneMachines = machines.filter(m => m.sectorId === sector.id).length;
-                        const assignedTech = activeTechnicians.find(t => t.id === sector.preventiveTechId);
+          {/* Content Area - Full Bleed Table / Cards Container */}
+          <div className="flex-1 min-h-0 flex flex-col overflow-hidden bg-transparent relative">
+            {filteredSectors.length === 0 && !isAdding ? (
+              <div className="p-6 md:p-8 flex-1 flex items-center justify-center">
+                <RegistryGuidanceState
+                  id="sector-registry-guidance"
+                  icon={Network}
+                  title={
+                    searchTerm || statusFilter !== 'ALL' || techFilter !== 'ALL'
+                      ? t('sectors.nullResultsTitle', 'لم يتم العثور على قطاعات مطابقة')
+                      : t('sectors.welcomeTitle', 'سجل القطاعات ومناطق الإنتاج')
+                  }
+                  subtitle={
+                    searchTerm || statusFilter !== 'ALL' || techFilter !== 'ALL'
+                      ? t('sectors.nullResultsDesc', 'لا توجد قطاعات إنتاجية تطابق معايير البحث والفلترة المحددة. يمكنك تصفير الفلاتر أو تفعيل قطاع جديد.')
+                      : t('sectors.welcomeDesc', 'المرجع المكاني لتوزيع خطوط الإنتاج والآلات وتعيين قيادات القطاعات والفنيين المسؤولين عن الخطط الوقائية.')
+                  }
+                  isSearchActive={Boolean(searchTerm || statusFilter !== 'ALL' || techFilter !== 'ALL')}
+                  onClearSearch={() => {
+                    setSearchTerm('');
+                    setStatusFilter('ALL');
+                    setTechFilter('ALL');
+                  }}
+                  primaryAction={{
+                    label: t('sectors.newZone', 'تفعيل قطاع إنتاجي جديد'),
+                    icon: Plus,
+                    onClick: () => setIsAdding(true)
+                  }}
+                  secondaryAction={{
+                    label: t('sectors.showAllStatus', 'عرض جميع الحالات'),
+                    icon: Eye,
+                    onClick: () => {
+                      setStatusFilter('ALL');
+                      setTechFilter('ALL');
+                    }
+                  }}
+                  guidanceCards={[
+                    {
+                      icon: MapPin,
+                      title: 'الهيكلية المكانية والصناعية',
+                      description: 'تقسيم المصنع إلى قطاعات جغرافية ووظيفية يتيح المتابعة الدقيقة لكثافة الأعطال وتوزيع الآلات والمعدات.'
+                    },
+                    {
+                      icon: ShieldCheck,
+                      title: 'مسؤولية الصيانة الوقائية (Owner Tech)',
+                      description: 'إسناد فني مسؤول عن القطاع يضمن تنفيذ كافة الجولات التفتيشية والمهام الدورية ومنع التجاوزات التشغيلية.'
+                    }
+                  ]}
+                  themeColor="indigo"
+                />
+              </div>
+            ) : displayMode === 'table' ? (
+              /* Crystal High-Contrast Full Table View */
+              <div className="flex-1 overflow-x-auto overflow-y-auto custom-scrollbar w-full min-h-0">
+                <table className="w-full text-start border-collapse">
+                  <thead className="bg-[#12141d] border-b-2 border-white/15 text-slate-200 font-extrabold uppercase tracking-wider text-[11px] sticky top-0 z-20 backdrop-blur-md shadow-sm">
+                    <tr>
+                      <th className="py-4 px-6 text-start font-extrabold">{t('sectors.thCode', 'Zone Code')}</th>
+                      <th className="py-4 px-6 text-start font-extrabold">{t('sectors.thDesignation', 'Designation & Details')}</th>
+                      <th className="py-4 px-6 text-start font-extrabold">{t('sectors.thManager', 'Sector Manager')}</th>
+                      <th className="py-4 px-6 text-start font-extrabold">{t('sectors.thPmTech', 'Preventive Tech')}</th>
+                      <th className="py-4 px-6 text-center font-extrabold">{t('sectors.thMachines', 'Machines')}</th>
+                      <th className="py-4 px-6 text-center font-extrabold">{t('sectors.thPersonnel', 'Staff')}</th>
+                      <th className="py-4 px-6 text-center font-extrabold">{t('sectors.thStatus', 'Status')}</th>
+                      <th className="py-4 px-6 text-center font-extrabold">{t('sectors.thActions', 'Actions')}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5 text-xs text-slate-300">
+                    {filteredSectors.map((sector, idx) => {
+                      const zoneTechs = activeTechnicians.filter(t => t.id === sector.preventiveTechId).length;
+                      const zoneMachines = machines.filter(m => m.sectorId === sector.id).length;
+                      const assignedTech = activeTechnicians.find(t => t.id === sector.preventiveTechId);
 
-                        return (
-                          <tr 
-                            key={sector.id} 
-                            className={cn(
-                              "transition-colors duration-150 group text-start",
-                              idx % 2 === 0 ? "bg-white/[0.015]" : "bg-white/[0.05]",
-                              "hover:bg-indigo-500/15"
+                      return (
+                        <tr 
+                          key={sector.id} 
+                          className={cn(
+                            "transition-colors duration-150 group text-start cursor-pointer",
+                            idx % 2 === 0 ? "bg-white/[0.015]" : "bg-white/[0.05]",
+                            "hover:bg-indigo-500/15 hover:text-white"
+                          )}
+                        >
+                          {/* Code / ID */}
+                          <td className="py-3.5 px-6 font-mono font-extrabold">
+                            <span className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-white text-[11px] inline-flex items-center gap-1.5">
+                              <Network className="w-3 h-3 text-indigo-400" />
+                              {sector.id.substring(0, 8).toUpperCase()}
+                            </span>
+                          </td>
+
+                          {/* Zone Designation & Details */}
+                          <td className="py-3.5 px-6">
+                            <div className="flex flex-col">
+                              <span className="font-extrabold text-white text-xs tracking-tight group-hover:text-indigo-200 transition-colors uppercase">
+                                {sector.name}
+                              </span>
+                              <span className="text-[10px] text-slate-400 line-clamp-1 mt-0.5 font-medium">
+                                {sector.description || t('sectors.defaultProtocol', 'Standard Operational Protocol')}
+                              </span>
+                            </div>
+                          </td>
+
+                          {/* Sector Manager */}
+                          <td className="py-3.5 px-6">
+                            {sector.managerName ? (
+                              <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-400">
+                                  <Users className="w-3 h-3" />
+                                </div>
+                                <span className="font-bold text-slate-200 text-xs">{sector.managerName}</span>
+                              </div>
+                            ) : (
+                              <span className="text-[11px] text-slate-500 italic">{t('sectors.unassignedManager', 'Unassigned')}</span>
                             )}
-                          >
-                            {/* Code / ID */}
-                            <td className="py-3.5 px-4 font-mono font-bold">
-                              <span className="px-2.5 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[11px] inline-flex items-center gap-1">
-                                <Network className="w-3 h-3 text-indigo-400" />
-                                {sector.id.substring(0, 8).toUpperCase()}
-                              </span>
-                            </td>
+                          </td>
 
-                            {/* Zone Designation & Details */}
-                            <td className="py-3.5 px-4">
-                              <div className="flex flex-col">
-                                <span className="font-extrabold text-white text-xs tracking-tight group-hover:text-indigo-300 transition-colors uppercase">
-                                  {sector.name}
-                                </span>
-                                <span className="text-[10px] text-slate-400 line-clamp-1 mt-0.5 font-medium">
-                                  {sector.description || t('sectors.defaultProtocol', 'Standard Operational Protocol')}
-                                </span>
-                              </div>
-                            </td>
-
-                            {/* Sector Manager */}
-                            <td className="py-3.5 px-4">
-                              {sector.managerName ? (
-                                <div className="flex items-center gap-2">
-                                  <div className="w-6 h-6 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-slate-400">
-                                    <Users className="w-3 h-3" />
-                                  </div>
-                                  <span className="font-bold text-slate-200 text-xs">{sector.managerName}</span>
+                          {/* Assigned PM Tech */}
+                          <td className="py-3.5 px-6">
+                            {assignedTech ? (
+                              <div className="flex items-center gap-2">
+                                <div className="w-6 h-6 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                                  <Activity className="w-3 h-3" />
                                 </div>
-                              ) : (
-                                <span className="text-[11px] text-slate-500 italic">{t('sectors.unassignedManager', 'Unassigned')}</span>
-                              )}
-                            </td>
-
-                            {/* Assigned PM Tech */}
-                            <td className="py-3.5 px-4">
-                              {assignedTech ? (
-                                <div className="flex items-center gap-2">
-                                  <div className="w-6 h-6 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
-                                    <Activity className="w-3 h-3" />
-                                  </div>
-                                  <div className="flex flex-col">
-                                    <span className="font-bold text-slate-200 text-xs">{assignedTech.name}</span>
-                                    <span className="text-[9px] text-emerald-400 font-mono">{assignedTech.id}</span>
-                                  </div>
+                                <div className="flex flex-col">
+                                  <span className="font-bold text-slate-200 text-xs">{assignedTech.name}</span>
+                                  <span className="text-[9px] text-emerald-400 font-mono">{assignedTech.id}</span>
                                 </div>
-                              ) : (
-                                <span className="text-[11px] text-slate-500 italic">{t('sectors.generalistPool', 'Generalist Pool')}</span>
-                              )}
-                            </td>
-
-                            {/* Machines Count */}
-                            <td className="py-3.5 px-4 text-center">
-                              <span className="font-mono font-bold px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-white text-xs">
-                                {zoneMachines}
-                              </span>
-                            </td>
-
-                            {/* Staff Count */}
-                            <td className="py-3.5 px-4 text-center">
-                              <span className="font-mono font-bold px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-slate-300 text-xs">
-                                {zoneTechs}
-                              </span>
-                            </td>
-
-                            {/* Status */}
-                            <td className="py-3.5 px-4 text-center">
-                              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 inline-flex items-center gap-1">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                                {t('sectors.statusActive', 'Active')}
-                              </span>
-                            </td>
-
-                            {/* Actions */}
-                            <td className="py-3.5 px-4 text-center">
-                              <div className="flex items-center justify-center gap-1.5">
-                                <button 
-                                  onClick={() => handleEdit(sector)}
-                                  className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 text-slate-300 hover:text-white border border-white/10 transition-colors cursor-pointer"
-                                  title={t('sectors.editZone', 'Edit Zone')}
-                                >
-                                  <Edit3 className="w-3.5 h-3.5" />
-                                </button>
-                                <button 
-                                  onClick={() => handleDelete(sector.id, sector.name)}
-                                  className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 hover:text-rose-200 border border-rose-500/20 transition-colors cursor-pointer"
-                                  title={t('sectors.decommissionZone', 'Decommission Zone')}
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                </button>
                               </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                            ) : (
+                              <span className="text-[11px] text-slate-500 italic">{t('sectors.generalistPool', 'Generalist Pool')}</span>
+                            )}
+                          </td>
+
+                          {/* Machines Count */}
+                          <td className="py-3.5 px-6 text-center">
+                            <span className="font-mono font-bold px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-white text-xs">
+                              {zoneMachines}
+                            </span>
+                          </td>
+
+                          {/* Staff Count */}
+                          <td className="py-3.5 px-6 text-center">
+                            <span className="font-mono font-bold px-2 py-0.5 rounded-md bg-white/5 border border-white/10 text-slate-300 text-xs">
+                              {zoneTechs}
+                            </span>
+                          </td>
+
+                          {/* Status */}
+                          <td className="py-3.5 px-6 text-center">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 inline-flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                              {t('sectors.statusActive', 'Active')}
+                            </span>
+                          </td>
+
+                          {/* Actions */}
+                          <td className="py-3.5 px-6 text-center" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex items-center justify-center gap-1.5">
+                              <button 
+                                onClick={() => handleEdit(sector)}
+                                className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 text-slate-300 hover:text-white border border-white/10 transition-colors cursor-pointer"
+                                title={t('sectors.editZone', 'Edit Zone')}
+                              >
+                                <Edit3 className="w-3.5 h-3.5" />
+                              </button>
+                              <button 
+                                onClick={() => handleDelete(sector.id, sector.name)}
+                                className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 hover:text-rose-200 border border-rose-500/20 transition-colors cursor-pointer"
+                                title={t('sectors.decommissionZone', 'Decommission Zone')}
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
             ) : (
               /* Cards View */
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 <AnimatePresence mode="popLayout">
                   {filteredSectors.map((sector) => {
                     const zoneTechs = activeTechnicians.filter(t => t.id === sector.preventiveTechId).length;
@@ -562,14 +622,7 @@ export function SectorRegistryView() {
                     );
                   })}
                 </AnimatePresence>
-              </div>
-            )}
-            
-            {filteredSectors.length === 0 && !isAdding && (
-              <div className="py-20 flex flex-col items-center justify-center border border-dashed border-white/10 rounded-3xl bg-white/[0.02]">
-                <Network className="w-12 h-12 text-slate-600 mb-4" />
-                <p className="text-sm text-slate-400 font-bold uppercase tracking-widest">{t('sectors.noZones', 'No Zones Registered')}</p>
-                <p className="text-xs text-slate-500 mt-2">{t('sectors.noZonesHelp', 'Initialize the first production zone to continue.')}</p>
+                </div>
               </div>
             )}
           </div>

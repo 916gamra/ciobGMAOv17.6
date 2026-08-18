@@ -5,6 +5,7 @@ import { GlassCard } from '@/shared/components/GlassCard';
 import { PageHeader } from '@/shared/components/PageHeader';
 import { HeaderBentoCard } from '@/shared/components/HeaderBentoCard';
 import { Select } from '@/shared/components/Select';
+import { NexusIconLoader } from '@/shared/components/NexusIconLoader';
 import { 
   ClipboardCheck, 
   User, 
@@ -14,7 +15,7 @@ import {
   Trash2, 
   CheckCircle2, 
   AlertCircle, 
-  Loader2, 
+  Loader2,
   Boxes, 
   ShoppingCart,
   MapPin,
@@ -259,10 +260,12 @@ export function RequisitionHubView() {
 
   if (isLoading) {
     return (
-      <div className="p-12 text-slate-400 flex flex-col items-center justify-center gap-4 h-full">
-        <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
-        <span className="text-sm font-mono font-bold tracking-wider">{t('common.loading', 'Loading...')}</span>
-      </div>
+      <NexusIconLoader
+        icon={ClipboardCheck}
+        title="جاري تجهيز مصفوفة طلبات الصرف..."
+        subtitle="INITIALIZING REQUISITION HUB"
+        themeColor="cyan"
+      />
     );
   }
 

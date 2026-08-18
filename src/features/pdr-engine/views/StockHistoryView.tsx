@@ -3,7 +3,7 @@ import { motion, AnimatePresence, Variants } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/core/db';
-import { PdrPageSkeleton } from '../components/PdrPageSkeleton';
+import { EngineViewSkeleton } from '@/shared/components/EngineViewSkeleton';
 import { GlassCard } from '@/shared/components/GlassCard';
 import { PageHeader } from '@/shared/components/PageHeader';
 import { HeaderBentoCard } from '@/shared/components/HeaderBentoCard';
@@ -362,7 +362,7 @@ export function StockHistoryView() {
   };
 
   if (isLoading) {
-    return <PdrPageSkeleton />;
+    return <EngineViewSkeleton mode="table" themeColor="cyan" />;
   }
 
   return (

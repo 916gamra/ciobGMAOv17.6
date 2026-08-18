@@ -125,7 +125,7 @@ export function PageHeader({
         <div className="flex items-start md:items-center gap-3.5 relative z-10 text-start">
           {icon && (
             <div className="shrink-0 flex items-center justify-center relative">
-              <div className="relative z-10 animate-pulse">
+              <div className="relative z-10">
                 {icon}
               </div>
             </div>

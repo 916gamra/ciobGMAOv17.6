@@ -538,15 +538,15 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                     <div className="flex gap-2">
                       <button 
                         onClick={() => setView('wizard')}
-                        className="py-2 px-3.5 bg-cyan-500 hover:bg-cyan-400 text-[#050508] font-black rounded-xl text-[10px] uppercase tracking-wider transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(6,182,212,0.2)]"
+                        className="py-2.5 px-4 bg-white hover:bg-slate-200 text-slate-950 font-extrabold rounded-xl text-xs transition-all flex items-center gap-1.5 shadow-md cursor-pointer"
                       >
-                        <Plus className="w-3.5 h-3.5 stroke-[2.5]" /> ربط قطعة غيار
+                        <Plus className="w-4 h-4 text-slate-950 stroke-[2.5]" /> ربط قطعة غيار
                       </button>
                       <button 
                         onClick={() => setView('advanced_edit')}
-                        className="py-2 px-3 bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white rounded-xl text-[10px] uppercase tracking-wider transition-colors flex items-center gap-1.5"
+                        className="py-2.5 px-4 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 text-slate-300 hover:text-white rounded-xl text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer"
                       >
-                        <Settings className="w-3.5 h-3.5" /> تعديل التجميع
+                        <Settings className="w-4 h-4 text-slate-400" /> تعديل التجميع
                       </button>
                     </div>
                   </div>
@@ -991,7 +991,7 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                     <button
                       type="button"
                       onClick={() => setView('details')}
-                      className="flex-1 py-3 px-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-slate-300 font-bold text-xs uppercase tracking-wider transition-all"
+                      className="flex-1 py-3 px-4 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 rounded-xl text-slate-300 font-bold text-xs transition-all cursor-pointer"
                     >
                       إلغاء والعودة
                     </button>
@@ -999,9 +999,9 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                       type="button"
                       onClick={() => handleSaveAssembly()}
                       disabled={isSaving}
-                      className="flex-1 py-3 px-4 bg-indigo-500 hover:bg-indigo-400 text-[#050508] font-black rounded-xl text-xs uppercase tracking-widest transition-all shadow-[0_0_20px_rgba(99,102,241,0.3)] disabled:opacity-50 flex items-center justify-center gap-2"
+                      className="flex-1 py-3 px-4 bg-white hover:bg-slate-200 text-slate-950 font-extrabold rounded-xl text-xs transition-all shadow-md disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
                     >
-                      <Save className="w-4 h-4" />
+                      <Save className="w-4 h-4 text-slate-950" />
                       {isSaving ? 'جاري الحفظ...' : 'تطبيق المواصفات والتجميع'}
                     </button>
                   </div>
@@ -1397,9 +1397,9 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                           <button
                             type="submit"
                             disabled={isSubmittingWizard}
-                            className="w-full py-3.5 bg-cyan-500 hover:bg-cyan-400 text-black font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-[0_0_20px_rgba(6,182,212,0.3)] flex items-center justify-center gap-2"
+                            className="w-full py-3 bg-white hover:bg-slate-200 text-slate-950 font-extrabold text-xs rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                           >
-                            <Save className="w-4 h-4" />
+                            <Save className="w-4 h-4 text-slate-950" />
                             {isSubmittingWizard ? 'جاري تسجيل وتفعيل قطعة الغيار...' : 'تسجيل قطعة الغيار وربطها بهيكل الآلة'}
                           </button>
                         </div>
@@ -1420,7 +1420,7 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                         setView('details');
                       }
                     }}
-                    className="py-2 px-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-slate-300 font-bold text-xs uppercase tracking-wider transition-colors flex items-center gap-1.5"
+                    className="py-2.5 px-4 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 rounded-xl text-slate-300 hover:text-white font-bold text-xs transition-colors flex items-center gap-1.5 cursor-pointer"
                   >
                     <ArrowLeft className="w-4 h-4" /> الرجوع
                   </button>
@@ -1429,7 +1429,7 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                     <button
                       type="button"
                       onClick={() => setView('details')}
-                      className="py-2 px-4 bg-white/5 hover:bg-white/10 border border-white/5 rounded-xl text-slate-400 hover:text-slate-200 text-xs font-bold transition-colors"
+                      className="py-2.5 px-4 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 rounded-xl text-slate-400 hover:text-slate-200 text-xs font-bold transition-colors cursor-pointer"
                     >
                       إلغاء المعالج
                     </button>
@@ -1439,9 +1439,9 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                         type="button"
                         disabled={!wizardSelectedFamilyId}
                         onClick={() => setWizardStep(2)}
-                        className="py-2.5 px-6 bg-cyan-500 hover:bg-cyan-400 text-black font-black rounded-xl text-xs uppercase tracking-widest flex items-center gap-1.5 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                        className="py-2.5 px-6 bg-white hover:bg-slate-200 text-slate-950 font-extrabold rounded-xl text-xs flex items-center gap-1.5 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-md cursor-pointer"
                       >
-                        الخطوة التالية <ArrowRight className="w-4 h-4" />
+                        الخطوة التالية <ArrowRight className="w-4 h-4 text-slate-950" />
                       </button>
                     )}
 
@@ -1450,9 +1450,9 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
                         type="button"
                         disabled={!wizardSelectedTemplateId}
                         onClick={() => setWizardStep(3)}
-                        className="py-2.5 px-6 bg-cyan-500 hover:bg-cyan-400 text-black font-black rounded-xl text-xs uppercase tracking-widest flex items-center gap-1.5 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                        className="py-2.5 px-6 bg-white hover:bg-slate-200 text-slate-950 font-extrabold rounded-xl text-xs flex items-center gap-1.5 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-md cursor-pointer"
                       >
-                        استمر لتعيين قطعة تجارية <ArrowRight className="w-4 h-4" />
+                        استمر لتعيين قطعة تجارية <ArrowRight className="w-4 h-4 text-slate-950" />
                       </button>
                     )}
                   </div>
@@ -1469,9 +1469,9 @@ export function BlueprintAssemblyModal({ blueprintId, onClose, user }: Blueprint
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-3 px-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-slate-300 font-bold text-xs uppercase tracking-wider transition-all"
+              className="flex-1 py-3 px-4 bg-white/[0.04] hover:bg-white/[0.08] border border-white/10 rounded-xl text-slate-300 font-bold text-xs transition-all cursor-pointer"
             >
-              إغلاق نافذة التفاصيل (Close)
+              إغلاق نافذة التفاصيل
             </button>
           </div>
         )}

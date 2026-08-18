@@ -7,7 +7,7 @@ import { Loader2, Plus, Settings, Factory, Box } from 'lucide-react';
 import { ErrorBoundary } from '@/shared/components/ErrorBoundary';
 import { hasPortalAccess } from '@/core/permissions';
 import { Skeleton } from '@/shared/components/Skeleton';
-import { PdrPageSkeleton } from '@/features/pdr-engine/components/PdrPageSkeleton';
+import { EngineViewSkeleton } from '@/shared/components/EngineViewSkeleton';
 import { SystemBackground } from '@/shared/components/SystemBackground';
 import { NotificationHub } from '@/components/notifications/NotificationHub';
 import { useNotificationsContext } from '@/shared/context/NotificationContext';
@@ -22,12 +22,39 @@ const CorrectiveLayout = React.lazy(() => import('@/features/corrective/layout/C
 const SystemSettingsLayout = React.lazy(() => import('@/features/system/layout/SystemSettingsLayout').then(m => ({ default: m.SystemSettingsLayout })));
 const FactoryLayout = React.lazy(() => import('@/features/factory/layout/FactoryLayout').then(m => ({ default: m.FactoryLayout })));
 
-// Loading Fallback
+import { useTabStore } from '@/app/store';
+import { NexusIconLoader } from '@/shared/components/NexusIconLoader';
+import type { SkeletonTheme } from '@/shared/components/EngineViewSkeleton';
+
+// Loading Fallback matching exact PortalCanvas dimensions & location
 function PortalFallback() {
+  const { activePortal } = useOsStore();
+  const { tabs } = useTabStore();
+  const currentTab = tabs.find(t => t.portalId === activePortal);
+
+  const isLab = currentTab?.id === 'engineering-lab' || 
+                currentTab?.id === 'parts-catalog' || 
+                currentTab?.id === 'components-catalog' ||
+                currentTab?.id === 'task-catalog';
+
+  const portalThemeMap: Record<string, SkeletonTheme> = {
+    FACTORY: 'indigo',
+    PDR: 'cyan',
+    PREVENTIVE: 'emerald',
+    CORRECTIVE: 'orange',
+    ANALYTICS: 'fuchsia',
+    SETTINGS: 'indigo',
+    ORGANIZATION: 'amber',
+  };
+
+  const theme = portalThemeMap[activePortal] || 'indigo';
+
   return (
-    <div className="flex-1 flex flex-col w-full h-full p-4 md:p-6 overflow-hidden bg-transparent">
-      <PdrPageSkeleton />
-    </div>
+    <main className="flex-1 flex flex-col min-w-0 relative z-10 bg-transparent overflow-hidden my-0 mr-3 ml-0">
+      <div className="flex-1 relative overflow-hidden flex flex-col w-full rounded-2xl md:rounded-3xl bg-[#0a0a0f]/30 backdrop-blur-2xl border border-white/[0.08] shadow-[0_20px_50px_rgba(0,0,0,0.6)] p-4 md:p-6 lg:p-8 overflow-y-auto">
+        <EngineViewSkeleton mode={isLab ? 'lab' : 'registry'} themeColor={theme} />
+      </div>
+    </main>
   );
 }
 
@@ -86,7 +113,7 @@ export function DesktopLayout({ user, onLogout }: { user: User | null, onLogout:
           </div>
         )}
         
-        <div className={`flex-1 flex overflow-hidden relative ${activePortal !== 'HOME' ? 'pl-[80px] pt-1' : ''}`}>
+        <div className={`flex-1 flex overflow-hidden relative ${activePortal !== 'HOME' ? 'pl-[80px]' : ''}`}>
           <ErrorBoundary>
             {activePortal === 'HOME' ? (
               <LaunchpadView user={user} />

@@ -5,6 +5,7 @@ import { useAnalyticsEngine } from '../hooks/useAnalyticsEngine';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { PageHeader } from '@/shared/components/PageHeader';
 import { HeaderBentoCard } from '@/shared/components/HeaderBentoCard';
+import { EngineViewSkeleton } from '@/shared/components/EngineViewSkeleton';
 import { Eye, TrendingUp, PackageSearch, PenTool, Database, Loader2, BarChart2, CheckCircle2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
@@ -13,12 +14,7 @@ export function AnalyticsDashboardPage() {
   const { kpis, topMachines, techActivity, stockHealth, isLoading } = useAnalyticsEngine();
 
   if (isLoading) {
-    return (
-      <div className="p-12 flex items-center gap-3 text-slate-400 font-mono text-sm tracking-widest uppercase dir-ltr" dir="ltr">
-        <Loader2 className="w-5 h-5 animate-spin text-fuchsia-500" />
-        Booting The Oracle...
-      </div>
-    );
+    return <EngineViewSkeleton mode="table" themeColor="fuchsia" />;
   }
 
   // Calculate healthy stock rate dynamically for the 4th Bento card

@@ -29,6 +29,7 @@ import {
 import { toast } from 'sonner';
 import { cn } from '@/shared/utils';
 import { EmptyState } from '@/shared/components/EmptyState';
+import { EngineViewSkeleton } from '@/shared/components/EngineViewSkeleton';
 
 export function TaskCatalogView() {
   const { t } = useTranslation();
@@ -197,6 +198,12 @@ export function TaskCatalogView() {
     return <Box className="w-5 h-5 text-emerald-400" />;
   };
 
+  const isLoading = tasks === undefined || pdrFamilies === undefined || pdrTemplates === undefined || standardActions === undefined;
+
+  if (isLoading) {
+    return <EngineViewSkeleton mode="lab" themeColor="emerald" />;
+  }
+
   return (
     <div className="flex flex-col h-full bg-[#08080c] text-slate-100 custom-scrollbar overflow-y-auto" dir="ltr">
       {/* Page Header */}
@@ -326,15 +333,15 @@ export function TaskCatalogView() {
                   </button>
                 )}
 
-                {/* Sidebar Search Bar - Crystal White */}
+                {/* Sidebar Search Bar - Crystal Glass */}
                 <div className="relative w-full shrink-0">
-                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                  <Search className="w-4 h-4 absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                   <input 
                     type="text" 
                     placeholder={t('preventive.catalog.searchPlaceholder', 'Search catalog...')}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-white border border-slate-300 rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all text-left font-bold shadow-sm"
+                    className="w-full bg-[#0a0a0f]/80 border border-white/10 rounded-xl pl-9 pr-3 rtl:pr-9 rtl:pl-3 py-2.5 text-xs text-white placeholder:text-slate-500 focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all text-start font-bold shadow-sm"
                   />
                 </div>
 

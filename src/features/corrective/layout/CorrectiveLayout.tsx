@@ -10,12 +10,15 @@ import { BreakdownLogView } from '../views/BreakdownLogView';
 import { MasterPartsCatalogHub } from '@/features/organization/views/MasterPartsCatalogHub';
 import { ComponentRadarView } from '../views/ComponentRadarView';
 import { FailureCatalogView } from '../views/FailureCatalogView';
+import { DiagnosticSimulatorView } from '../views/DiagnosticSimulatorView';
+import { Activity } from 'lucide-react';
 
 const CORRECTIVE_COMPONENTS = {
   'breakdown-log': BreakdownLogView,
   'components-catalog': (props: any) => <MasterPartsCatalogHub defaultTab="components" {...props} />,
-  'component-radar': ComponentRadarView,
   'failure-catalog': FailureCatalogView,
+  'diagnostic-simulator': DiagnosticSimulatorView,
+  'component-radar': ComponentRadarView,
 };
 
 export function CorrectiveLayout({ user, onLogout }: { user: User | null, onLogout: () => void }) {
@@ -61,6 +64,14 @@ export function CorrectiveLayout({ user, onLogout }: { user: User | null, onLogo
           isActive={activeTabId === 'failure-catalog'} 
           onClick={() => openTab({ id: 'failure-catalog', portalId: 'CORRECTIVE', title: 'كتالوج الأعطال', component: 'failure-catalog' })}
           title="كتالوج الأعطال (Symptom/Problem)"
+          colorClass="text-orange-400"
+        />
+
+        <PortalSidebarItem 
+          icon={<Activity />} 
+          isActive={activeTabId === 'diagnostic-simulator'} 
+          onClick={() => openTab({ id: 'diagnostic-simulator', portalId: 'CORRECTIVE', title: 'شجرة التشخيص الميداني', component: 'diagnostic-simulator' })}
+          title="شجرة التشخيص الميداني (ISO 14224)"
           colorClass="text-orange-400"
         />
 

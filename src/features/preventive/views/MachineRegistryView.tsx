@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'motion/react';
 import { toast } from 'sonner';
 import { EmptyState } from '@/shared/components/EmptyState';
+import { EngineViewSkeleton } from '@/shared/components/EngineViewSkeleton';
 import { 
   FileStack, 
   Activity, 
@@ -372,6 +373,12 @@ export function MachineRegistryView() {
     }
   };
 
+  const isLoading = templates === undefined || blueprints === undefined || machines === undefined || tasks === undefined || preventiveCards === undefined;
+
+  if (isLoading) {
+    return <EngineViewSkeleton mode="lab" themeColor="emerald" />;
+  }
+
   return (
     <div className="flex flex-col h-full bg-[#08080c] text-slate-100 custom-scrollbar overflow-y-auto">
       
@@ -383,42 +390,6 @@ export function MachineRegistryView() {
           icon={<Layers className="w-6 h-6 text-emerald-400" />}
           badgeColor="emerald"
           badgeText={t("preventive.plans.badge", "Maintenance Schemes")}
-          actions={
-            <div className="flex items-center gap-3">
-              {/* Global View Switcher */}
-              <div className="flex items-center gap-1.5 p-1 bg-[#08080c] rounded-xl border border-white/10">
-                <button
-                  onClick={() => setViewMode('table')}
-                  className={cn(
-                    "p-1.5 rounded-lg transition-all cursor-pointer",
-                    viewMode === 'table' ? "bg-white text-slate-950 shadow-sm" : "text-slate-400 hover:text-white"
-                  )}
-                  title={t('common.tableView', 'عرض الجدول')}
-                >
-                  <Eye className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setViewMode('cards')}
-                  className={cn(
-                    "p-1.5 rounded-lg transition-all cursor-pointer",
-                    viewMode === 'cards' ? "bg-white text-slate-950 shadow-sm" : "text-slate-400 hover:text-white"
-                  )}
-                  title={t('common.cardsView', 'عرض البطاقات')}
-                >
-                  <LayoutGrid className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Action Buttons */}
-              <button
-                onClick={() => setIsTemplateModalOpen(true)}
-                className="bg-white/10 hover:bg-white/20 text-white border border-white/10 font-extrabold rounded-xl px-4 py-2 text-xs shadow-md transition-all flex items-center gap-2 cursor-pointer"
-              >
-                <Plus className="w-4 h-4" />
-                <span>{t("preventive.plans.addTemplate", "إضافة قالب آلة جديد")}</span>
-              </button>
-            </div>
-          }
         >
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <HeaderBentoCard
@@ -529,15 +500,15 @@ export function MachineRegistryView() {
                   </button>
                 )}
 
-                {/* Search Bar - Crystal White */}
+                {/* Search Bar - Crystal Glass */}
                 <div className="relative w-full">
-                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
+                  <Search className="w-4 h-4 absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
                   <input 
                     type="text"
                     placeholder={activeSidebarTab === 'templates' ? t('machine.searchTemplates', "Search machine templates...") : t('machine.searchModels', "Search commercial models...")}
                     value={searchTerm}
                     onChange={e => setSearchTerm(e.target.value)}
-                    className="w-full bg-white border border-slate-300 rounded-xl pl-9 pr-3 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none transition-all text-left font-bold shadow-sm"
+                    className="w-full bg-[#0a0a0f]/80 border border-white/10 rounded-xl pl-9 pr-3 rtl:pr-9 rtl:pl-3 py-2.5 text-xs text-white placeholder:text-slate-500 focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all text-start font-bold shadow-sm"
                   />
                 </div>
 

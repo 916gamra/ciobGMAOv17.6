@@ -40,9 +40,9 @@ export function PortalCanvas({ componentMap, user, onLogout }: { componentMap: R
   const currentTab = tabs.find(t => t.portalId === activePortal);
 
   return (
-    <main className="flex-1 flex flex-col min-w-0 relative z-10 bg-transparent overflow-hidden my-1 mr-3 ml-0">
-      {/* Canvas Area with Glass Frame Effect */}
-      <div className="flex-1 relative overflow-hidden flex flex-col w-full rounded-3xl bg-[#0a0a0f]/30 backdrop-blur-2xl border border-white/[0.08] shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
+    <main className="flex-1 flex flex-col min-w-0 relative z-10 bg-transparent overflow-hidden my-0 mr-3 ml-0">
+      {/* Canvas Area with Glass Frame Effect - Merged seamlessly with header shelf */}
+      <div className="flex-1 relative overflow-hidden flex flex-col w-full rounded-2xl md:rounded-3xl bg-[#0a0a0f]/40 backdrop-blur-2xl border border-white/[0.08] shadow-[0_20px_50px_rgba(0,0,0,0.6)]">
         <AnimatePresence mode="wait">
           {currentTab ? (() => {
             const Component = MERGED_MAP[currentTab.component] || (() => <div className="p-6 text-[var(--text-dim)]">Component '{currentTab.component}' Not Found in Portal</div>);

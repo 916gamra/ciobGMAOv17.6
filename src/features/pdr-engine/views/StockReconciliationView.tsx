@@ -28,7 +28,7 @@ import { HeaderBentoCard } from '@/shared/components/HeaderBentoCard';
 import { KpiCard } from '@/shared/components/KpiCard';
 import { BadgePill } from '@/shared/components/BadgePill';
 import { Button } from '@/shared/components/Button';
-import { PdrPageSkeleton } from '../components/PdrPageSkeleton';
+import { EngineViewSkeleton } from '@/shared/components/EngineViewSkeleton';
 import { toast } from 'sonner';
 import { UnifiedSearchFilter } from '@/shared/components/UnifiedSearchFilter';
 import { EmptyState } from '@/shared/components/EmptyState';
@@ -152,7 +152,7 @@ export function StockReconciliationView({ user }: { user: any }) {
   }, [claimsList, searchTerm, statusFilter]);
 
   if (!data) {
-    return <PdrPageSkeleton />;
+    return <EngineViewSkeleton mode="table" themeColor="cyan" />;
   }
 
   // Storekeeper Action 1: Confirm Match (Without extra deduction)

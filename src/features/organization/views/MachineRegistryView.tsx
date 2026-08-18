@@ -4,8 +4,10 @@ import { GlassCard } from '@/shared/components/GlassCard';
 import { getAssetMatrixForBlueprint, MAX_ASSETS_PER_BLUEPRINT, AssetSlot } from '@/core/config/assetMatrix';
 import { 
   Factory, Cpu, Plus, X, Search, Activity, Box, Tag, Trash2, Edit3, 
-  Save, Wrench, QrCode, Upload, Link2, AlertTriangle, Eye, LayoutGrid, CheckCircle2 
+  Save, Wrench, QrCode, Upload, Link2, AlertTriangle, Eye, LayoutGrid, CheckCircle2,
+  Binary, Compass, ShieldCheck, Network
 } from 'lucide-react';
+import { RegistryGuidanceState } from '@/core/ui/RegistryGuidanceState';
 import { useOrganizationEngine } from '../hooks/useOrganizationEngine';
 import { useMachineLibrary } from '../hooks/useMachineLibrary';
 import { useNotifications } from '@/shared/hooks/useNotifications';
@@ -20,6 +22,7 @@ import { HeaderBentoCard } from '@/shared/components/HeaderBentoCard';
 import { UnifiedSearchFilter, FilterGroup } from '@/shared/components/UnifiedSearchFilter';
 import { cn } from '@/shared/utils';
 import { useTranslation } from 'react-i18next';
+import { EngineViewSkeleton } from '@/shared/components/EngineViewSkeleton';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -171,7 +174,7 @@ export function MachineRegistryView() {
       <PageHeader
         title={t('machines.title', 'Machine Registry')}
         subtitle={t('machines.subtitle', 'Comprehensive Machinery & Asset Directory')}
-        icon={<Factory className="w-7 h-7 text-indigo-400" />}
+        icon={<Cpu className="w-7 h-7 text-indigo-400" />}
         badgeText={t('machines.badge', 'Machine Registry')}
         badgeColor="indigo"
       >
@@ -210,7 +213,9 @@ export function MachineRegistryView() {
 
       <div className="flex flex-col flex-1 px-6 md:px-8 mt-6 gap-6 min-h-0">
       <motion.div variants={itemVariants} className="flex-1 min-h-0 flex flex-col">
-        <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl h-full flex flex-col bg-[#0a0a0f]/60 backdrop-blur-xl">
+        <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl h-full flex flex-col bg-[#0a0b10]/95 backdrop-blur-xl relative">
+          <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent pointer-events-none" />
+          
           {/* Universal Crystal Command Bar */}
           <div className="p-4 md:p-6 border-b border-white/10 bg-white/[0.02] flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4 shrink-0 relative z-10">
             {/* Context Count */}
@@ -285,159 +290,193 @@ export function MachineRegistryView() {
             </div>
           </div>
 
-          <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar bg-[#0a0a0f]/40 p-4 md:p-6">
+          {/* Content Area - Full Bleed Table / Cards Container */}
+          <div className="flex-1 min-h-0 flex flex-col overflow-hidden bg-transparent relative">
             {filteredMachines.length === 0 ? (
-              <div className="py-20 text-center border border-dashed border-white/10 rounded-3xl bg-white/[0.02]">
-                <Cpu className="w-16 h-16 text-slate-500 mx-auto mb-4 opacity-50" />
-                <h3 className="text-xl font-bold text-slate-100 uppercase tracking-widest mb-2 mt-4">{t('machines.nullResultsTitle', 'Null Results Detected')}</h3>
-                <p className="text-slate-400 text-sm font-medium">{t('machines.nullResultsDesc', 'No assets matching your query or registry is empty.')}</p>
-                <button
-                  onClick={handleTriggerNewAssetWizard}
-                  className="mt-8 px-6 py-2.5 rounded-xl border border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10 transition-colors uppercase tracking-widest text-xs font-bold cursor-pointer"
-                >
-                  + {t('machines.syncFirst', 'Sync First Machine')}
-                </button>
+              <div className="p-6 md:p-8 flex-1 flex items-center justify-center">
+                <RegistryGuidanceState
+                  id="machine-registry-guidance"
+                  icon={Cpu}
+                  title={
+                    searchTerm || filterSector !== 'ALL' || filterTemplate !== 'ALL'
+                      ? t('machines.nullResultsTitle', 'لم يتم العثور على أصول مطابقة')
+                      : t('machines.welcomeTitle', 'سجل الأصول والآلات الصناعية')
+                  }
+                  subtitle={
+                    searchTerm || filterSector !== 'ALL' || filterTemplate !== 'ALL'
+                      ? t('machines.nullResultsDesc', 'لا توجد أصول أو آلات تطابق معايير البحث والفلترة المحددة. يمكنك إعادة ضبط الفلترة أو تسجيل آلة جديدة.')
+                      : t('machines.welcomeDesc', 'قاعدة البيانات المركزية لجميع خطوط الإنتاج والآلات وتوزيعها الجغرافي وربطها بهياكل النمذجة (B.O.M) وقطع الغيار.')
+                  }
+                  isSearchActive={Boolean(searchTerm || filterSector !== 'ALL' || filterTemplate !== 'ALL')}
+                  onClearSearch={() => {
+                    setSearchTerm('');
+                    setFilterSector('ALL');
+                    setFilterTemplate('ALL');
+                  }}
+                  primaryAction={{
+                    label: t('machines.newAsset', 'تسجيل آلة جديدة'),
+                    icon: Plus,
+                    onClick: handleTriggerNewAssetWizard
+                  }}
+                  secondaryAction={{
+                    label: t('machines.smartImport', 'استيراد ذكي (Smart Import)'),
+                    icon: Upload,
+                    onClick: () => setIsImporterOpen(true)
+                  }}
+                  guidanceCards={[
+                    {
+                      icon: Binary,
+                      title: 'الوعي الصناعي وشجرة B.O.M',
+                      description: 'ربط الآلة بنموذج تجاري (Blueprint) يُمكّن النظام من بناء شجرة المكونات وتوريث خطط الصيانة وقطع الغيار تلقائياً.'
+                    },
+                    {
+                      icon: ShieldCheck,
+                      title: 'المعرف الرقمي وبطاقة QR',
+                      description: 'توليد كود تعريفي موحد وبطاقة QR تفاعلية لكل آلة للوصول الفوري لسجل الصيانة وسحب قطع الغيار من أرض المصنع.'
+                    }
+                  ]}
+                  themeColor="indigo"
+                />
               </div>
             ) : displayMode === 'table' ? (
-              /* Crystal Table View */
-              <div className="rounded-2xl border border-white/10 overflow-hidden bg-slate-900/60 backdrop-blur-xl shadow-2xl flex flex-col max-h-[600px]">
-                <div className="overflow-x-auto overflow-y-auto custom-scrollbar flex-1">
-                  <table className="w-full text-start border-collapse">
-                    <thead className="bg-[#12141d] border-b-2 border-white/15 text-slate-200 font-extrabold uppercase tracking-wider text-[11px] sticky top-0 z-20 backdrop-blur-md shadow-sm">
-                      <tr>
-                        <th className="py-3.5 px-4 text-start font-bold">{t('machines.thAssetId', 'Asset ID')}</th>
-                        <th className="py-3.5 px-4 text-start font-bold">{t('machines.thNameModel', 'Machine Name & Model')}</th>
-                        <th className="py-3.5 px-4 text-start font-bold">{t('machines.thSector', 'Operating Sector')}</th>
-                        <th className="py-3.5 px-4 text-start font-bold">{t('machines.thManager', 'Manager & Tech')}</th>
-                        <th className="py-3.5 px-4 text-start font-bold">{t('machines.thFamilyTemplate', 'Family & Template')}</th>
-                        <th className="py-3.5 px-4 text-center font-bold">{t('machines.thActions', 'Actions & Links')}</th>
+              /* Crystal High-Contrast Full Table View */
+              <div className="flex-1 overflow-x-auto overflow-y-auto custom-scrollbar w-full min-h-0">
+                <table className="w-full text-start border-collapse">
+                  <thead className="bg-[#12141d] border-b-2 border-white/15 text-slate-200 font-extrabold uppercase tracking-wider text-[11px] sticky top-0 z-20 backdrop-blur-md shadow-sm">
+                    <tr>
+                      <th className="py-4 px-6 text-start font-extrabold">{t('machines.thAssetId', 'Asset ID')}</th>
+                      <th className="py-4 px-6 text-start font-extrabold">{t('machines.thNameModel', 'Machine Name & Model')}</th>
+                      <th className="py-4 px-6 text-start font-extrabold">{t('machines.thSector', 'Operating Sector')}</th>
+                      <th className="py-4 px-6 text-start font-extrabold">{t('machines.thManager', 'Manager & Tech')}</th>
+                      <th className="py-4 px-6 text-start font-extrabold">{t('machines.thFamilyTemplate', 'Family & Template')}</th>
+                      <th className="py-4 px-6 text-center font-extrabold">{t('machines.thActions', 'Actions & Links')}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5 text-xs text-slate-300">
+                    {filteredMachines.map((machine, idx) => (
+                      <tr 
+                        key={machine.id} 
+                        className={cn(
+                          "transition-colors duration-150 group text-start cursor-pointer",
+                          idx % 2 === 0 ? "bg-white/[0.015]" : "bg-white/[0.05]",
+                          "hover:bg-indigo-500/15 hover:text-white"
+                        )}
+                      >
+                        {/* Reference Code */}
+                        <td className="py-3.5 px-6 font-mono font-extrabold">
+                          <span 
+                            onClick={() => setSelectedMachineForDetails(machine)}
+                            className="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-white text-[11px] inline-flex items-center gap-2 cursor-pointer hover:bg-white/10 transition-colors"
+                          >
+                            <span className="w-2 h-2 rounded-full bg-indigo-400 shrink-0 inline-block" />
+                            {machine.referenceCode}
+                          </span>
+                        </td>
+
+                        {/* Machine Name & Blueprint */}
+                        <td className="py-3.5 px-6">
+                          <div 
+                            onClick={() => setSelectedMachineForDetails(machine)}
+                            className="flex flex-col cursor-pointer"
+                          >
+                            <span className="font-extrabold text-white text-xs tracking-tight group-hover:text-indigo-200 transition-colors uppercase">
+                              {machine.name}
+                            </span>
+                            <span className="text-[10px] text-slate-400 font-medium">
+                              {machine.blueprintReference || t('machines.unassignedBlueprint', 'Unassigned Model')}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Sector */}
+                        <td className="py-3.5 px-6">
+                          <div className="flex items-center gap-2">
+                            <Activity className="w-3.5 h-3.5 text-slate-400 group-hover:text-indigo-400 transition-colors" />
+                            <span className="font-bold text-slate-200 text-xs">
+                              {machine.sectorName}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Tech / Manager */}
+                        <td className="py-3.5 px-6">
+                          <span className="text-[11px] text-slate-300 font-medium">
+                            {machine.managerName || t('machines.defaultManager', 'Sector Manager')}
+                          </span>
+                        </td>
+
+                        {/* Family & Template */}
+                        <td className="py-3.5 px-6">
+                          <div className="flex items-center gap-2">
+                            <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[10px] text-slate-300 font-mono">
+                              {machine.familyName}
+                            </span>
+                            <span className="text-slate-500 text-xs">/</span>
+                            <span className="text-[10px] text-slate-200 font-bold">
+                              {machine.templateName}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Actions */}
+                        <td className="py-3.5 px-6 text-center">
+                          <div className="flex items-center justify-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                            {/* Link Spare Part Quick Trigger */}
+                            <button
+                              type="button"
+                              onClick={() => setSelectedMachineForPdrLink(machine)}
+                              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 text-slate-300 hover:text-white border border-white/10 transition-colors cursor-pointer"
+                              title={t('machines.linkPdrTooltip', 'Link Spare Part (PDR)')}
+                            >
+                              <Link2 className="w-3.5 h-3.5" />
+                            </button>
+
+                            {/* QR Code */}
+                            <button 
+                              onClick={() => setSelectedMachineForQr(machine)}
+                              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 text-slate-300 hover:text-white border border-white/10 transition-colors cursor-pointer"
+                              title={t('machines.digitalIdTooltip', 'Digital ID & QR Card')}
+                            >
+                              <QrCode className="w-3.5 h-3.5" />
+                            </button>
+
+                            {/* BOM */}
+                            <button 
+                              onClick={() => setSelectedMachineForBom({ id: machine.id, name: machine.name })}
+                              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 text-slate-300 hover:text-white border border-white/10 transition-colors cursor-pointer"
+                              title={t('machines.bomTooltip', 'BOM Configuration')}
+                            >
+                              <Wrench className="w-3.5 h-3.5" />
+                            </button>
+
+                            {/* Edit */}
+                            <button 
+                              onClick={() => handleEdit(machine)}
+                              className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 text-slate-300 hover:text-white border border-white/10 transition-colors cursor-pointer"
+                              title={t('machines.editTooltip', 'Edit Asset Specs')}
+                            >
+                              <Edit3 className="w-3.5 h-3.5" />
+                            </button>
+
+                            {/* Delete */}
+                            <button 
+                              onClick={() => handleDelete(machine.id, machine.name)}
+                              className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition-colors cursor-pointer"
+                              title={t('machines.decommissionTooltip', 'Decommission Asset')}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
                       </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/5 text-xs">
-                      {filteredMachines.map((machine, idx) => (
-                        <tr 
-                          key={machine.id} 
-                          className={cn(
-                            "transition-colors duration-150 group text-start",
-                            idx % 2 === 0 ? "bg-white/[0.015]" : "bg-white/[0.05]",
-                            "hover:bg-indigo-500/15"
-                          )}
-                        >
-                          {/* Reference Code */}
-                          <td className="py-3.5 px-4 font-mono font-bold">
-                            <span 
-                              onClick={() => setSelectedMachineForDetails(machine)}
-                              className="px-2.5 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-[11px] inline-flex items-center gap-1.5 cursor-pointer hover:bg-indigo-500/20 transition-colors"
-                            >
-                              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(16,185,129,0.8)] animate-pulse" />
-                              {machine.referenceCode}
-                            </span>
-                          </td>
-
-                          {/* Machine Name & Blueprint */}
-                          <td className="py-3.5 px-4">
-                            <div 
-                              onClick={() => setSelectedMachineForDetails(machine)}
-                              className="flex flex-col cursor-pointer"
-                            >
-                              <span className="font-extrabold text-white text-xs tracking-tight group-hover:text-indigo-300 transition-colors uppercase">
-                                {machine.name}
-                              </span>
-                              <span className="text-[10px] text-slate-400 font-medium">
-                                {machine.blueprintReference || t('machines.unassignedBlueprint', 'Unassigned Model')}
-                              </span>
-                            </div>
-                          </td>
-
-                          {/* Sector */}
-                          <td className="py-3.5 px-4">
-                            <div className="flex items-center gap-2">
-                              <Activity className="w-3.5 h-3.5 text-indigo-400" />
-                              <span className="font-bold text-slate-200 text-xs">
-                                {machine.sectorName}
-                              </span>
-                            </div>
-                          </td>
-
-                          {/* Tech / Manager */}
-                          <td className="py-3.5 px-4">
-                            <span className="text-[11px] text-slate-300 font-medium">
-                              {machine.managerName || t('machines.defaultManager', 'Sector Manager')}
-                            </span>
-                          </td>
-
-                          {/* Family & Template */}
-                          <td className="py-3.5 px-4">
-                            <div className="flex items-center gap-2">
-                              <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[10px] text-slate-400 font-mono">
-                                {machine.familyName}
-                              </span>
-                              <span className="text-slate-500 text-xs">/</span>
-                              <span className="text-[10px] text-slate-300 font-bold">
-                                {machine.templateName}
-                              </span>
-                            </div>
-                          </td>
-
-                          {/* Actions */}
-                          <td className="py-3.5 px-4 text-center">
-                            <div className="flex items-center justify-center gap-1.5">
-                              {/* Link Spare Part Quick Trigger */}
-                              <button
-                                type="button"
-                                onClick={() => setSelectedMachineForPdrLink(machine)}
-                                className="p-1.5 rounded-lg bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 transition-colors cursor-pointer"
-                                title={t('machines.linkPdrTooltip', 'Link Spare Part (PDR)')}
-                              >
-                                <Link2 className="w-3.5 h-3.5" />
-                              </button>
-
-                              {/* QR Code */}
-                              <button 
-                                onClick={() => setSelectedMachineForQr(machine)}
-                                className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 text-slate-300 hover:text-white border border-white/10 transition-colors cursor-pointer"
-                                title={t('machines.digitalIdTooltip', 'Digital ID & QR Card')}
-                              >
-                                <QrCode className="w-3.5 h-3.5" />
-                              </button>
-
-                              {/* BOM */}
-                              <button 
-                                onClick={() => setSelectedMachineForBom({ id: machine.id, name: machine.name })}
-                                className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 text-slate-300 hover:text-white border border-white/10 transition-colors cursor-pointer"
-                                title={t('machines.bomTooltip', 'BOM Configuration')}
-                              >
-                                <Wrench className="w-3.5 h-3.5" />
-                              </button>
-
-                              {/* Edit */}
-                              <button 
-                                onClick={() => handleEdit(machine)}
-                                className="p-1.5 rounded-lg bg-white/5 hover:bg-white/15 text-slate-300 hover:text-white border border-white/10 transition-colors cursor-pointer"
-                                title={t('machines.editTooltip', 'Edit Asset Specs')}
-                              >
-                                <Edit3 className="w-3.5 h-3.5" />
-                              </button>
-
-                              {/* Delete */}
-                              <button 
-                                onClick={() => handleDelete(machine.id, machine.name)}
-                                className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/20 transition-colors cursor-pointer"
-                                title={t('machines.decommissionTooltip', 'Decommission Asset')}
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             ) : (
               /* Cards View */
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 <AnimatePresence>
                   {filteredMachines.map((machine, idx) => (
                     <motion.div
@@ -547,6 +586,7 @@ export function MachineRegistryView() {
                     </motion.div>
                   ))}
                 </AnimatePresence>
+                </div>
               </div>
             )}
           </div>
