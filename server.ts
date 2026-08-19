@@ -2,6 +2,7 @@ import express from 'express';
 import { createServer as createViteServer } from 'vite';
 import helmet from 'helmet';
 import path from 'path';
+import { execFile } from 'child_process';
 
 async function startServer() {
   const app = express();
@@ -16,10 +17,29 @@ async function startServer() {
 
   // --- API Routes ---
   app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', message: 'TITANIC OS Hybrid API Active' });
+    res.json({ status: 'ok', message: 'TITANIC OS Hybrid API Active', pythonSupported: true });
   });
 
-  // Future Route: Sync offline data to central server
+  // Python ML Predictive Maintenance Endpoint
+  app.post('/api/ml/predict-maintenance', (req, res) => {
+    const historyData = req.body.history || [];
+    const jsonString = JSON.stringify(historyData);
+
+    const scriptPath = path.join(process.cwd(), 'python', 'ml_engine.py');
+    execFile('python3', [scriptPath, jsonString], (error, stdout) => {
+      if (error) {
+        return res.status(500).json({ status: 'error', message: 'Failed to run Python ML engine', details: error.message });
+      }
+      try {
+        const parsed = JSON.parse(stdout);
+        return res.json(parsed);
+      } catch (e) {
+        return res.status(500).json({ status: 'error', message: 'Invalid output from Python ML engine', stdout });
+      }
+    });
+  });
+
+  // Sync offline data to central server
   app.post('/api/sync', (req, res) => {
     // In the future: Rate limiting and payload validation with Zod
     res.json({ status: 'success', syncedAt: new Date().toISOString() });

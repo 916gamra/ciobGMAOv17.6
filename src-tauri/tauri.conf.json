@@ -1,83 +1,41 @@
 {
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "BDR Nexus GMAO",
+  "version": "17.6.0",
+  "identifier": "com.bdr.nexus.gmao",
   "build": {
-    "beforeBuildCommand": "npm run build",
     "beforeDevCommand": "npm run dev",
-    "devPath": "http://localhost:3000",
-    "distDir": "../dist"
+    "devUrl": "http://localhost:3000",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
   },
-  "package": {
-    "productName": "BDR Nexus",
-    "version": "17.6.0"
-  },
-  "tauri": {
-    "allowlist": {
-      "all": false,
-      "fs": {
-        "all": true,
-        "scope": ["$APPDATA/*"]
-      },
-      "path": {
-        "all": true
-      },
-      "dialog": {
-        "all": true,
-        "open": true,
-        "save": true
-      },
-      "window": {
-        "all": true,
-        "create": true
-      },
-      "shell": {
-        "all": true,
-        "open": true
-      }
-    },
-    "bundle": {
-      "active": true,
-      "category": "DeveloperTool",
-      "copyright": "Copyright © 2026 BDR Nexus",
-      "deb": {
-        "depends": []
-      },
-      "externalBin": [],
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ],
-      "identifier": "com.bdrnexus.gmao",
-      "longDescription": "BDR Nexus - Advanced Industrial Maintenance & Spare Parts Management System",
-      "macOS": {
-        "frameworks": [],
-        "minimumSystemVersion": "10.15",
-        "signingIdentity": null
-      },
-      "resources": [],
-      "shortDescription": "GMAO Industrial Management",
-      "targets": "all",
-      "windows": {
-        "certificateThumbprint": null,
-        "digestAlgorithm": null,
-        "timestampUrl": null
-      }
-    },
-    "security": {
-      "csp": "default-src 'self'; img-src 'self' data: https: referrer; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; connect-src 'self' ws: wss: http: https:"
-    },
+  "app": {
     "windows": [
       {
-        "fullscreen": false,
-        "height": 768,
+        "title": "BDR Nexus v17.6 - Industrial CMMS System",
+        "width": 1440,
+        "height": 900,
+        "minWidth": 1024,
+        "minHeight": 720,
         "resizable": true,
-        "title": "BDR Nexus (GMAO v17.6)",
-        "width": 1024,
-        "decorations": true,
-        "transparent": false,
-        "maximized": true
+        "fullscreen": false,
+        "center": true
       }
-    ]
+    ],
+    "security": {
+      "csp": "default-src 'self'; img-src 'self' data: blob: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "publisher": "BDR Industrial Systems"
   }
 }
