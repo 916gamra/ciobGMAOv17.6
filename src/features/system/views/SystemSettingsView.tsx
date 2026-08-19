@@ -237,7 +237,7 @@ export function SystemSettingsView({ user, onLogout }: { user: User | null, onLo
           </div>
 
           {/* The 3 Standardized Action Cards inside the Main Shell */}
-          <div className="p-6 md:p-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="p-6 md:p-8 grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10">
             
             {/* 1. FACTORY MASTER RESET CARD */}
             <div className="rounded-2xl p-6 md:p-7 bg-[#120d10]/60 border border-rose-500/25 hover:border-rose-500/40 transition-all duration-300 shadow-xl flex flex-col justify-between relative overflow-hidden group min-h-[420px]">

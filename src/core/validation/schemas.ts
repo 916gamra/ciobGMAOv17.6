@@ -1,102 +1,121 @@
-// src/core/validation/schemas.ts
+/**
+ * Comprehensive Zod Schemas for BDR Nexus Domain Models & ISO 14224 Compliance
+ */
+
 import { z } from 'zod';
-import { ValidationError, Result } from '@/core/error';
+import { ValidationError } from '@/core/error';
 
-// Common Schemas
-export const IdSchema = z.string().min(1, 'ID مطلوب');
-export const EmailSchema = z.string().email('بريد إلكتروني غير صحيح');
-export const PhoneSchema = z.string().regex(/^\+?[0-9]{10,}$/, 'رقم هاتف غير صحيح');
-export const DateSchema = z.date();
+export class Validator {
+  static validate<T>(schema: z.ZodSchema<T>, data: unknown): T {
+    const res = schema.safeParse(data);
+    if (!res.success) {
+      const msg = res.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(', ');
+      throw new ValidationError(msg);
+    }
+    return res.data;
+  }
 
-// Inventory Schemas
-export const InventorySchema = z.object({
-  id: IdSchema,
-  partId: IdSchema,
-  quantity: z.number().min(0, 'الكمية يجب أن تكون موجبة'),
-  location: z.string().min(1, 'الموقع مطلوب'),
-  minStock: z.number().min(0, 'الحد الأدنى يجب أن يكون موجباً'),
-  maxStock: z.number().min(0, 'الحد الأقصى يجب أن يكون موجباً'),
-  lastUpdated: DateSchema,
+  static safeValidate<T>(schema: z.ZodSchema<T>, data: unknown): { ok: boolean; data?: T; errors?: string[] } {
+    const res = schema.safeParse(data);
+    if (res.success) {
+      return { ok: true, data: res.data };
+    }
+    return {
+      ok: false,
+      errors: res.error.issues.map(i => `${i.path.join('.')}: ${i.message}`)
+    };
+  }
+}
+
+export const CreateInventorySchema = z.object({
+  partId: z.string().min(1, 'Part ID is required'),
+  quantity: z.number().min(0, 'Quantity must be non-negative'),
+  location: z.string().min(1, 'Location is required'),
+  minStock: z.number().min(0, 'Minimum stock must be non-negative'),
+  maxStock: z.number().min(0, 'Maximum stock must be non-negative'),
 });
 
-export const CreateInventorySchema = InventorySchema.omit({
-  id: true,
-  lastUpdated: true,
-});
-
-export type Inventory = z.infer<typeof InventorySchema>;
 export type CreateInventoryInput = z.infer<typeof CreateInventorySchema>;
 
-// Machine Schemas
+export interface Inventory {
+  id: string;
+  partId: string;
+  quantity: number;
+  location: string;
+  minStock: number;
+  maxStock: number;
+  lastUpdated: Date;
+}
+
+export const MachineTemplateSchema = z.object({
+  id: z.string().min(1),
+  familyId: z.string().min(1),
+  name: z.string().min(1).max(255),
+  type: z.enum(['Automatic', 'Hydraulic', 'Pneumatic', 'Electric', 'Mechanical', 'General']),
+  skuBase: z.string().regex(/^[A-Z0-9]{2,6}$/),
+  description: z.string().optional()
+});
+
+export const MachineBlueprintSchema = z.object({
+  id: z.string().min(1),
+  templateId: z.string().min(1),
+  reference: z.string().regex(/^[A-Z0-9]{2,6}-\d{3}$/), // e.g. ROB-001
+  brand: z.string().min(1),
+  model: z.string().min(1),
+  powerOrForce: z.string().optional(),
+  energySource: z.string().optional(),
+  partTemplateIds: z.array(z.string()).optional()
+});
+
+export const StockItemSchema = z.object({
+  id: z.string().min(1),
+  blueprintId: z.string().min(1),
+  warehouseId: z.string().min(1),
+  location: z.string().min(1), // e.g. A-01/B-02/03
+  quantity: z.number().int().min(0),
+  minThreshold: z.number().int().min(0)
+});
+
 export const MachineSchema = z.object({
-  id: IdSchema,
-  name: z.string().min(1, 'الاسم مطلوب'),
-  sectorId: IdSchema,
-  status: z.enum(['OPERATIONAL', 'MAINTENANCE', 'BROKEN']),
-  criticality: z.enum(['LOW', 'MEDIUM', 'HIGH']),
-  manufacturer: z.string().optional(),
-  model: z.string().optional(),
-  serialNumber: z.string().optional(),
+  id: z.string().min(1),
+  blueprintId: z.string().optional(),
+  templateId: z.string().optional(),
+  referenceCode: z.string().min(1), // e.g. SAT1-01
+  serialNumber: z.string().min(1),
+  sectorId: z.string().min(1),
+  functionalLocationId: z.string().optional(),
+  lifecycleState: z.enum(['OPERATING', 'MAINTENANCE', 'STANDBY', 'STOPPED']).optional()
 });
 
-export const CreateMachineSchema = MachineSchema.omit({ id: true });
+export const ISO14224FailureRecordSchema = z.object({
+  equipmentId: z.string().min(1),
+  subunitId: z.string().min(1),
+  componentId: z.string().min(1),
+  maintainableItemId: z.string().min(1),
 
-export type Machine = z.infer<typeof MachineSchema>;
-export type CreateMachineInput = z.infer<typeof CreateMachineSchema>;
+  symptom: z.string().min(1),
+  failureMode: z.string().min(1),
+  failureMechanism: z.string().min(1),
+  causeCategory: z.string().min(1),
+  consequenceCategory: z.string().min(1),
 
-// Part Schemas
-export const PartSchema = z.object({
-  id: IdSchema,
-  code: z.string().min(1, 'الكود مطلوب'),
-  name: z.string().min(1, 'الاسم مطلوب'),
-  category: z.string().min(1, 'الفئة مطلوبة'),
-  manufacturer: z.string().optional(),
-  unit: z.enum(['PIECE', 'KG', 'LITER']).default('PIECE'),
-  price: z.number().min(0, 'السعر يجب أن يكون موجباً'),
+  actionTaken: z.string().min(1),
+  timestamp: z.number().int().positive()
 });
 
-export const CreatePartSchema = PartSchema.omit({ id: true });
-
-export type Part = z.infer<typeof PartSchema>;
-export type CreatePartInput = z.infer<typeof CreatePartSchema>;
-
-// Validator Class
-export class Validator {
-  static validate<T>(schema: z.ZodSchema, data: unknown): T {
-    try {
-      return schema.parse(data) as T;
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const messages = error.issues
-          .map(e => `${e.path.join('.')}: ${e.message}`)
-          .join(', ');
-        throw new ValidationError(messages, error.issues);
-      }
-      throw error;
-    }
+export async function validateAndSave<T>(
+  schema: z.ZodSchema<T>,
+  data: unknown,
+  saveFunction: (validated: T) => Promise<void>
+): Promise<{ success: boolean; errors?: string[] }> {
+  const result = schema.safeParse(data);
+  if (!result.success) {
+    return {
+      success: false,
+      errors: result.error.issues.map(issue => `${issue.path.join('.')}: ${issue.message}`)
+    };
   }
 
-  static safeValidate<T>(
-    schema: z.ZodSchema,
-    data: unknown
-  ): Result<T, ValidationError> {
-    try {
-      const validated = schema.parse(data) as T;
-      return { ok: true, value: validated };
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const messages = error.issues
-          .map(e => `${e.path.join('.')}: ${e.message}`)
-          .join(', ');
-        return {
-          ok: false,
-          error: new ValidationError(messages, error.issues),
-        };
-      }
-      return {
-        ok: false,
-        error: new ValidationError('Validation failed'),
-      };
-    }
-  }
+  await saveFunction(result.data);
+  return { success: true };
 }

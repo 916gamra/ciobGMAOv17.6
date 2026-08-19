@@ -5,7 +5,6 @@ import './index.css';
 import { ErrorBoundary } from './shared/components/ErrorBoundary';
 import { setupDependencyInjection } from './core/di/setup';
 import './core/i18n';
-
 import {GlobalErrorHandler} from './core/errors/GlobalErrorHandler';
 import {CsrfShield} from './core/security/csrfShield';
 

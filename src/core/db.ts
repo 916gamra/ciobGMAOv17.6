@@ -637,6 +637,11 @@ export interface AuditLog {
   timestamp: string;
   severity: AuditLogSeverity;
   deviceInfo?: string;
+  // Cryptographic Audit Shield Fields
+  prevHash?: string | null;
+  eventHash?: string;
+  signature?: string;
+  publicKeyId?: string;
 }
 
 // --- 3. The Database Engine ---

@@ -4,6 +4,7 @@ import { PageHeader } from "@/shared/components/PageHeader";
 import { HeaderBentoCard } from "@/shared/components/HeaderBentoCard";
 import { GlassCard } from '@/shared/components/GlassCard';
 import { useAuditTrail } from '../hooks/useAuditTrail';
+import { runOfflinePerformanceBenchmark } from '@/core/utils/perfBenchmark';
 import { 
   Trash2, 
   Calendar, 
@@ -24,7 +25,8 @@ import {
   FileText,
   Clock,
   Layers,
-  Search
+  Search,
+  Zap
 } from 'lucide-react';
 import { cn } from '@/shared/utils';
 import { EmptyState } from '@/shared/components/EmptyState';
@@ -43,13 +45,55 @@ const itemVariants: Variants = {
 };
 
 export function AuditTrailView() {
-  const { logs, clearLogs } = useAuditTrail();
+  const { logs, clearLogs, verifyAuditIntegrity } = useAuditTrail();
   const [searchTerm, setSearchTerm] = useState('');
   const [severityFilter, setSeverityFilter] = useState<string>('ALL');
   const [entityFilter, setEntityFilter] = useState<string>('ALL');
   const [displayMode, setDisplayMode] = useState<'table' | 'cards'>('table');
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isBenchmarking, setIsBenchmarking] = useState(false);
+
+  const handleRunBenchmark = async () => {
+    setIsBenchmarking(true);
+    try {
+      const res = await runOfflinePerformanceBenchmark();
+      if (res.overallPassSla) {
+        toast.success(`اختبار الأداء ممتاز (SLA Pass < 1000ms): تم الاستعلام بـ ${res.readAllMachinesMs}ms فقط!`, {
+          duration: 5000
+        });
+      } else {
+        toast.warning(`اختبار الأداء أظهر تباطؤ في الاستعلامات.`, {
+          duration: 5000
+        });
+      }
+    } catch {
+      toast.error('فشل تشغيل اختبار قياس الأداء');
+    } finally {
+      setIsBenchmarking(false);
+    }
+  };
+
+  const handleVerifyIntegrity = async () => {
+    setIsVerifying(true);
+    try {
+      const res = await verifyAuditIntegrity();
+      if (res.isValid) {
+        toast.success(`تم التحقق بنجاح من سلامة ${res.totalChecked} سجل! التوقيع الرقمي وسلسلة SHA-256 سليمة 100%.`, {
+          duration: 4000
+        });
+      } else {
+        toast.error(`تحذير أمني: تم اكتشاف ${res.tamperedLogIds.length} سجلات معدلة أو غير متطابقة!`, {
+          duration: 5000
+        });
+      }
+    } catch (err) {
+      toast.error('فشل إجراء فحص سلامة التوقيعات الرقمية');
+    } finally {
+      setIsVerifying(false);
+    }
+  };
 
   // Quick statistics
   const criticalCount = useMemo(() => logs.filter(l => l.severity === 'CRITICAL').length, [logs]);
@@ -220,7 +264,23 @@ export function AuditTrailView() {
         badgeText="Audit & Compliance"
         badgeColor="slate"
         actions={
-          <div className="flex items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <button 
+               onClick={handleRunBenchmark}
+               disabled={isBenchmarking}
+               className="bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 border border-amber-500/40 font-extrabold rounded-xl px-4 py-2.5 text-xs transition-all flex items-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
+            >
+              <Zap className="w-4 h-4 text-amber-400" />
+              <span>{isBenchmarking ? 'جاري القياس...' : 'اختبار الأداء (Benchmark <1s SLA)'}</span>
+            </button>
+            <button 
+               onClick={handleVerifyIntegrity}
+               disabled={isVerifying}
+               className="bg-indigo-500/20 text-indigo-300 hover:bg-indigo-500/30 border border-indigo-500/40 font-extrabold rounded-xl px-4 py-2.5 text-xs transition-all flex items-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
+            >
+              <Shield className="w-4 h-4 text-indigo-400" /> 
+              <span>{isVerifying ? 'جاري التحقق...' : 'فحص سلامة التوقيع الرقمي (Audit Shield)'}</span>
+            </button>
             <button 
                onClick={exportLogsAsCSV}
                className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center gap-2 cursor-pointer"

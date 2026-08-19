@@ -6,8 +6,13 @@ const puppeteer = require('puppeteer');
     console.log('PAGE ERROR:', err.toString());
     console.log(err.stack);
   });
-  page.on('console', msg => console.log('CONSOLE:', msg.text()));
+  page.on('console', msg => {
+    if(msg.type() === 'error') {
+       console.log('CONSOLE ERROR:', msg.text());
+    }
+  });
   
-  await page.goto('http://localhost:3000', { waitUntil: 'networkidle0' });
+  await page.goto('http://localhost:3000');
+  await new Promise(r => setTimeout(r, 2000));
   await browser.close();
 })();
