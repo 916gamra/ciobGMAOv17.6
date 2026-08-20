@@ -44,6 +44,16 @@ export const PORTAL_COLORS: Record<string, PortalColor> = {
   SETTINGS: { dot: 'bg-slate-400', border: 'border-slate-500/30', text: 'text-slate-400' },
 };
 
+export const PORTAL_UNDERGLOW: Record<string, string> = {
+  PDR: 'from-cyan-500/35 via-cyan-500/15 to-transparent',
+  PREVENTIVE: 'from-emerald-500/35 via-emerald-500/15 to-transparent',
+  CORRECTIVE: 'from-orange-500/35 via-orange-500/15 to-transparent',
+  ANALYTICS: 'from-fuchsia-500/35 via-fuchsia-500/15 to-transparent',
+  FACTORY: 'from-indigo-500/35 via-indigo-500/15 to-transparent',
+  ORGANIZATION: 'from-amber-500/35 via-amber-500/15 to-transparent',
+  SETTINGS: 'from-slate-500/30 via-slate-500/10 to-transparent',
+};
+
 export const HEADER_THEMES: Record<string, HeaderTheme> = {
   PDR: { 
     bg: 'bg-[#0a0a0f]/40 to-[#0a0a0f]/95 bg-gradient-to-r from-cyan-950/80', 
@@ -142,14 +152,14 @@ export const TAB_SVG_THEMES: Record<string, TabSvgTheme> = {
 };
 
 export const SVG_PATHS = {
-  // Primary tab width and slant constants
-  PRIMARY_WIDTH: 172,
+  // Primary tab width and slant constants (extended length)
+  PRIMARY_WIDTH: 215,
   PRIMARY_HEIGHT: 38,
   PRIMARY_SLANT_W: 34,
 
-  // Secondary tab width and slant constants
-  SECONDARY_WIDTH: 165,
-  SECONDARY_HEIGHT: 30,
-  SECONDARY_SLANT_W: 27,
+  // Secondary tab width and slant constants (centered height & isometric slant)
+  SECONDARY_WIDTH: 175,
+  SECONDARY_HEIGHT: 34,
+  SECONDARY_SLANT_W: 28,
 };
 

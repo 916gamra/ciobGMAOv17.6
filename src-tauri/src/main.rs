@@ -1,122 +1,199 @@
-// BDR Nexus v17.6 - Rust Core Backend Entry Point
 #![cfg_attr(
     all(not(debug_assertions), target_os = "windows"),
     windows_subsystem = "windows"
 )]
 
+mod commands;
+mod db;
+mod security;
+mod windows_bridge;
+mod logger;
+mod state;
+
 use tauri::{
-    CustomMenuItem, SystemTray, SystemTrayMenu, SystemTrayMenuItem, Manager, AppHandle
+    Manager, SystemTray, SystemTrayMenu, SystemTrayMenuItem, CustomMenuItem,
+    AppHandle, State, async_runtime::block_on, Window, Menu, MenuItem, Submenu
 };
 use std::sync::Mutex;
+use log::{info, error};
 
-pub struct AppState {
-    pub session_token: Mutex<Option<String>>,
-    pub offline_queue_count: Mutex<usize>,
-}
-
-#[tauri::command]
-async fn get_system_info() -> Result<serde_json::Value, String> {
-    let mut sys = sysinfo::System::new_all();
-    sys.refresh_all();
-
-    let info = serde_json::json!({
-        "os": std::env::consts::OS,
-        "arch": std::env::consts::ARCH,
-        "memory": {
-            "total": sys.total_memory(),
-            "used": sys.used_memory(),
-            "available": sys.available_memory()
-        },
-        "cpuCount": sys.cpus().len(),
-        "status": "OPERATIONAL"
-    });
-    Ok(info)
-}
-
-#[tauri::command]
-async fn read_registry(key: String, value: String) -> Result<String, String> {
-    #[cfg(target_os = "windows")]
-    {
-        use winreg::RegKey;
-        use winreg::enums::HKEY_CURRENT_USER;
-        
-        let hkcu = RegKey::predef(HKEY_CURRENT_USER);
-        let reg_key = hkcu.open_subkey(&key).map_err(|e| e.to_string())?;
-        let val: String = reg_key.get_value(&value).map_err(|e| e.to_string())?;
-        return Ok(val);
-    }
-
-    #[cfg(not(target_os = "windows"))]
-    {
-        Ok(format!("SIMULATED_REG_VAL_{}", value))
-    }
-}
-
-#[tauri::command]
-async fn write_registry(key: String, value: String, data: String) -> Result<(), String> {
-    #[cfg(target_os = "windows")]
-    {
-        use winreg::RegKey;
-        use winreg::enums::HKEY_CURRENT_USER;
-
-        let hkcu = RegKey::predef(HKEY_CURRENT_USER);
-        let (reg_key, _) = hkcu.create_subkey(&key).map_err(|e| e.to_string())?;
-        reg_key.set_value(&value, &data).map_err(|e| e.to_string())?;
-        return Ok(());
-    }
-
-    #[cfg(not(target_os = "windows"))]
-    {
-        println!("[Simulated Registry Write] {}/{} = {}", key, value, data);
-        Ok(())
-    }
-}
-
-#[tauri::command]
-async fn create_notification(title: String, body: String) -> Result<(), String> {
-    println!("[BDR Nexus Notification] {}: {}", title, body);
-    Ok(())
-}
+use crate::state::AppState;
+use crate::commands::*;
 
 fn main() {
-    let tray_menu = SystemTrayMenu::new()
-        .add_item(CustomMenuItem::new("show", "إظهار BDR Nexus"))
-        .add_item(CustomMenuItem::new("hide", "إخفاء النافذة"))
-        .add_native_item(SystemTrayMenuItem::Separator)
-        .add_item(CustomMenuItem::new("sync", "مزامنة البيانات الآن"))
-        .add_item(CustomMenuItem::new("exit", "خروج من النظام"));
+    // Initialize logger
+    logger::init();
+    info!("🚀 Starting BDR Nexus v17.6");
 
-    tauri::Builder::default()
-        .manage(AppState {
-            session_token: Mutex::new(None),
-            offline_queue_count: Mutex::new(0),
-        })
-        .system_tray(SystemTray::new().with_menu(tray_menu))
-        .on_system_tray_event(|app, event| {
-            if let tauri::SystemTrayEvent::MenuItemClick { id, .. } = event {
-                match id.as_str() {
-                    "show" => {
-                        if let Some(window) = app.get_window("main") {
-                            let _ = window.show();
-                            let _ = window.set_focus();
-                        }
-                    }
-                    "hide" => {
-                        if let Some(window) = app.get_window("main") {
-                            let _ = window.hide();
-                        }
-                    }
-                    "exit" => std::process::exit(0),
-                    _ => {}
+    // Create system tray menu
+    let tray_menu = SystemTrayMenu::new()
+        .add_item(CustomMenuItem::new("show", "عرض التطبيق"))
+        .add_item(CustomMenuItem::new("hide", "إخفاء التطبيق"))
+        .add_native_item(SystemTrayMenuItem::Separator)
+        .add_item(CustomMenuItem::new("settings", "الإعدادات"))
+        .add_item(CustomMenuItem::new("status", "الحالة"))
+        .add_native_item(SystemTrayMenuItem::Separator)
+        .add_item(CustomMenuItem::new("about", "حول التطبيق"))
+        .add_native_item(SystemTrayMenuItem::Separator)
+        .add_item(CustomMenuItem::new("exit", "خروج"));
+
+    let system_tray = SystemTray::new().with_menu(tray_menu);
+
+    // Create app menu
+    let app_menu = Menu::new()
+        .add_submenu(Submenu::new(
+            "ملف",
+            Menu::new()
+                .add_item(CustomMenuItem::new("new", "جديد"))
+                .add_item(CustomMenuItem::new("open", "فتح"))
+                .add_item(CustomMenuItem::new("save", "حفظ"))
+                .add_native_item(MenuItem::Separator)
+                .add_item(CustomMenuItem::new("exit", "خروج"))
+        ))
+        .add_submenu(Submenu::new(
+            "تحرير",
+            Menu::new()
+                .add_item(CustomMenuItem::new("undo", "تراجع"))
+                .add_item(CustomMenuItem::new("redo", "إعادة"))
+                .add_native_item(MenuItem::Separator)
+                .add_item(CustomMenuItem::new("cut", "قص"))
+                .add_item(CustomMenuItem::new("copy", "نسخ"))
+                .add_item(CustomMenuItem::new("paste", "لصق"))
+        ))
+        .add_submenu(Submenu::new(
+            "عرض",
+            Menu::new()
+                .add_item(CustomMenuItem::new("reload", "تحديث"))
+                .add_item(CustomMenuItem::new("devtools", "أدوات المطور"))
+        ))
+        .add_submenu(Submenu::new(
+            "مساعدة",
+            Menu::new()
+                .add_item(CustomMenuItem::new("about", "حول"))
+                .add_item(CustomMenuItem::new("docs", "التوثيق"))
+        ));
+
+    // Build Tauri app
+    let app = tauri::Builder::default()
+        .setup(|app| {
+            info!("⚙️ Setting up application");
+            
+            // Initialize app state
+            let app_state = AppState::new(app.handle().clone());
+            
+            // Initialize database
+            let app_handle = app.handle().clone();
+            tauri::async_runtime::spawn(async move {
+                match db::init_database(&app_handle).await {
+                    Ok(_) => info!("✅ Database initialized successfully"),
+                    Err(e) => error!("❌ Database initialization failed: {}", e),
                 }
+            });
+
+            info!("✅ Application setup completed");
+            Ok(())
+        })
+        .manage(AppState::default())
+        .system_tray(system_tray)
+        .on_system_tray_event(|app, event| {
+            windows_bridge::handle_tray_event(app, event);
+        })
+        .menu(app_menu)
+        .on_menu_event(|event| {
+            match event.menu_item_id() {
+                "exit" => std::process::exit(0),
+                "devtools" => {
+                    if let Some(window) = event.window().get_window("main") {
+                        let _ = window.open_devtools();
+                    }
+                }
+                _ => {}
             }
         })
         .invoke_handler(tauri::generate_handler![
-            get_system_info,
-            read_registry,
-            write_registry,
-            create_notification
+            // System commands
+            commands::get_system_info,
+            commands::get_app_version,
+            commands::get_app_data_dir,
+            commands::get_app_config,
+            commands::set_app_config,
+            
+            // Registry commands
+            commands::read_registry,
+            commands::write_registry,
+            commands::delete_registry,
+            commands::list_registry_keys,
+            
+            // File system commands
+            commands::read_file,
+            commands::write_file,
+            commands::list_files,
+            commands::create_directory,
+            commands::file_exists,
+            commands::delete_file,
+            commands::get_file_metadata,
+            
+            // Database commands
+            commands::init_database,
+            commands::execute_query,
+            commands::fetch_data,
+            commands::get_database_stats,
+            
+            // Security commands
+            commands::encrypt_data,
+            commands::decrypt_data,
+            commands::generate_session_token,
+            commands::verify_session_token,
+            commands::derive_key_from_pin,
+            commands::verify_hash,
+            
+            // Notification commands
+            commands::show_notification,
+            commands::show_error_notification,
+            commands::show_success_notification,
+            
+            // Update commands
+            commands::check_for_updates,
+            commands::install_update,
+            
+            // Window commands
+            commands::minimize_window,
+            commands::maximize_window,
+            commands::close_window,
         ])
-        .run(tauri::generate_context!())
-        .expect("Error while starting BDR Nexus Tauri Application");
+        .on_window_event(|event| {
+            match event.event() {
+                tauri::WindowEvent::CloseRequested { api, .. } => {
+                    api.prevent_close();
+                    if let Some(window) = event.window().get_window("main") {
+                        let _ = window.hide();
+                    }
+                    info!("🔒 Window close prevented - minimized to tray");
+                }
+                tauri::WindowEvent::Focused(focused) => {
+                    if *focused {
+                        info!("👁️ Window focused");
+                    }
+                }
+                _ => {}
+            }
+        })
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application");
+
+    info!("🎯 Application built successfully");
+
+    app.run(|_app_handle, event| match event {
+        tauri::RunEvent::ExitRequested { api, .. } => {
+            info!("🛑 Exit requested");
+            api.prevent_exit();
+        }
+        tauri::RunEvent::Ready => {
+            info!("✅ Application ready");
+        }
+        tauri::RunEvent::Exit => {
+            info!("👋 Application exiting");
+        }
+        _ => {}
+    });
 }

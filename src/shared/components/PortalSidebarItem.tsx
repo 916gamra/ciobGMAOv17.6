@@ -28,14 +28,6 @@ export function PortalSidebarItem({ icon, isActive, onClick, title, colorClass }
       {isActive && (
         <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/30 pointer-events-none" />
       )}
-      
-      {/* Active Indicator Pill */}
-      <div 
-        className={cn(
-          "absolute left-0 top-1/2 -translate-y-1/2 w-1 rounded-r-full transition-all duration-300 ease-out",
-          isActive ? `h-5 opacity-100 ${colorClass ? colorClass.replace('text-', 'bg-') : 'bg-cyan-400'}` : "h-0 opacity-0 group-hover:h-3 group-hover:opacity-40 bg-white/40"
-        )} 
-      />
 
       {React.cloneElement(icon as React.ReactElement<{ className?: string }>, { 
         className: cn(

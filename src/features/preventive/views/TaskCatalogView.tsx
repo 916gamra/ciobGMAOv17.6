@@ -555,117 +555,118 @@ export function TaskCatalogView() {
 
           {/* Left Main Workspace Canvas */}
           <div className="flex-1 flex flex-col min-h-0 min-w-0">
-            <GlassCard className="flex flex-col flex-1 !p-0 border-white/10 overflow-hidden shadow-2xl bg-[#0a0b10]/90 backdrop-blur-xl">
+            <GlassCard className="flex flex-col flex-1 !p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl h-full bg-[#0a0b10]/95 backdrop-blur-xl relative min-h-0 w-full">
               
+              {/* Engine Accent Line */}
+              <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent pointer-events-none z-20" />
+
+              {/* Ambient Engine Accent Rays & Glows */}
+              <div className="absolute -top-12 -right-12 sm:-top-20 sm:-right-20 w-64 h-64 sm:w-80 sm:h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none z-0" />
+              <div className="absolute -bottom-12 -left-12 sm:-bottom-20 sm:-left-20 w-64 h-64 sm:w-80 sm:h-80 bg-purple-500/10 rounded-full blur-3xl pointer-events-none z-0" />
+
               <AnimatePresence mode="wait">
                 <motion.div
                   key={`workspace-${activeTab}-${selectedFamilyFilter}-${selectedActionTypeFilter}`}
                   initial={{ opacity: 0, y: 15 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -15 }}
-                  className="flex flex-col h-full min-h-0 p-6 md:p-8"
+                  className="flex flex-col h-full min-h-0 w-full relative z-10"
                 >
                   {((activeTab === 'tasks' && selectedFamilyFilter !== null) || (activeTab === 'actions' && selectedActionTypeFilter !== null)) ? (
                     <>
                       {/* Dynamic Header */}
-                  <div className="flex flex-col sm:flex-row justify-between items-start border-b border-white/10 pb-6 mb-6 gap-4 text-start">
-                    <div className="flex items-start gap-4">
-                      <div className={cn(
-                        "w-12 h-12 rounded-2xl border flex items-center justify-center shadow-inner shrink-0",
-                        activeTab === 'tasks' ? "bg-emerald-500/10 border-emerald-500/20" : "bg-purple-500/10 border-purple-500/20"
-                      )}>
-                        {activeTab === 'tasks' ? <Settings2 className="w-6 h-6 text-emerald-400" /> : <Activity className="w-6 h-6 text-purple-400" />}
-                      </div>
-                      <div className="text-start">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs font-mono font-bold bg-white/10 text-white px-1.5 py-0.5 rounded border border-white/15">
-                            {activeTab === 'tasks' ? 'مهمات' : 'أفعال'}
-                          </span>
-                          <h3 className="text-lg font-bold text-white tracking-tight">
-                            {activeTab === 'tasks' 
-                              ? (selectedFamilyFilter === 'ALL' ? t('preventive.catalog.allFamilies', 'جميع العائلات الهندسية') : pdrFamilies?.find(f => f.id === selectedFamilyFilter)?.name || 'عائلة غير معروفة')
-                              : (selectedActionTypeFilter === 'ALL' ? t('preventive.catalog.allActions', 'جميع أفعال الصيانة') : 
-                                 selectedActionTypeFilter === 'PREV' ? t('preventive.catalog.prevActions', 'أفعال وقائية') :
-                                 selectedActionTypeFilter === 'CORR' ? t('preventive.catalog.corrActions', 'أفعال علاجية') : t('preventive.catalog.bothActions', 'أفعال مشتركة'))
-                            }
-                          </h3>
+                      <div className="p-4 md:p-6 border-b border-emerald-500/20 bg-gradient-to-r from-emerald-950/40 via-slate-900/90 to-[#0a0b10]/95 backdrop-blur-xl flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4 shrink-0 relative z-10 shadow-md text-start">
+                        <div className="flex items-start gap-4 shrink-0">
+                          <div className={cn(
+                            "w-12 h-12 rounded-2xl border flex items-center justify-center shrink-0 shadow-[0_0_15px_rgba(16,185,129,0.15)]",
+                            activeTab === 'tasks' ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400" : "bg-purple-500/10 border-purple-500/30 text-purple-400"
+                          )}>
+                            {activeTab === 'tasks' ? <Settings2 className="w-6 h-6" /> : <Activity className="w-6 h-6" />}
+                          </div>
+                          <div className="text-start">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-xs font-mono font-bold bg-white/10 text-white px-2 py-0.5 rounded border border-white/15">
+                                {activeTab === 'tasks' ? 'مهمات' : 'أفعال'}
+                              </span>
+                              <h3 className="text-lg font-bold text-white tracking-tight">
+                                {activeTab === 'tasks' 
+                                  ? (selectedFamilyFilter === 'ALL' ? t('preventive.catalog.allFamilies', 'جميع العائلات الهندسية') : pdrFamilies?.find(f => f.id === selectedFamilyFilter)?.name || 'عائلة غير معروفة')
+                                  : (selectedActionTypeFilter === 'ALL' ? t('preventive.catalog.allActions', 'جميع أفعال الصيانة') : 
+                                     selectedActionTypeFilter === 'PREV' ? t('preventive.catalog.prevActions', 'أفعال وقائية') :
+                                     selectedActionTypeFilter === 'CORR' ? t('preventive.catalog.corrActions', 'أفعال علاجية') : t('preventive.catalog.bothActions', 'أفعال مشتركة'))
+                                }
+                              </h3>
+                              <span className="text-xs font-mono font-bold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 px-2.5 py-0.5 rounded-full">
+                                {activeTab === 'tasks' ? `${filteredTasks.length} مهمة` : `${filteredActions.length} فعل`}
+                              </span>
+                            </div>
+                            <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider">
+                              {activeTab === 'tasks' 
+                                ? 'نطاق توجيه الصيانة الوقائية'
+                                : 'قاموس مصطلحات الصيانة القياسية'}
+                            </p>
+                          </div>
                         </div>
-                        <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider">
-                          {activeTab === 'tasks' 
-                            ? 'نطاق توجيه الصيانة الوقائية'
-                            : 'قاموس مصطلحات الصيانة القياسية'}
-                        </p>
-                      </div>
-                    </div>
 
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-1.5 p-1 bg-[#0a0a0f]/60 rounded-xl border border-white/5 mr-2">
-                        <button
-                          onClick={() => setViewMode('table')}
-                          className={cn(
-                            "p-1.5 rounded-lg transition-all cursor-pointer",
-                            viewMode === 'table' ? "bg-white text-slate-950 shadow-sm" : "text-slate-400 hover:text-white"
-                          )}
-                          title={t('common.tableView', 'عرض الجدول')}
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => setViewMode('cards')}
-                          className={cn(
-                            "p-1.5 rounded-lg transition-all cursor-pointer",
-                            viewMode === 'cards' ? "bg-white text-slate-950 shadow-sm" : "text-slate-400 hover:text-white"
-                          )}
-                          title={t('common.cardsView', 'عرض البطاقات')}
-                        >
-                          <LayoutGrid className="w-4 h-4" />
-                        </button>
-                      </div>
+                        <div className="flex items-center gap-2 shrink-0 justify-end">
+                          <div className="flex items-center gap-1.5 p-1 bg-[#08080c] rounded-xl border border-white/10 mr-1">
+                            <button
+                              onClick={() => setViewMode('table')}
+                              className={cn(
+                                "p-1.5 rounded-lg transition-all cursor-pointer",
+                                viewMode === 'table' ? "bg-white text-slate-950 shadow-sm" : "text-slate-400 hover:text-white"
+                              )}
+                              title={t('common.tableView', 'عرض الجدول')}
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => setViewMode('cards')}
+                              className={cn(
+                                "p-1.5 rounded-lg transition-all cursor-pointer",
+                                viewMode === 'cards' ? "bg-white text-slate-950 shadow-sm" : "text-slate-400 hover:text-white"
+                              )}
+                              title={t('common.cardsView', 'عرض البطاقات')}
+                            >
+                              <LayoutGrid className="w-4 h-4" />
+                            </button>
+                          </div>
 
-                      {activeTab === 'tasks' ? (
-                        <button 
-                          onClick={() => setIsModalOpen(true)}
-                          className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center gap-1.5 cursor-pointer"
-                        >
-                          <Plus className="w-3.5 h-3.5" />
-                          <span>{t('preventive.catalog.newTask', 'مهمة وقائية جديدة')}</span>
-                        </button>
-                      ) : (
-                        <button 
-                          onClick={() => {
-                            setEditingActionId(null);
-                            setActionName('');
-                            setActionCode('');
-                            setActionType('PREV');
-                            setActionDesc('');
-                            setIsActionModalOpen(true);
-                          }}
-                          className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center gap-1.5 cursor-pointer"
-                        >
-                          <Plus className="w-3.5 h-3.5" />
-                          <span>{t('preventive.catalog.newAction', 'فعل صيانة جديد')}</span>
-                        </button>
-                      )}
-                    </div>
-                  </div>
+                          {activeTab === 'tasks' ? (
+                            <button 
+                              onClick={() => setIsModalOpen(true)}
+                              className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
+                            >
+                              <Plus className="w-3.5 h-3.5 text-slate-950" />
+                              <span>{t('preventive.catalog.newTask', 'مهمة وقائية جديدة')}</span>
+                            </button>
+                          ) : (
+                            <button 
+                              onClick={() => {
+                                setEditingActionId(null);
+                                setActionName('');
+                                setActionCode('');
+                                setActionType('PREV');
+                                setActionDesc('');
+                                setIsActionModalOpen(true);
+                              }}
+                              className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
+                            >
+                              <Plus className="w-3.5 h-3.5 text-slate-950" />
+                              <span>{t('preventive.catalog.newAction', 'فعل صيانة جديد')}</span>
+                            </button>
+                          )}
+                        </div>
+                      </div>
 
                   {/* Main Data Content */}
-                  <div className="flex-1 flex flex-col min-h-0 text-start">
-                    <div className="flex items-center justify-between mb-4 flex-row">
-                      <div className="text-sm font-bold text-slate-200">
-                        {activeTab === 'tasks' 
-                          ? `${filteredTasks.length} المهمات المسجلة تحت هذا النطاق`
-                          : `${filteredActions.length} أفعال الصيانة المسجلة`}
-                      </div>
-                    </div>
-
-                    <div className="flex-1 overflow-y-auto custom-scrollbar">
-                      {activeTab === 'tasks' ? (
-                        /* Tasks Content */
-                        viewMode === 'table' ? (
-                        <div className="rounded-2xl border border-white/10 bg-[#0a0b10]/90 backdrop-blur-xl shadow-2xl overflow-hidden">
+                  <div className="flex-1 flex flex-col min-h-0 w-full text-start overflow-hidden">
+                    {activeTab === 'tasks' ? (
+                      /* Tasks Content */
+                      viewMode === 'table' ? (
+                        <div className="flex-1 overflow-x-auto overflow-y-auto custom-scrollbar w-full min-h-0">
                           <table className="w-full text-start border-collapse">
-                            <thead className="bg-white/[0.04] border-b border-white/10 text-slate-300 font-bold text-xs uppercase tracking-wider text-start">
+                            <thead className="bg-[#0b0c13]/98 border-b-2 border-white/10 text-slate-300 font-extrabold uppercase tracking-wider text-[11px] sticky top-0 z-20 backdrop-blur-md shadow-sm">
                               <tr>
                                 <th className="p-4 text-start">{t("preventive.catalog.colTitle", "عنوان المهمة")}</th>
                                 <th className="p-4 text-start">{t("preventive.catalog.colFamily", "العائلة")}</th>
@@ -689,13 +690,20 @@ export function TaskCatalogView() {
                                   </td>
                                 </tr>
                               ) : (
-                                filteredTasks.map(task => {
+                                filteredTasks.map((task, idx) => {
                                   const linkedFamily = pdrFamilies?.find(f => f.id === task.pdrFamilyId);
                                   const linkedTemplate = pdrTemplates?.find(t => t.id === task.pdrTemplateId);
                                   const linkedAction = standardActions?.find(a => a.id === task.actionId);
 
                                   return (
-                                    <tr key={task.id} className="hover:bg-white/[0.04] transition-colors border-b border-white/5">
+                                    <tr 
+                                      key={task.id} 
+                                      className={cn(
+                                        "transition-colors duration-150 border-b border-white/5",
+                                        idx % 2 === 0 ? "bg-white/[0.015]" : "bg-white/[0.05]",
+                                        "hover:bg-emerald-500/15 hover:text-white"
+                                      )}
+                                    >
                                       <td className="p-4 font-bold text-white text-start">
                                         <div className="font-bold text-white mb-1">{task.title}</div>
                                         {task.description && (
@@ -750,99 +758,100 @@ export function TaskCatalogView() {
                           </table>
                         </div>
                       ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4">
-                          {filteredTasks.length === 0 ? (
-                            <div className="col-span-full">
-                              <EmptyState 
-                                icon={Settings2}
-                                title={t('preventive.catalog.noTasks', 'لا توجد مهام مطابقة')}
-                                description={t('preventive.catalog.noTasksDesc', 'لا توجد مهام مطابقة للبحث أو التصفية.')}
-                                color="emerald"
-                                className="py-16 opacity-80 glass-panel rounded-2xl border-dashed border-white/10"
-                              />
-                            </div>
-                          ) : (
-                            filteredTasks.map(task => {
-                              const linkedFamily = pdrFamilies?.find(f => f.id === task.pdrFamilyId);
-                              const linkedTemplate = pdrTemplates?.find(t => t.id === task.pdrTemplateId);
-                              const linkedAction = standardActions?.find(a => a.id === task.actionId);
+                        <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-4">
+                            {filteredTasks.length === 0 ? (
+                              <div className="col-span-full">
+                                <EmptyState 
+                                  icon={Settings2}
+                                  title={t('preventive.catalog.noTasks', 'لا توجد مهام مطابقة')}
+                                  description={t('preventive.catalog.noTasksDesc', 'لا توجد مهام مطابقة للبحث أو التصفية.')}
+                                  color="emerald"
+                                  className="py-16 opacity-80 glass-panel rounded-2xl border-dashed border-white/10"
+                                />
+                              </div>
+                            ) : (
+                              filteredTasks.map(task => {
+                                const linkedFamily = pdrFamilies?.find(f => f.id === task.pdrFamilyId);
+                                const linkedTemplate = pdrTemplates?.find(t => t.id === task.pdrTemplateId);
+                                const linkedAction = standardActions?.find(a => a.id === task.actionId);
 
-                              return (
-                                <GlassCard 
-                                  key={task.id} 
-                                  className="p-5 flex flex-col justify-between group transition-all duration-500 hover:scale-[1.03] hover:border-emerald-500 hover:bg-[#0a0a0f] hover:shadow-[0_0_25px_rgba(16,185,129,0.25)] relative overflow-hidden text-start border border-white/10"
-                                >
-                                  {/* Ambient Hover Bottom Glow */}
-                                  <div className="bg-emerald-500/0 group-hover:bg-emerald-500/25 rounded-full blur-xl absolute -bottom-10 left-1/2 -translate-x-1/2 w-28 h-16 pointer-events-none z-0 transition-all duration-500" />
+                                return (
+                                  <GlassCard 
+                                    key={task.id} 
+                                    className="p-5 flex flex-col justify-between group transition-all duration-500 hover:scale-[1.02] hover:border-emerald-500/50 hover:bg-[#0a0a0f] hover:shadow-[0_0_25px_rgba(16,185,129,0.25)] relative overflow-hidden text-start border border-white/10"
+                                  >
+                                    <div className="bg-emerald-500/0 group-hover:bg-emerald-500/25 rounded-full blur-xl absolute -bottom-10 left-1/2 -translate-x-1/2 w-28 h-16 pointer-events-none z-0 transition-all duration-500" />
 
-                                  <div className="relative z-10 w-full h-full flex flex-col justify-between">
-                                    <div>
-                                      <div className="flex items-start justify-between gap-2 mb-3 flex-row">
-                                        <div className="flex items-center gap-3">
-                                          <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 shrink-0">
-                                            {getFamilyIcon(task.pdrFamilyId)}
+                                    <div className="relative z-10 w-full h-full flex flex-col justify-between">
+                                      <div>
+                                        <div className="flex items-start justify-between gap-2 mb-3 flex-row">
+                                          <div className="flex items-center gap-3">
+                                            <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 shrink-0">
+                                              {getFamilyIcon(task.pdrFamilyId)}
+                                            </div>
+                                            <div>
+                                              <h4 className="text-sm font-bold text-white tracking-tight">{task.title}</h4>
+                                              <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.2 rounded border border-emerald-500/20 mt-1 inline-block">
+                                                {linkedFamily?.name || 'General'}
+                                              </span>
+                                            </div>
                                           </div>
-                                          <div>
-                                            <h4 className="text-sm font-bold text-white tracking-tight">{task.title}</h4>
-                                            <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.2 rounded border border-emerald-500/20 mt-1 inline-block">
-                                              {linkedFamily?.name || 'General'}
+                                          <button
+                                            onClick={(e) => handleDeleteTask(task.id, e)}
+                                            className="opacity-0 group-hover:opacity-100 p-2 text-slate-500 hover:text-rose-400 transition-all rounded-lg hover:bg-rose-500/10 cursor-pointer"
+                                          >
+                                            <Trash2 className="w-4 h-4" />
+                                          </button>
+                                        </div>
+
+                                        {task.description && (
+                                          <p className="text-xs text-slate-400 mb-4 leading-relaxed line-clamp-2">
+                                            {task.description}
+                                          </p>
+                                        )}
+
+                                        <div className="space-y-2 pt-2 border-t border-white/5 text-xs">
+                                          <div className="flex justify-between items-center text-slate-300 flex-row">
+                                            <span className="text-slate-500 flex items-center gap-1">
+                                              <Clock className="w-3.5 h-3.5 text-emerald-400" /> التكرارية
+                                            </span>
+                                            <span className="font-mono font-bold text-white bg-white/10 px-2 py-0.5 rounded">
+                                              {task.frequencyValue} أيام
+                                            </span>
+                                          </div>
+                                          <div className="flex justify-between items-center text-slate-300 flex-row">
+                                            <span className="text-slate-500 flex items-center gap-1">
+                                              <Wrench className="w-3.5 h-3.5 text-purple-400" /> الفعل
+                                            </span>
+                                            <span className="font-mono text-purple-300 bg-purple-500/15 px-2 py-0.5 rounded text-[10px]">
+                                              {linkedAction?.code ? `[${linkedAction.code}] ` : ''}{linkedAction?.name || '—'}
+                                            </span>
+                                          </div>
+                                          <div className="flex justify-between items-center text-slate-300 flex-row">
+                                            <span className="text-slate-500 flex items-center gap-1">
+                                              <Box className="w-3.5 h-3.5 text-cyan-400" /> النطاق
+                                            </span>
+                                            <span className="text-[11px] font-medium text-slate-200">
+                                              {linkedTemplate ? `${linkedTemplate.name} (${linkedTemplate.skuBase})` : 'كامل أصول العائلة'}
                                             </span>
                                           </div>
                                         </div>
-                                        <button
-                                          onClick={(e) => handleDeleteTask(task.id, e)}
-                                          className="opacity-0 group-hover:opacity-100 p-2 text-slate-500 hover:text-rose-400 transition-all rounded-lg hover:bg-rose-500/10 cursor-pointer"
-                                        >
-                                          <Trash2 className="w-4 h-4" />
-                                        </button>
-                                      </div>
-
-                                      {task.description && (
-                                        <p className="text-xs text-slate-400 mb-4 leading-relaxed line-clamp-2">
-                                          {task.description}
-                                        </p>
-                                      )}
-
-                                      <div className="space-y-2 pt-2 border-t border-white/5 text-xs">
-                                        <div className="flex justify-between items-center text-slate-300 flex-row">
-                                          <span className="text-slate-500 flex items-center gap-1">
-                                            <Clock className="w-3.5 h-3.5 text-emerald-400" /> التكرارية
-                                          </span>
-                                          <span className="font-mono font-bold text-white bg-white/10 px-2 py-0.5 rounded">
-                                            {task.frequencyValue} أيام
-                                          </span>
-                                        </div>
-                                        <div className="flex justify-between items-center text-slate-300 flex-row">
-                                          <span className="text-slate-500 flex items-center gap-1">
-                                            <Wrench className="w-3.5 h-3.5 text-purple-400" /> الفعل
-                                          </span>
-                                          <span className="font-mono text-purple-300 bg-purple-500/15 px-2 py-0.5 rounded text-[10px]">
-                                            {linkedAction?.code ? `[${linkedAction.code}] ` : ''}{linkedAction?.name || '—'}
-                                          </span>
-                                        </div>
-                                        <div className="flex justify-between items-center text-slate-300 flex-row">
-                                          <span className="text-slate-500 flex items-center gap-1">
-                                            <Box className="w-3.5 h-3.5 text-cyan-400" /> النطاق
-                                          </span>
-                                          <span className="text-[11px] font-medium text-slate-200">
-                                            {linkedTemplate ? `${linkedTemplate.name} (${linkedTemplate.skuBase})` : 'كامل أصول العائلة'}
-                                          </span>
-                                        </div>
                                       </div>
                                     </div>
-                                  </div>
-                                </GlassCard>
-                              );
-                            })
-                          )}
+                                  </GlassCard>
+                                );
+                              })
+                            )}
+                          </div>
                         </div>
                       )
                     ) : (
                       /* Actions Content */
                       viewMode === 'table' ? (
-                        <div className="rounded-2xl border border-white/10 bg-[#0a0b10]/90 backdrop-blur-xl shadow-2xl overflow-hidden">
+                        <div className="flex-1 overflow-x-auto overflow-y-auto custom-scrollbar w-full min-h-0">
                           <table className="w-full text-start border-collapse">
-                            <thead className="bg-white/[0.04] border-b border-white/10 text-slate-300 font-bold text-xs uppercase tracking-wider text-start">
+                            <thead className="bg-[#0b0c13]/98 border-b-2 border-white/10 text-slate-300 font-extrabold uppercase tracking-wider text-[11px] sticky top-0 z-20 backdrop-blur-md shadow-sm">
                               <tr>
                                 <th className="p-4 text-start">{t("preventive.catalog.colCode", "الرمز")}</th>
                                 <th className="p-4 text-start">{t("preventive.catalog.colName", "الفعل")}</th>
@@ -865,13 +874,20 @@ export function TaskCatalogView() {
                                   </td>
                                 </tr>
                               ) : (
-                                filteredActions.map(act => {
+                                filteredActions.map((act, idx) => {
                                   const typeBadgeColor = act.type === 'PREV' ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' 
                                                        : act.type === 'CORR' ? 'text-rose-400 bg-rose-500/10 border-rose-500/20'
                                                        : 'text-amber-400 bg-amber-500/10 border-amber-500/20';
 
                                   return (
-                                    <tr key={act.id} className="hover:bg-white/[0.04] transition-colors border-b border-white/5">
+                                    <tr 
+                                      key={act.id} 
+                                      className={cn(
+                                        "transition-colors duration-150 border-b border-white/5",
+                                        idx % 2 === 0 ? "bg-white/[0.015]" : "bg-white/[0.05]",
+                                        "hover:bg-purple-500/15 hover:text-white"
+                                      )}
+                                    >
                                       <td className="p-4 font-mono font-bold text-purple-300 text-start">
                                         {act.code ? (
                                           <span className="bg-purple-500/20 px-2 py-0.5 rounded border border-purple-500/30">
@@ -985,7 +1001,6 @@ export function TaskCatalogView() {
                         </div>
                       )
                     )}
-                    </div>
                   </div>
                 </>
               ) : (

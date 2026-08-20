@@ -1,122 +1,165 @@
 import { PageHeader } from "@/shared/components/PageHeader";
 import { HeaderBentoCard } from "@/shared/components/HeaderBentoCard";
-import React, { useState } from 'react';
-import { DownloadCloud, UploadCloud, Database, Users, Factory, Package, AlertTriangle, RefreshCw, HardDrive, FileSpreadsheet, Layers, ShieldCheck } from 'lucide-react';
-import { useLiveQuery } from 'dexie-react-hooks';
-import ExcelJS from 'exceljs';
+import { GlassCard } from "@/shared/components/GlassCard";
+import React, { useState, useEffect } from 'react';
+import { 
+  RefreshCw, 
+  HardDrive, 
+  FileSpreadsheet, 
+  UploadCloud, 
+  DownloadCloud, 
+  Factory, 
+  Database, 
+  Package, 
+  CheckCircle2, 
+  AlertTriangle,
+  Layers,
+  ShieldCheck,
+  FileCheck
+} from 'lucide-react';
 import { db } from '@/core/db';
-import { toast } from 'sonner';
-import { measureOperation, logger } from '@/core/logger';
-import { GlassCard } from '@/shared/components/GlassCard';
-import { motion, Variants } from 'motion/react';
-import { generatePdrSlotId } from '@/core/config/pdrMatrix';
+import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
+import { toast } from 'sonner';
+import { motion, Variants } from 'motion/react';
+import { useTranslation } from 'react-i18next';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.15, delayChildren: 0.1 } }
+  visible: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.05 } }
 };
 
 const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
+  hidden: { opacity: 0, y: 15 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } }
 };
 
 export function DataExchangeView() {
-  const [isProcessing, setIsProcessing] = useState(false);
-  const sectorsCount = useLiveQuery(() => db.sectors.count()) || 0;
-  const machinesCount = useLiveQuery(() => db.machines.count()) || 0;
-  const blueprintsCount = useLiveQuery(() => db.pdrBlueprints.count()) || 0;
-  const inventoryCount = useLiveQuery(() => db.inventory.count()) || 0;
+  const { t, i18n } = useTranslation();
+  const isAr = i18n.language === 'ar';
 
-  // --- DOWNLOAD HELPER ---
-  const handleDownloadTemplate = async (fileName: string, columns: { header: string, key: string, width: number }[]) => {
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [sectorsCount, setSectorsCount] = useState(0);
+  const [machinesCount, setMachinesCount] = useState(0);
+  const [blueprintsCount, setBlueprintsCount] = useState(0);
+  const [inventoryCount, setInventoryCount] = useState(0);
+
+  const refreshStats = async () => {
     try {
-      const wb = new ExcelJS.Workbook();
-      const ws = wb.addWorksheet('Template');
-      ws.columns = columns;
-      
-      const headerRow = ws.getRow(1);
-      headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-      headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2563EB' } };
-      
-      const buffer = await wb.xlsx.writeBuffer();
-      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName;
-      a.click();
-      URL.revokeObjectURL(url);
-    } catch (err: any) {
-      toast.error('Failed to generate template', { description: err.message });
+      const [sec, mach, bp, inv] = await Promise.all([
+        db.sectors.count(),
+        db.machines.count(),
+        db.pdrBlueprints.count(),
+        db.inventory.count()
+      ]);
+      setSectorsCount(sec);
+      setMachinesCount(mach);
+      setBlueprintsCount(bp);
+      setInventoryCount(inv);
+    } catch(e) {
+      console.error(e);
     }
   };
 
-  // --- UPLOAD HELPER ---
-  const triggerFileUpload = (inputId: string) => document.getElementById(inputId)?.click();
+  useEffect(() => {
+    refreshStats();
+  }, []);
+
+  // --- EXCEL GENERATOR HELPER ---
+  const handleDownloadTemplate = async (filename: string, columns: { header: string, key: string, width: number }[]) => {
+    try {
+      const workbook = new ExcelJS.Workbook();
+      const sheet = workbook.addWorksheet('Template');
+      sheet.columns = columns;
+
+      // Style Header
+      const headerRow = sheet.getRow(1);
+      headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+      headerRow.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF1E293B' } // Slate 800
+      };
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      saveAs(blob, filename);
+      toast.success(isAr ? 'تم تحميل القالب بنجاح' : 'Template Downloaded', { 
+        description: isAr ? `جاهز لإدخال البيانات: ${filename}` : `Ready for populating data: ${filename}` 
+      });
+    } catch (e: any) {
+      toast.error(isAr ? 'فشل تحميل القالب' : 'Download Failed', { description: e.message });
+    }
+  };
+
+  // --- GENERIC UPLOADER & BUFFER PROCESSOR ---
+  const triggerFileUpload = (inputId: string) => {
+    document.getElementById(inputId)?.click();
+  };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, processFn: (ws: ExcelJS.Worksheet) => Promise<void>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    
+
     setIsProcessing(true);
+    const toastId = toast.loading(isAr ? 'جاري قراءة وتحليل ملف البيانات...' : 'Processing Excel File...');
+
     try {
-      const arrayBuffer = await file.arrayBuffer();
-      const wb = new ExcelJS.Workbook();
-      await wb.xlsx.load(arrayBuffer);
-      const ws = wb.worksheets[0];
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(await file.arrayBuffer());
+      const worksheet = workbook.worksheets[0];
       
-      if (!ws) throw new Error('No worksheet found in file.');
-      
-      await measureOperation(`Upload_${file.name}`, async () => {
-        await processFn(ws);
+      if (!worksheet || worksheet.rowCount <= 1) {
+        throw new Error(isAr ? 'الملف فارغ أو لا يحتوي على صفوف بيانات صالحة' : 'File is empty or contains no valid rows.');
+      }
+
+      await processFn(worksheet);
+      await refreshStats();
+      toast.success(isAr ? 'تم حقن البيانات بنجاح' : 'Injection Succeeded', { 
+        id: toastId, 
+        description: isAr ? 'تم التحقق من تكامل البيانات وحفظها في قاعدة البيانات' : 'Dataset structurally verified and committed to persistent database.' 
       });
-      
-      toast.success('Data Injected', { description: `Successfully safely processed ${file.name}` });
     } catch (err: any) {
-      logger.error('Injection Error', err);
-      toast.error('Injection Failed', { description: err.message });
+      console.error(err);
+      toast.error(isAr ? 'فشل معالجة البيانات' : 'Injection Failed', { id: toastId, description: err.message });
     } finally {
-      e.target.value = '';
       setIsProcessing(false);
+      e.target.value = ''; // reset
     }
   };
 
-  // --- MODULE 1: FACTORY ORG ---
+  // --- MODULE 2: FACTORY INFRASTRUCTURE ---
   const FACTORY_COLS = [
-    { header: 'Sector Name (Required)', key: 'sector', width: 25 },
-    { header: 'Machine Name (Required)', key: 'machine', width: 30 },
-    { header: 'Machine Reference Code', key: 'code', width: 25 },
-    { header: 'Machine Family', key: 'family', width: 25 }
+    { header: 'Sector/Zone (Required)', key: 'sector', width: 30 },
+    { header: 'Machine Name (Required)', key: 'name', width: 30 },
+    { header: 'Code/Ref (Optional)', key: 'code', width: 25 },
+    { header: 'Family/Type (Optional)', key: 'family', width: 25 }
   ];
 
   const processFactoryData = async (ws: ExcelJS.Worksheet) => {
-    // PASS 1: DB Read & Memory Allocation
     const existingSectors = await db.sectors.toArray();
     const existingMachines = await db.machines.toArray();
-    
-    const dbSectorsMap = new Map<string, string>(); // name -> id
-    existingSectors.forEach(s => dbSectorsMap.set(s.name.toUpperCase(), s.id));
-    
-    const dbMachinesSet = new Set<string>(); // sectorId_machineName
-    existingMachines.forEach(m => dbMachinesSet.add(`${m.sectorId}_${m.referenceCode.toUpperCase()}`));
 
-    const newSectorsToInsert = new Map<string, any>(); // name -> object
+    const sectorMap = new Map<string, string>();
+    existingSectors.forEach(s => sectorMap.set(s.name.toUpperCase(), s.id));
+
+    const dbMachinesSet = new Set<string>();
+    existingMachines.forEach(m => dbMachinesSet.add(`${m.sectorId}_${(m.referenceCode || '').toUpperCase()}`));
+
+    const newSectorsToInsert = new Map<string, any>();
     const newMachinesToInsert: any[] = [];
-    
     let skippedMachines = 0;
 
     ws.eachRow((row, rowNumber) => {
       if (rowNumber === 1) return;
       const sectorName = row.getCell(1).text?.trim();
       const machineName = row.getCell(2).text?.trim();
-      if (!sectorName || !machineName) return;
-
-      const code = row.getCell(3).text?.trim() || 'N/A';
+      const code = row.getCell(3).text?.trim();
       const family = row.getCell(4).text?.trim() || 'General';
 
-      let sectorId = dbSectorsMap.get(sectorName.toUpperCase());
+      if (!sectorName || !machineName) return;
+
+      let sectorId = sectorMap.get(sectorName.toUpperCase());
       if (!sectorId) {
         if (newSectorsToInsert.has(sectorName.toUpperCase())) {
           sectorId = newSectorsToInsert.get(sectorName.toUpperCase()).id;
@@ -128,30 +171,31 @@ export function DataExchangeView() {
 
       if (dbMachinesSet.has(`${sectorId}_${machineName.toUpperCase()}`)) {
         skippedMachines++;
-        return; // Avoid duplicating exact same machine in same sector
+        return;
       }
 
       newMachinesToInsert.push({
         id: crypto.randomUUID(),
-        referenceCode: code || machineName, // use code or name
+        referenceCode: code || machineName,
         sectorId: sectorId,
         family: family,
         template: 'Standard'
       });
-      dbMachinesSet.add(`${sectorId}_${machineName.toUpperCase()}`); // mark as seen
+      dbMachinesSet.add(`${sectorId}_${machineName.toUpperCase()}`);
     });
 
     if (newSectorsToInsert.size === 0 && newMachinesToInsert.length === 0) {
-      throw new Error("No new valid machines or sectors found (or all completely duplicated).");
+      throw new Error(isAr ? 'لم يتم العثور على آلات أو مناطق جديدة' : "No new valid machines or sectors found (or all completely duplicated).");
     }
 
-    // PASS 2: Transaction Bulk Execution
     await db.transaction('rw', db.sectors, db.machines, async () => {
       if (newSectorsToInsert.size > 0) await db.sectors.bulkAdd(Array.from(newSectorsToInsert.values()));
       if (newMachinesToInsert.length > 0) await db.machines.bulkAdd(newMachinesToInsert);
     });
 
-    if (skippedMachines > 0) toast.info(`Skipped ${skippedMachines} already existing machines.`);
+    if (skippedMachines > 0) {
+      toast.info(isAr ? `تم تخطي ${skippedMachines} آلة موجودة مسبقاً` : `Skipped ${skippedMachines} already existing machines.`);
+    }
   };
 
   // --- MODULE 3: PDR CATALOG ---
@@ -165,7 +209,6 @@ export function DataExchangeView() {
   ];
 
   const processCatalogData = async (ws: ExcelJS.Worksheet) => {
-     // DB Fetch
      const [dbFamilies, dbTemplates, dbBlueprints, dbMachines, dbMappings] = await Promise.all([
        db.pdrFamilies.toArray(),
        db.pdrTemplates.toArray(),
@@ -180,9 +223,6 @@ export function DataExchangeView() {
      const machineMap = new Map<string, string>(); dbMachines.forEach(m => machineMap.set(m.referenceCode?.toUpperCase() || '', m.id));
      const existingMappings = new Set(dbMappings.map(m => `${m.machineId}_${m.blueprintId}`));
      
-     // 999 Slot Tracking
-     const existingBpIds = new Set(dbBlueprints.map(b => b.id));
-
      const newFamilies = new Map<string, any>();
      const newTemplates = new Map<string, any>();
      const newBlueprints: any[] = [];
@@ -211,7 +251,7 @@ export function DataExchangeView() {
         // Family resolution
         let familyId = fMap.get(familyRow.toUpperCase());
         if (!familyId) {
-          if(newFamilies.has(familyRow.toUpperCase())) familyId = newFamilies.get(familyRow.toUpperCase()).id;
+          if (newFamilies.has(familyRow.toUpperCase())) familyId = newFamilies.get(familyRow.toUpperCase()).id;
           else {
             familyId = crypto.randomUUID();
             newFamilies.set(familyRow.toUpperCase(), { id: familyId, name: familyRow, createdAt: new Date().toISOString() });
@@ -239,66 +279,50 @@ export function DataExchangeView() {
         const existingBp = bpMap.get(referenceRow.toUpperCase());
         
         if (existingBp) {
-           // Upsert Logic: Update existing record instead of skipping
            blueprintId = existingBp.id;
            updateBlueprints.push({
               ...existingBp,
-              templateId, // Allow correcting the template
+              templateId,
               unit: unitVal,
-              minThreshold: thresholdValue // Allow updating threshold
+              minThreshold: thresholdValue
            });
            updatedRef++;
         } else {
-           // Locate next 999 slot
-           let nextSlotIndex = 1;
-           while(nextSlotIndex <= 999) {
-             const candidateId = generatePdrSlotId(templateCode, nextSlotIndex);
-             if (!existingBpIds.has(candidateId)) {
-               blueprintId = candidateId;
-               break;
-             }
-             nextSlotIndex++;
-           }
-           
-           if (!blueprintId) {
-             throw new Error(`Master Catalog Overflow: Template ${templateCode} has exhausted all 999 available slots.`);
-           }
-
-           existingBpIds.add(blueprintId); // Locally mark slot as filled
-           
+           blueprintId = crypto.randomUUID();
            newBlueprints.push({
-             id: blueprintId,
-             templateId,
-             reference: referenceRow,
-             unit: unitVal,
-             minThreshold: thresholdValue,
-             createdAt: new Date().toISOString()
+              id: blueprintId,
+              templateId,
+              reference: referenceRow,
+              sku: referenceRow,
+              unit: unitVal,
+              minThreshold: thresholdValue,
+              isActivated: false,
+              createdAt: new Date().toISOString()
            });
-           bpMap.set(referenceRow.toUpperCase(), { id: blueprintId }); // mark as seen locally
+           bpMap.set(referenceRow.toUpperCase(), { id: blueprintId });
         }
 
-        // BOM Validation Linker
         if (machineRefRow) {
-           const dbMachineId = machineMap.get(machineRefRow.toUpperCase());
-           if (dbMachineId) {
-              const linkageKey = `${dbMachineId}_${blueprintId}`;
-              if (!existingMappings.has(linkageKey)) {
+           const machineId = machineMap.get(machineRefRow.toUpperCase());
+           if (machineId) {
+              const mapKey = `${machineId}_${blueprintId}`;
+              if (!existingMappings.has(mapKey)) {
                  newBoms.push({
                     id: crypto.randomUUID(),
-                    machineId: dbMachineId,
-                    blueprintId: blueprintId,
-                    addedAt: new Date().toISOString()
+                    machineId,
+                    blueprintId,
+                    quantityRequired: 1,
+                    criticality: 'MEDIUM'
                  });
-                 existingMappings.add(linkageKey);
+                 existingMappings.add(mapKey);
                  newBomsCount++;
               }
            }
         }
-
         rowCount++;
      });
 
-     if (rowCount === 0) throw new Error("No valid new catalog items found.");
+     if (rowCount === 0) throw new Error(isAr ? "لم يتم العثور على قطع غيار صالحة للإدراج" : "No valid new catalog items found.");
 
      await db.transaction('rw', db.pdrFamilies, db.pdrTemplates, db.pdrBlueprints, db.machinePartMappings, async () => {
         if (newFamilies.size > 0) await db.pdrFamilies.bulkAdd(Array.from(newFamilies.values()));
@@ -308,8 +332,8 @@ export function DataExchangeView() {
         if (newBoms.length > 0) await db.machinePartMappings.bulkAdd(newBoms);
      });
 
-     if(updatedRef > 0) toast.info(`Upsert complete: Updated ${updatedRef} existing references.`);
-     if(newBomsCount > 0) toast.success(`BOM Linker: Created ${newBomsCount} new spare part links to machines.`);
+     if (updatedRef > 0) toast.info(isAr ? `تم تحديث ${updatedRef} مرجع موجود مسبقاً` : `Upsert complete: Updated ${updatedRef} existing references.`);
+     if (newBomsCount > 0) toast.success(isAr ? `تم ربط ${newBomsCount} قطعة غيار بالآلات` : `BOM Linker: Created ${newBomsCount} new spare part links to machines.`);
   };
 
   // --- MODULE 4: INVENTORY STOCK ---
@@ -321,18 +345,16 @@ export function DataExchangeView() {
   ];
 
   const processStockData = async (ws: ExcelJS.Worksheet) => {
-    // Pass 1: Fetch state
     const blueprints = await db.pdrBlueprints.toArray();
-    const bpMap = new Map<string, string>(); // ref -> bpId
+    const bpMap = new Map<string, string>();
     blueprints.forEach(bp => bpMap.set(bp.reference.toUpperCase(), bp.id));
 
     const inventories = await db.inventory.toArray();
-    const invMap = new Map<string, any>(); // bpId -> stockItem
+    const invMap = new Map<string, any>();
     inventories.forEach(inv => invMap.set(inv.blueprintId, inv));
 
-    // Phase 2: Accumulation & Delta calculation 
-    const stockUpdates = new Map<string, any>(); // Existing DB Items to update -> { full partial object }
-    const newStocks = new Map<string, any>(); // bpId -> full new stock object
+    const stockUpdates = new Map<string, any>();
+    const newStocks = new Map<string, any>();
     const newMovements: any[] = [];
     
     let missingReferences = 0; let validRows = 0;
@@ -356,11 +378,9 @@ export function DataExchangeView() {
        const existingDBStock = invMap.get(bpId);
 
        if (existingDBStock) {
-          // Add to existing
           const activeItem = stockUpdates.get(existingDBStock.id) || existingDBStock;
-          
           stockUpdates.set(existingDBStock.id, {
-             quantityCurrent: activeItem.quantityCurrent + quantity, // cumulative additive
+             quantityCurrent: activeItem.quantityCurrent + quantity,
              updatedAt: now,
              ...(location && { locationDetails: location })
           });
@@ -375,12 +395,11 @@ export function DataExchangeView() {
              timestamp: now
           });
        } else {
-          // Add to new entirely
           const pendingStock = newStocks.get(bpId);
           let stockId;
           
           if (pendingStock) {
-             pendingStock.quantityCurrent += quantity; // accumulate duplicates in file
+             pendingStock.quantityCurrent += quantity;
              if (location) pendingStock.locationDetails = location;
              stockId = pendingStock.id;
           } else {
@@ -409,10 +428,9 @@ export function DataExchangeView() {
     });
 
     if (validRows === 0 && missingReferences > 0) {
-      throw new Error(`Execution halted. 0 rows imported. All ${missingReferences} references were completely unknown to the Master Index.`);
+      throw new Error(isAr ? `فشل الاستيراد: ${missingReferences} مرجع غير مسجل في الكتالوج مسبقاً` : `Execution halted. 0 rows imported. All ${missingReferences} references were completely unknown to the Master Index.`);
     }
 
-    // Pass 3: Strict Transaction Commit
     await db.transaction('rw', db.inventory, db.movements, async () => {
        if (stockUpdates.size > 0) {
            const keys = Array.from(stockUpdates.keys());
@@ -426,40 +444,39 @@ export function DataExchangeView() {
     });
     
     if (missingReferences > 0) {
-      toast.warning('Import Incomplete', { description: `${missingReferences} rows were safely skipped due to unrecognized references.` });
+      toast.warning(isAr ? 'اكتمل الاستيراد جزئياً' : 'Import Incomplete', { 
+        description: isAr ? `تم تخطي ${missingReferences} صف لعدم تسجيل المرجع مسبقاً في الكتالوج.` : `${missingReferences} rows were safely skipped due to unrecognized references.` 
+      });
     }
   };
 
   const CARDS = [
     {
       id: 'factory',
-      title: 'Factory Infrastructure',
-      desc: 'Define your production lines, sectors, and physical machines.',
-      icon: <Factory className="w-8 h-8 text-indigo-400" />,
+      title: isAr ? 'البنية التحتية والآلات' : 'Factory Infrastructure',
+      desc: isAr ? 'تعريف خطوط الإنتاج، المناطق الصناعية، والآلات والمعدات الإنتاجية.' : 'Define your production lines, sectors, and physical machines.',
+      icon: <Factory className="w-6 h-6 text-slate-300" />,
       cols: FACTORY_COLS,
       processFn: processFactoryData,
       filename: 'Factory_Master_Template.xlsx',
-      color: 'bg-indigo-500'
     },
     {
       id: 'catalog',
-      title: 'Master PDR Catalog',
-      desc: 'Create parts dictionary: Families, types, and strict references without balances.',
-      icon: <Database className="w-8 h-8 text-blue-400" />,
+      title: isAr ? 'كتالوج قطع الغيار' : 'Master PDR Catalog',
+      desc: isAr ? 'بناء شجرة المعرفة: عائلات القطع، القوالب المجردة، والمرجعيات الفنية.' : 'Create parts dictionary: Families, types, and strict references without balances.',
+      icon: <Database className="w-6 h-6 text-slate-300" />,
       cols: CATALOG_COLS,
       processFn: processCatalogData,
       filename: 'PDR_Catalog_Template.xlsx',
-      color: 'bg-blue-500'
     },
     {
       id: 'stock',
-      title: 'Inventory Stock balances',
-      desc: 'Initialize the actual physical stock balances using references established above.',
-      icon: <Package className="w-8 h-8 text-amber-400" />,
+      title: isAr ? 'الرصيد الافتتاحي للمخزون' : 'Inventory Stock Balances',
+      desc: isAr ? 'إدخال الأرصدة المادية الفعلية وربطها بالمستودعات والأرفف المحددة.' : 'Initialize the actual physical stock balances using references established above.',
+      icon: <Package className="w-6 h-6 text-slate-300" />,
       cols: STOCK_COLS,
       processFn: processStockData,
       filename: 'Inventory_Opening_Stock.xlsx',
-      color: 'bg-amber-500'
     }
   ];
 
@@ -468,9 +485,11 @@ export function DataExchangeView() {
     try {
       const blob = await (db as any).export();
       saveAs(blob, `BDR_Nexus_Snapshot_${new Date().toISOString().slice(0,10)}.json`);
-      toast.success("Snapshot Exported", { description: "You can load this offline or in Windows Electron." });
+      toast.success(isAr ? "تم تصدير اللقطة الشاملة بنجاح" : "Snapshot Exported", { 
+        description: isAr ? "يمكنك استخدام هذا الملف للاستعادة دون اتصال أو النقل." : "You can load this offline or in Windows Electron." 
+      });
     } catch(err: any) {
-       toast.error("Snapshot Failed", { description: err.message });
+       toast.error(isAr ? "فشل تصدير اللقطة" : "Snapshot Failed", { description: err.message });
     } finally {
        setIsProcessing(false);
     }
@@ -481,88 +500,90 @@ export function DataExchangeView() {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="w-full space-y-6 pb-12 lg:px-8"
+      className="w-full space-y-8 pb-12 pt-2 px-4 md:px-0 lg:px-8"
     >
       <PageHeader
-        title="Data Exchange Hub"
-        subtitle={<>Strict, standardized template injection framework. Buffered extraction ensures 100% database ACID compliance. <strong className="text-amber-400">Note: You must upload the Master PDR Catalog before injecting Inventory.</strong></>}
+        title={isAr ? "مركز تبادل وحقن البيانات" : "Data Exchange Hub"}
+        subtitle={isAr ? "منظومة معيارية لحقن واستيراد البيانات الصناعية الضخمة، وضمان الامتثال الصارم لقواعد تكامل قاعدة البيانات." : "Strict, standardized template injection framework. Buffered extraction ensures 100% database ACID compliance."}
         icon={<RefreshCw className={`w-7 h-7 text-slate-300 ${isProcessing ? 'animate-spin' : ''}`} />}
-        badgeText="Data Exchange Hub"
+        badgeText={isAr ? "تبادل البيانات" : "Data Exchange Hub"}
         badgeColor="slate"
         actions={
           <button 
             onClick={handleSnapshotDownload}
             disabled={isProcessing}
-            className="titan-button bg-white text-slate-950 hover:bg-slate-200 font-extrabold shadow-lg"
+            className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center justify-center gap-2"
           >
-            <HardDrive className="w-4 h-4" /> Export DB Snapshot
+            <HardDrive className="w-4 h-4" /> {isAr ? "تصدير لقطة البيانات" : "Export DB Snapshot"}
           </button>
         }
       >
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <HeaderBentoCard
-            title="Infrastructure"
+            title={isAr ? "البنية التحتية" : "Infrastructure"}
             subtitle="ZONES & MACHINES"
-            value={`${sectorsCount} Z / ${machinesCount} M`}
+            value={`${sectorsCount} ${isAr ? 'منطقة' : 'Z'} / ${machinesCount} ${isAr ? 'آلة' : 'M'}`}
             icon={<Factory className="w-3.5 h-3.5" />}
             color="slate"
           />
           <HeaderBentoCard
-            title="Catalog Matrix"
+            title={isAr ? "مصفوفة الكتالوج" : "Catalog Matrix"}
             subtitle="PDR BLUEPRINTS"
             value={blueprintsCount}
             icon={<Database className="w-3.5 h-3.5" />}
             color="blue"
           />
           <HeaderBentoCard
-            title="Inventory Items"
+            title={isAr ? "أرصدة المخزون" : "Inventory Items"}
             subtitle="STOCK BALANCES"
             value={inventoryCount}
             icon={<Package className="w-3.5 h-3.5" />}
             color="emerald"
           />
           <HeaderBentoCard
-            title="ACID Validation"
+            title={isAr ? "محرك السلامة" : "ACID Validation"}
             subtitle="BUFFER ENGINE"
-            value="Active"
+            value={isAr ? "نشط ومفحوص" : "Active"}
             icon={<ShieldCheck className="w-3.5 h-3.5" />}
             color="cyan"
           />
         </div>
       </PageHeader>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {CARDS.map((card, idx) => (
           <motion.div key={card.id} variants={itemVariants}>
-            <GlassCard className="p-6 border border-white/10 bg-white/[0.06] flex flex-col relative overflow-hidden group hover:border-white/30 transition-all shadow-xl hover:shadow-2xl backdrop-blur-md h-full">
-               <div className="flex items-start gap-5 mb-6">
-                  <div className={`p-4 rounded-2xl bg-[#0a0a0f]/40 border border-white/5 shadow-inner`}>
+            <div className="p-6 rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-xl flex flex-col relative overflow-hidden group hover:border-white/20 transition-all shadow-xl hover:shadow-2xl h-full">
+               <div className="flex items-start gap-4 mb-6">
+                  <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 shadow-inner shrink-0 group-hover:border-white/20 transition-colors">
                     {card.icon}
                   </div>
                   <div>
-                     <div className="flex items-center gap-2 mb-1">
-                       <span className="text-[10px] font-bold text-slate-500 bg-white/5 px-2 py-0.5 rounded uppercase tracking-widest border border-white/10">Step {idx + 1}</span>
-                       <h3 className="text-xl font-bold text-slate-200">{card.title}</h3>
+                     <div className="flex items-center gap-2 mb-1.5">
+                       <span className="text-[10px] font-bold text-slate-300 bg-white/5 px-2 py-0.5 rounded uppercase tracking-wider border border-white/10">
+                         {isAr ? `الخطوة ${idx + 1}` : `Step ${idx + 1}`}
+                       </span>
                      </div>
-                     <p className="text-sm text-slate-400 mt-2">{card.desc}</p>
+                     <h3 className="text-base font-bold text-white tracking-tight">{card.title}</h3>
+                     <p className="text-xs text-slate-400 mt-2 leading-relaxed">{card.desc}</p>
                   </div>
                </div>
                
-               <div className="mt-auto pt-4 flex gap-3 border-t border-white/5 relative z-10">
+               <div className="mt-auto pt-4 flex gap-2.5 border-t border-white/5 relative z-10">
                   <button 
                     onClick={() => handleDownloadTemplate(card.filename, card.cols)}
                     disabled={isProcessing}
-                    className="flex-1 flex justify-center items-center gap-2 px-4 py-2.5 bg-[#0a0a0f]/40 hover:bg-white/10 text-slate-300 rounded-xl font-medium text-sm transition-colors border border-white/10 disabled:opacity-50"
+                    className="flex-1 flex justify-center items-center gap-1.5 px-3 py-2 bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 hover:text-white rounded-xl font-bold text-xs transition-colors border border-white/10 disabled:opacity-50"
                   >
-                    <DownloadCloud className="w-4 h-4" /> Get Template
+                    <DownloadCloud className="w-3.5 h-3.5" /> {isAr ? "تحميل القالب" : "Get Template"}
                   </button>
                   
                   <button 
                     onClick={() => triggerFileUpload(`upload-${card.id}`)}
                     disabled={isProcessing}
-                    className={`flex-1 flex justify-center items-center gap-2 px-4 py-2.5 ${card.color} hover:opacity-80 text-white rounded-xl font-medium text-sm transition-opacity shadow-lg disabled:opacity-50`}
+                    className="flex-1 flex justify-center items-center gap-1.5 px-3 py-2 bg-white text-slate-950 hover:bg-slate-200 rounded-xl font-extrabold text-xs transition-all shadow-md disabled:opacity-50"
                   >
-                    <UploadCloud className="w-4 h-4" /> Inject Data
+                    <UploadCloud className="w-3.5 h-3.5" /> {isAr ? "استيراد وحقن" : "Inject Data"}
                   </button>
                   
                   <input 
@@ -573,20 +594,21 @@ export function DataExchangeView() {
                     onChange={(e) => handleFileUpload(e, card.processFn)}
                   />
                </div>
-            </GlassCard>
+            </div>
           </motion.div>
         ))}
       </div>
       
-      <motion.div variants={itemVariants} className="mt-8 p-5 bg-blue-500/10 border border-blue-500/20 rounded-2xl flex gap-4">
-        <AlertTriangle className="w-6 h-6 text-blue-400 shrink-0" />
+      <motion.div variants={itemVariants} className="p-5 bg-slate-900/40 border border-white/10 rounded-2xl flex gap-4 backdrop-blur-md">
+        <AlertTriangle className="w-5 h-5 text-sky-400 shrink-0 mt-0.5" />
         <div>
-           <h4 className="font-bold text-blue-400 uppercase tracking-widest text-sm mb-1">Architectural Integrity Engine</h4>
-           <p className="text-slate-300 text-[13px] leading-relaxed max-w-4xl">
-             This module processes massive spreadsheets via a hyper-safe 2-pass RAM buffer. 
-             In Pass 1, duplicate values (e.g. accidentally copy-pasting the same machine 8 times) are silently merged locally. 
-             In Pass 2, validated unique objects are committed through a strict bulk transaction port. 
-             Missing cross-references are isolated rather than corrupting relational datasets.
+           <h4 className="font-bold text-sky-400 uppercase tracking-wider text-xs mb-1">
+             {isAr ? "محرك السلامة الهيكلية والتكامل المزدوج" : "Architectural Integrity Engine"}
+           </h4>
+           <p className="text-slate-300 text-xs leading-relaxed max-w-4xl">
+             {isAr 
+               ? "تتم معالجة جداول البيانات عبر مخزن مؤقت ثنائي المراحل. في المرحلة الأولى، يتم دمج القيم المكررة تلقائياً والتحقق من المرجعيات. في المرحلة الثانية، يتم تنفيذ المعاملة الشاملة داخل قاعدة البيانات مع عزل السجلات غير المطابقة لمنع أي تشوه في العلاقات البنيوية."
+               : "This module processes massive spreadsheets via a hyper-safe 2-pass RAM buffer. Duplicate values are safely merged locally, and validated unique objects are committed through a strict bulk transaction port."}
            </p>
         </div>
       </motion.div>

@@ -1,41 +1,175 @@
 {
-  "$schema": "https://schema.tauri.app/config/2",
-  "productName": "BDR Nexus GMAO",
-  "version": "17.6.0",
-  "identifier": "com.bdr.nexus.gmao",
   "build": {
-    "beforeDevCommand": "npm run dev",
-    "devUrl": "http://localhost:3000",
     "beforeBuildCommand": "npm run build",
+    "beforeDevCommand": "npm run dev",
+    "devPath": "http://localhost:5173",
     "frontendDist": "../dist"
   },
   "app": {
     "windows": [
       {
-        "title": "BDR Nexus v17.6 - Industrial CMMS System",
-        "width": 1440,
+        "title": "BDR Nexus v17.6",
+        "width": 1400,
         "height": 900,
         "minWidth": 1024,
-        "minHeight": 720,
+        "minHeight": 768,
         "resizable": true,
         "fullscreen": false,
+        "icon": [
+          "icons/32x32.png",
+          "icons/128x128.png",
+          "icons/256x256.png",
+          "icons/icon.ico"
+        ],
+        "decorations": true,
+        "transparent": false,
+        "alwaysOnTop": false,
+        "skipTaskbar": false,
+        "fileDropEnabled": true,
+        "visible": true,
         "center": true
       }
     ],
     "security": {
-      "csp": "default-src 'self'; img-src 'self' data: blob: https:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'"
+      "csp": "default-src 'self'; img-src 'self' data: https:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:;"
     }
   },
-  "bundle": {
-    "active": true,
-    "targets": "all",
-    "icon": [
-      "icons/32x32.png",
-      "icons/128x128.png",
-      "icons/128x128@2x.png",
-      "icons/icon.icns",
-      "icons/icon.ico"
+  "tauri": {
+    "allowlist": {
+      "all": false,
+      "shell": {
+        "all": false,
+        "open": true,
+        "execute": false,
+        "sidecar": false,
+        "scope": []
+      },
+      "fs": {
+        "all": false,
+        "readDir": true,
+        "readFile": true,
+        "writeFile": true,
+        "createDir": true,
+        "removeDir": true,
+        "removeFile": true,
+        "renameFile": true,
+        "exists": true,
+        "copyFile": true,
+        "scope": ["$APPDATA/**", "$DOCUMENT/**"]
+      },
+      "path": {
+        "all": true
+      },
+      "window": {
+        "all": true,
+        "create": true,
+        "center": true,
+        "requestUserAttention": true,
+        "setResizable": true,
+        "setMaxSize": true,
+        "setMinSize": true,
+        "setSize": true,
+        "setPosition": true,
+        "setFullscreen": true,
+        "setFocus": true,
+        "setIcon": true,
+        "setSkipTaskbar": true,
+        "setCursorGrab": true,
+        "setCursorVisible": true,
+        "setCursorIcon": true,
+        "setCursorPosition": true,
+        "setDecorations": true,
+        "setAlwaysOnTop": true,
+        "setContentProtected": true,
+        "setTitle": true,
+        "maximize": true,
+        "unmaximize": true,
+        "minimize": true,
+        "unminimize": true,
+        "show": true,
+        "hide": true,
+        "close": true,
+        "setTransparent": true,
+        "setHasShadow": true
+      },
+      "dialog": {
+        "all": true,
+        "open": true,
+        "save": true,
+        "message": true,
+        "ask": true,
+        "confirm": true
+      },
+      "http": {
+        "all": true,
+        "request": true,
+        "scope": ["https://**"]
+      },
+      "notification": {
+        "all": true
+      },
+      "updater": {
+        "all": true
+      }
+    },
+    "systemTray": {
+      "iconPath": "icons/tray_icon.png",
+      "iconAsTemplate": false,
+      "menuOnLeftClick": false
+    },
+    "updater": {
+      "active": true,
+      "endpoints": [
+        "https://updates.bdrnexus.com/latest.json"
+      ],
+      "dialog": true,
+      "pubkey": "YOUR_PUBLIC_KEY_HERE"
+    },
+    "windows": [
+      {
+        "label": "main",
+        "title": "BDR Nexus v17.6",
+        "url": "/",
+        "resizable": true,
+        "fullscreen": false
+      }
     ],
-    "publisher": "BDR Industrial Systems"
+    "bundle": {
+      "active": true,
+      "targets": ["msi", "nsis"],
+      "identifier": "com.bdrsystems.nexus",
+      "icon": [
+        "icons/32x32.png",
+        "icons/128x128.png",
+        "icons/256x256.png",
+        "icons/icon.ico"
+      ],
+      "resources": [],
+      "externalBin": [],
+      "copyright": "Copyright © 2024 BDR Systems",
+      "category": "Productivity",
+      "shortDescription": "Industrial CMMS System",
+      "longDescription": "Professional maintenance management system for industrial environments",
+      "deb": {
+        "depends": []
+      },
+      "rpm": {
+        "epoch": "0"
+      },
+      "windows": {
+        "certificateThumbprint": null,
+        "digestAlgorithm": "sha256",
+        "timestampUrl": "http://timestamp.digicert.com"
+      },
+      "macOS": {
+        "frameworks": [],
+        "minimumSystemVersion": "",
+        "useBootstrapper": true,
+        "exceptionDomain": ""
+      },
+      "linux": {
+        "debian": {}
+      }
+    }
   }
 }

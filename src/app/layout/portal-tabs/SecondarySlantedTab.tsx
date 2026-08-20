@@ -27,17 +27,17 @@ export function SecondarySlantedTab({
   const H = SVG_PATHS.SECONDARY_HEIGHT;
   const S = SVG_PATHS.SECONDARY_SLANT_W;
 
-  // Correct forward parallel 45° slant (\ \) matching the primary tab & chassis
-  const secondaryTabPath = `M 7 1 L ${W - S - 3} 1 Q ${W - S + 1} 1 ${W - S + 3} 4 L ${W - 3} ${H - 4} Q ${W - 1} ${H - 1} ${W - 5} ${H - 1} L ${S + 5} ${H - 1} Q ${S + 1} ${H - 1} ${S - 1} ${H - 4} L 3 4 Q 1 1 7 1 Z`;
+  // Correct forward parallel 45° slant (\ \) with equal isometric slope and rounded vertices
+  const secondaryTabPath = `M 6 1 L ${W - S - 3} 1 Q ${W - S + 1} 1 ${W - S + 4} 4 L ${W - 3} ${H - 4} Q ${W - 1} ${H - 1} ${W - 5} ${H - 1} L ${S + 4} ${H - 1} Q ${S + 1} ${H - 1} ${S - 1} ${H - 4} L 2 4 Q 1 1 6 1 Z`;
 
   return (
     <div
       className={cn(
         "group relative flex items-center cursor-pointer select-none shrink-0 transition-all duration-300",
-        "h-[30px] z-0 hover:z-10",
-        index > 0 ? "-ml-1.5" : isFirst ? "ml-0.5" : "ml-0"
+        "z-0 hover:z-10",
+        index > 0 ? "-ml-2.5" : isFirst ? "ml-0" : "ml-0"
       )}
-      style={{ width: `${W}px` }}
+      style={{ width: `${W}px`, height: `${H}px` }}
       onPointerDown={() => onActivate(tab.portalId)}
     >
       {/* Secondary Slanted SVG Shape (\ \) floating over dark canvas */}
@@ -48,28 +48,37 @@ export function SecondarySlantedTab({
         >
           <path 
             d={secondaryTabPath} 
-            fill="rgba(10, 12, 18, 0.88)" 
+            fill="rgba(10, 12, 18, 0.85)" 
             className="transition-all duration-300" 
           />
           <path 
             d={secondaryTabPath} 
-            className={cn("transition-all duration-300", tabTheme.inactiveBg)} 
+            className={cn("transition-all duration-300 opacity-25", tabTheme.inactiveBg)} 
             fill="currentColor" 
           />
+          {/* Crystal Base Border */}
+          <path 
+            d={secondaryTabPath} 
+            fill="none" 
+            stroke="rgba(255, 255, 255, 0.12)" 
+            strokeWidth="1" 
+            vectorEffect="non-scaling-stroke" 
+          />
+          {/* Subtle Engine Accent Border */}
           <path 
             d={secondaryTabPath} 
             className={cn("transition-all duration-300", tabTheme.inactiveBorder)} 
             fill="none" 
             stroke="currentColor" 
-            strokeWidth="1.2" 
+            strokeWidth="1" 
             vectorEffect="non-scaling-stroke" 
-            opacity="0.5"
+            opacity="0.2" 
           />
         </svg>
       </div>
 
       {/* Content for Secondary Slanted Tab */}
-      <div className="relative z-10 flex items-center gap-1.5 pl-6 pr-4 w-full h-full text-[11px]">
+      <div className="relative z-10 flex items-center gap-2 pl-7 pr-3.5 w-full h-full text-[11.5px]">
         <Icon className={cn("w-3.5 h-3.5 shrink-0 transition-opacity opacity-70 group-hover:opacity-100", colors.text)} />
         <span className="truncate flex-1 tracking-tight font-bold text-slate-300 group-hover:text-white transition-colors">
           {tab.title}

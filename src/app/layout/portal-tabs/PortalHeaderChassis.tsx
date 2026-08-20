@@ -20,7 +20,7 @@ export function PortalHeaderChassis({
 }: PortalHeaderChassisProps) {
   return (
     <div className="relative w-full">
-      <header className="relative h-[48px] flex items-end pr-4 shrink-0 w-full overflow-x-auto custom-scrollbar z-[40]">
+      <header className="relative h-[54px] flex items-center pr-4 shrink-0 w-full overflow-x-auto custom-scrollbar z-[40]">
         {/* Soft Ambient Inner Glow to fully illuminate the left header junction */}
         <div 
           className={cn(
@@ -39,9 +39,9 @@ export function PortalHeaderChassis({
         <div 
           className={cn("absolute inset-0 z-0 transition-all duration-300 backdrop-blur-2xl", headerTheme.bg)}
           style={{
-            clipPath: `polygon(0px 0px, ${slantStart}px 0px, ${slantEnd}px 40px, 100% 40px, 100% 48px, 0px 48px)`,
+            clipPath: `polygon(0px 0px, ${slantStart}px 0px, ${slantEnd}px 46px, 100% 46px, 100% 54px, 0px 54px)`,
             minWidth: '100%',
-            height: '48px'
+            height: '54px'
           }}
         />
 

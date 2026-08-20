@@ -28,11 +28,19 @@ import {
   Trash2,
   Edit3,
   Link2,
-  ListFilter
+  ListFilter,
+  Eye,
+  LayoutGrid,
+  Save,
+  Loader2,
+  Box,
+  Layers,
+  ShieldCheck
 } from 'lucide-react';
 import { cn } from '@/shared/utils';
 import { toast } from 'sonner';
 import { UnifiedSearchFilter, type FilterGroup, type QuickTabOption } from '@/shared/components/UnifiedSearchFilter';
+import { RegistryGuidanceState } from '@/core/ui/RegistryGuidanceState';
 import { EmptyState } from '@/shared/components/EmptyState';
 
 const containerVariants: Variants = {
@@ -51,6 +59,16 @@ export function StockHistoryView() {
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<'ALL' | 'IN' | 'OUT' | 'ADJUST'>('ALL');
   const [selectedMachineId, setSelectedMachineId] = useState<string>('ALL');
+  const [displayMode, setDisplayMode] = useState<'table' | 'cards'>('table');
+
+  // Inline Accordion Drawer Form State
+  const [isAdding, setIsAdding] = useState(false);
+  const [newType, setNewType] = useState<'IN' | 'OUT' | 'ADJUST'>('IN');
+  const [newStockId, setNewStockId] = useState('');
+  const [newQty, setNewQty] = useState(1);
+  const [newMachineId, setNewMachineId] = useState('');
+  const [newNotes, setNewNotes] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Interactive UI state for smart mapper
   const [selectedMachineForDetails, setSelectedMachineForDetails] = useState<string | null>(null);
@@ -159,6 +177,66 @@ export function StockHistoryView() {
       onChange: (val) => setSelectedMachineId(val)
     }
   ], [machines, selectedMachineId]);
+
+  const handleAddMovement = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newStockId) {
+      toast.error('يرجى اختيار عنصر من المخزون');
+      return;
+    }
+
+    const stockItem = await db.inventory.get(newStockId);
+    if (!stockItem) {
+      toast.error('عنصر المخزون غير موجود');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const timestamp = new Date().toISOString();
+      let newQtyVal = stockItem.quantityCurrent;
+
+      if (newType === 'IN') {
+        newQtyVal += newQty;
+      } else if (newType === 'OUT') {
+        if (stockItem.quantityCurrent < newQty) {
+          toast.error(`الكمية المطلوبة (${newQty}) أكبر من الرصيد المتوفر (${stockItem.quantityCurrent})`);
+          setIsSubmitting(false);
+          return;
+        }
+        newQtyVal = Math.max(0, stockItem.quantityCurrent - newQty);
+      } else if (newType === 'ADJUST') {
+        newQtyVal = newQty;
+      }
+
+      await db.inventory.update(stockItem.id, {
+        quantityCurrent: newQtyVal,
+        updatedAt: timestamp
+      });
+
+      await db.movements.add({
+        id: crypto.randomUUID(),
+        stockId: stockItem.id,
+        type: newType,
+        quantity: newQty,
+        machineId: newMachineId || undefined,
+        performedBy: 'مسؤول المخزن',
+        notes: newNotes.trim() || (newType === 'IN' ? 'إيداع وتوريد يدوي' : newType === 'OUT' ? 'صرف يدوي من المستودع' : 'تسوية وتعديل رصيد دفتري'),
+        timestamp
+      });
+
+      toast.success('تم تسجيل حركة المخزن وتحديث الرصيد بنجاح');
+      setIsAdding(false);
+      setNewStockId('');
+      setNewQty(1);
+      setNewMachineId('');
+      setNewNotes('');
+    } catch (err: any) {
+      toast.error('فشل تسجيل الحركة: ' + err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   // Calculate Machine Consumption and Smart recommendation suggestions
   const machineAnalysisList = useMemo(() => {
@@ -470,8 +548,11 @@ export function StockHistoryView() {
             transition={{ duration: 0.3 }}
             className="space-y-6"
           >
-            <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl flex flex-col bg-[#0a0a0f]/60 backdrop-blur-xl">
-              {/* Universal Command Bar */}
+            <GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl flex flex-col bg-[#0a0b10]/95 backdrop-blur-xl relative">
+              {/* Engine Accent Line */}
+              <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-transparent via-cyan-500/40 to-transparent pointer-events-none z-20" />
+
+              {/* Universal Crystal Command Bar */}
               <div className="p-4 md:p-6 border-b border-white/10 bg-white/[0.02] flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4 shrink-0 relative z-10">
                 <div className="flex items-center gap-3 shrink-0">
                   <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center shrink-0">
@@ -479,59 +560,349 @@ export function StockHistoryView() {
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <h2 className="text-base font-extrabold text-white uppercase tracking-tight font-sans">
+                      <h2 className="text-sm font-black text-white uppercase tracking-tight">
                         سجل حركات وتسويات المخزون
                       </h2>
                       <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-cyan-500/15 border border-cyan-500/30 text-cyan-300">
                         {filteredMovements.length} حركة
                       </span>
                     </div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                       INVENTORY MOVEMENTS & CONSUMPTION LEDGER
                     </p>
                   </div>
                 </div>
 
-                <div className="flex-1 max-w-3xl">
+                <div className="flex-1 max-w-2xl w-full">
                   <UnifiedSearchFilter
                     searchTerm={searchTerm}
                     onSearchChange={setSearchTerm}
-                    searchPlaceholder="بحث في الحركات برقم العملية، اسم القطعة، الفني، أو الآلة..."
+                    searchPlaceholder="بحث برقم العملية، اسم القطعة، الفني، أو الآلة..."
                     quickTabs={quickTabs}
                     activeQuickTab={typeFilter}
                     onQuickTabChange={(id) => setTypeFilter(id as any)}
                     filterGroups={filterGroups}
                     themeColor="cyan"
-                    fullWidth
+                    extraControls={
+                      <div className="flex items-center gap-2 shrink-0">
+                        <div className="flex items-center gap-1 p-1 bg-[#12131a] rounded-xl border border-white/10 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => setDisplayMode('table')}
+                            className={cn(
+                              "p-1.5 rounded-lg transition-all cursor-pointer",
+                              displayMode === 'table' ? "bg-white text-slate-950 shadow-sm font-bold" : "text-slate-400 hover:text-white"
+                            )}
+                            title="عرض الجدول الكريستالي"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setDisplayMode('cards')}
+                            className={cn(
+                              "p-1.5 rounded-lg transition-all cursor-pointer",
+                              displayMode === 'cards' ? "bg-white text-slate-950 shadow-sm font-bold" : "text-slate-400 hover:text-white"
+                            )}
+                            title="عرض شبكة البطاقات"
+                          >
+                            <LayoutGrid className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        {!isAdding && (
+                          <button
+                            onClick={() => setIsAdding(true)}
+                            className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all shrink-0 flex items-center gap-2 cursor-pointer"
+                          >
+                            <Plus className="w-4 h-4 shrink-0" />
+                            <span>تسجيل حركة جديدة</span>
+                          </button>
+                        )}
+                      </div>
+                    }
                   />
                 </div>
               </div>
 
-              {/* Ledger Table */}
-              <div className="overflow-x-auto custom-scrollbar">
-                <table dir="rtl" className="w-full text-right border-collapse whitespace-nowrap">
-                  <thead className="bg-white/[0.04] border-b border-white/10 text-slate-300 font-bold uppercase tracking-wider font-mono text-[11px]">
-                    <tr>
-                      <th className="px-6 py-4">نوع وتوقيت الحركة</th>
-                      <th className="px-6 py-4">قطعة الغيار</th>
-                      <th className="px-6 py-4 text-center">الكمية</th>
-                      <th className="px-6 py-4">المنفذ والوجهة</th>
-                      <th className="px-6 py-4">البيان والملاحظات</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5 bg-[#0a0a0f]/40">
-                    {filteredMovements.map((mov) => (
-                      <tr key={mov.id} className="group hover:bg-white/[0.04] transition-colors border-b border-white/5">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <span className="text-[10px] font-mono text-slate-500">
-                              {new Date(mov.timestamp).toLocaleString('ar-MA', { 
-                                year: 'numeric', month: 'numeric', day: 'numeric', 
-                                hour: '2-digit', minute: '2-digit' 
+              {/* Inline Accordion Drawer Form for New Stock Movement */}
+              <AnimatePresence>
+                {isAdding && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.35, ease: "easeInOut" }}
+                    className="border-b border-white/10 bg-white/[0.02] relative overflow-hidden"
+                  >
+                    <div className="p-6 md:p-8 relative z-10">
+                      <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent" />
+                      <h2 className="text-sm font-bold text-white uppercase tracking-widest mb-6 flex items-center gap-2">
+                        <Activity className="w-4 h-4 text-cyan-400" /> تسجيل حركة مخزنية جديدة (إيداع / صرف / تسوية)
+                      </h2>
+
+                      <form onSubmit={handleAddMovement} className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                          <div className="space-y-2">
+                            <label className="text-[10px] uppercase font-bold text-slate-400 tracking-widest ml-1">
+                              نوع الحركة المخزنية
+                            </label>
+                            <select
+                              value={newType}
+                              onChange={(e) => setNewType(e.target.value as any)}
+                              className="titan-input py-3 appearance-none bg-[#0a0a0f] text-white w-full"
+                            >
+                              <option value="IN">إيداع وتوريد (+)</option>
+                              <option value="OUT">صرف واستهلاك (-)</option>
+                              <option value="ADJUST">تسوية دفتري (=)</option>
+                            </select>
+                          </div>
+
+                          <div className="space-y-2">
+                            <label className="text-[10px] uppercase font-bold text-slate-400 tracking-widest ml-1">
+                              قطعة الغيار (المستودع)
+                            </label>
+                            <select
+                              required
+                              value={newStockId}
+                              onChange={(e) => setNewStockId(e.target.value)}
+                              className="titan-input py-3 appearance-none bg-[#0a0a0f] text-white w-full"
+                            >
+                              <option value="">اختر قطعة الغيار من المخزون...</option>
+                              {(inventory || []).map(inv => {
+                                const bp = blueprintMap.get(inv.blueprintId);
+                                const tmpl = bp ? templateMap.get(bp.templateId) : null;
+                                return (
+                                  <option key={inv.id} value={inv.id}>
+                                    {bp?.reference || 'PDR'} - {tmpl?.name || 'قطعة غيار'} (الرصيد: {inv.quantityCurrent})
+                                  </option>
+                                );
                               })}
-                            </span>
+                            </select>
+                          </div>
+
+                          <div className="space-y-2">
+                            <label className="text-[10px] uppercase font-bold text-slate-400 tracking-widest ml-1">
+                              الكمية
+                            </label>
+                            <input
+                              required
+                              type="number"
+                              min="1"
+                              value={newQty}
+                              onChange={(e) => setNewQty(parseInt(e.target.value) || 1)}
+                              className="titan-input py-3 font-mono"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                          <div className="space-y-2">
+                            <label className="text-[10px] uppercase font-bold text-slate-400 tracking-widest ml-1">
+                              تخصيص الآلة المستهدفة (اختياري)
+                            </label>
+                            <select
+                              value={newMachineId}
+                              onChange={(e) => setNewMachineId(e.target.value)}
+                              className="titan-input py-3 appearance-none bg-[#0a0a0f] text-white w-full"
+                            >
+                              <option value="">بدون تخصيص آلة (مستودع عام)</option>
+                              {(machines || []).map(m => (
+                                <option key={m.id} value={m.id}>
+                                  {m.referenceCode} - {m.serialNumber || 'Unit'}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div className="space-y-2">
+                            <label className="text-[10px] uppercase font-bold text-slate-400 tracking-widest ml-1">
+                              ملاحظات والبيان
+                            </label>
+                            <input
+                              type="text"
+                              value={newNotes}
+                              onChange={(e) => setNewNotes(e.target.value)}
+                              placeholder="سبب الحركة أو رقم أمر العمل..."
+                              className="titan-input py-3"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex justify-end items-center gap-3 pt-4 border-t border-white/5">
+                          <button
+                            type="button"
+                            onClick={() => setIsAdding(false)}
+                            className="bg-white/[0.04] text-slate-300 hover:bg-white/[0.08] hover:text-white border border-white/10 font-bold rounded-xl px-5 py-2.5 text-xs transition-all cursor-pointer"
+                          >
+                            إلغاء
+                          </button>
+                          <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-6 py-2.5 text-xs shadow-lg transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                          >
+                            {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                            <span>تأكيد وتسجيل الحركة</span>
+                          </button>
+                        </div>
+                      </form>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Content Area - Table or Cards View */}
+              {filteredMovements.length === 0 && !isAdding ? (
+                <div className="p-6 md:p-8 flex-1 flex items-center justify-center">
+                  <RegistryGuidanceState
+                    id="stock-ledger-guidance"
+                    icon={History}
+                    title={
+                      searchTerm || typeFilter !== 'ALL' || selectedMachineId !== 'ALL'
+                        ? 'لم يتم العثور على حركات مخزنية مطابقة'
+                        : 'سجل حركات وتسويات المخزون'
+                    }
+                    subtitle={
+                      searchTerm || typeFilter !== 'ALL' || selectedMachineId !== 'ALL'
+                        ? 'لا توجد حركات مخزنية تطابق الفلاتر المحددة. يمكنك تصفير الفلاتر أو تسجيل حركة مخزنية جديدة.'
+                        : 'تتبع كافة حركات الإيداع والتوريد والصرف والتسويات الدفترية مع توثيق اسم الفني والآلة المستهدفة.'
+                    }
+                    isSearchActive={Boolean(searchTerm || typeFilter !== 'ALL' || selectedMachineId !== 'ALL')}
+                    onClearSearch={() => {
+                      setSearchTerm('');
+                      setTypeFilter('ALL');
+                      setSelectedMachineId('ALL');
+                    }}
+                    primaryAction={{
+                      label: 'تسجيل حركة مخزنية جديدة',
+                      icon: Plus,
+                      onClick: () => setIsAdding(true)
+                    }}
+                    guidanceCards={[
+                      {
+                        icon: Box,
+                        title: 'التحديث الفوري للرصيد',
+                        description: 'كل حركة تسجل يتم معالجتها فوراً لتحديث رصيد المادة الحالي وتوليد كود تتبع فريد.'
+                      },
+                      {
+                        icon: ShieldCheck,
+                        title: 'التخصيص التلقائي للآلات',
+                        description: 'ربط حركات الصرف بالآلة المحددة يبني شجرة مكونات B.O.M الخاصة بالآلة تلقائياً.'
+                      }
+                    ]}
+                    themeColor="cyan"
+                  />
+                </div>
+              ) : displayMode === 'table' ? (
+                /* Crystal High-Contrast Full Table View */
+                <div className="overflow-x-auto overflow-y-auto custom-scrollbar relative z-10">
+                  <table dir="ltr" className="w-full text-left border-collapse whitespace-nowrap">
+                    <thead className="bg-[#12141d] border-b-2 border-white/15 text-slate-200 font-extrabold uppercase tracking-wider text-[11px] sticky top-0 z-20 backdrop-blur-md shadow-sm">
+                      <tr>
+                        <th className="px-6 py-4">نوع وتوقيت الحركة</th>
+                        <th className="px-6 py-4">قطعة الغيار</th>
+                        <th className="px-6 py-4 text-center">الكمية</th>
+                        <th className="px-6 py-4">المنفذ والوجهة</th>
+                        <th className="px-6 py-4 text-right">البيان والملاحظات</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5 text-xs text-slate-300 font-medium">
+                      {filteredMovements.map((mov, idx) => (
+                        <tr 
+                          key={mov.id} 
+                          className={cn(
+                            "transition-colors duration-150 border-b border-white/5 group cursor-pointer",
+                            idx % 2 === 0 ? "bg-white/[0.015]" : "bg-white/[0.05]",
+                            "hover:bg-cyan-500/15 hover:text-white"
+                          )}
+                        >
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <span className="text-xs font-mono text-slate-400 font-medium">
+                                {new Date(mov.timestamp).toLocaleString('ar-MA', { 
+                                  year: 'numeric', month: 'numeric', day: 'numeric', 
+                                  hour: '2-digit', minute: '2-digit' 
+                                })}
+                              </span>
+                              <span className={cn(
+                                "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border",
+                                mov.type === 'IN' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' :
+                                mov.type === 'OUT' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' :
+                                'bg-cyan-500/10 border-cyan-500/20 text-cyan-400'
+                              )}>
+                                {mov.type === 'IN' ? 'إيداع' : mov.type === 'OUT' ? 'صرف' : 'تسوية'}
+                              </span>
+                            </div>
+                            <div className="text-[10px] font-mono font-bold text-cyan-400 mt-1">ID: #{mov.id.substring(0, 8).toUpperCase()}</div>
+                          </td>
+
+                          <td className="px-6 py-4">
+                            <div className="font-sans font-bold text-white text-sm group-hover:text-cyan-200 transition-colors">{mov.partName}</div>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-[10px] font-mono text-slate-400">المرجع:</span>
+                              <span className="font-mono text-xs font-bold text-cyan-400">{mov.partReference}</span>
+                            </div>
+                          </td>
+
+                          <td className="px-6 py-4 text-center">
+                            <div className="inline-flex items-baseline gap-1.5 bg-white/[0.04] border border-white/10 px-3 py-1 rounded-xl">
+                              <span className="font-mono text-sm font-bold text-white">{mov.quantity}</span>
+                              <span className="text-[10px] font-mono text-slate-400 font-semibold">{mov.partUnit}</span>
+                            </div>
+                          </td>
+
+                          <td className="px-6 py-4">
+                            <div className="font-semibold text-slate-200 text-xs">{mov.performedBy}</div>
+                            {mov.machineCode ? (
+                              <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-cyan-500/20 bg-cyan-500/10 text-[10px] font-mono font-bold text-cyan-400 mt-1">
+                                الآلة: {mov.machineCode}
+                              </div>
+                            ) : mov.type === 'OUT' ? (
+                              <span className="text-[10px] text-rose-400 font-medium block mt-1">صرف مباشر (دون تخصيص آلة)</span>
+                            ) : (
+                              <span className="text-[10px] text-slate-400 block mt-1">مستودع الأصول</span>
+                            )}
+                          </td>
+
+                          <td className="px-6 py-4 text-right">
+                            <p className="text-xs text-slate-300 max-w-xs break-words font-sans">
+                              {mov.notes || <span className="text-slate-500 italic">بدون ملاحظات</span>}
+                            </p>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                /* Cards View */
+                <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    {filteredMovements.map((mov) => (
+                      <div
+                        key={mov.id}
+                        className="titan-card overflow-hidden flex flex-col group relative shadow-none p-0 hover:border-cyan-500 transition-all duration-300 border border-white/10 bg-[#0a0a0f] rounded-3xl"
+                      >
+                        <div className="p-6 relative z-10 flex-1">
+                          <div className="flex justify-between items-start mb-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center shrink-0">
+                                <History className="w-5 h-5" />
+                              </div>
+                              <div>
+                                <h3 className="text-sm font-bold text-slate-300 group-hover:text-white group-hover:font-black tracking-tight font-mono">
+                                  #{mov.id.substring(0, 8).toUpperCase()}
+                                </h3>
+                                <p className="text-[10px] text-cyan-400 uppercase tracking-widest font-mono font-bold mt-0.5">
+                                  {new Date(mov.timestamp).toLocaleDateString()}
+                                </p>
+                              </div>
+                            </div>
+
                             <span className={cn(
-                              "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded border",
+                              "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border",
                               mov.type === 'IN' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' :
                               mov.type === 'OUT' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' :
                               'bg-cyan-500/10 border-cyan-500/20 text-cyan-400'
@@ -539,61 +910,39 @@ export function StockHistoryView() {
                               {mov.type === 'IN' ? 'إيداع' : mov.type === 'OUT' ? 'صرف' : 'تسوية'}
                             </span>
                           </div>
-                          <div className="text-[9px] font-mono text-slate-600 mt-1">ID: #{mov.id.substring(0, 8).toUpperCase()}</div>
-                        </td>
 
-                        <td className="px-6 py-4">
-                          <div className="font-sans font-bold text-slate-200 text-sm">{mov.partName}</div>
-                          <div className="flex items-center gap-2 mt-0.5">
-                            <span className="text-[10px] font-mono text-slate-500">المرجع:</span>
-                            <span className="font-mono text-xs font-semibold text-cyan-400">{mov.partReference}</span>
-                          </div>
-                        </td>
-
-                        <td className="px-6 py-4 text-center">
-                          <div className="inline-flex items-baseline gap-1 bg-white/[0.02] border border-white/5 px-2.5 py-1 rounded-lg">
-                            <span className="font-mono text-sm font-bold text-white">{mov.quantity}</span>
-                            <span className="text-[9px] font-mono text-slate-400">{mov.partUnit}</span>
-                          </div>
-                        </td>
-
-                        <td className="px-6 py-4">
-                          <div className="font-medium text-slate-200 text-xs">{mov.performedBy}</div>
-                          {mov.machineCode ? (
-                            <div className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-cyan-500/10 bg-cyan-500/5 text-[9px] font-mono text-cyan-400 mt-1">
-                              الآلة: {mov.machineCode}
+                          <div className="space-y-2 mb-4">
+                            <div className="text-sm font-bold text-white group-hover:text-cyan-200 transition-colors">
+                              {mov.partName}
                             </div>
-                          ) : mov.type === 'OUT' ? (
-                            <span className="text-[9px] text-rose-400 block mt-1">صرف مباشر (دون تخصيص آلة)</span>
-                          ) : (
-                            <span className="text-[9px] text-slate-500 block mt-1">مستودع الأصول</span>
-                          )}
-                        </td>
+                            <div className="text-xs font-mono text-cyan-400">
+                              Ref: {mov.partReference}
+                            </div>
+                            <p className="text-xs text-slate-400 line-clamp-2">
+                              {mov.notes || 'بدون ملاحظات'}
+                            </p>
+                          </div>
+                        </div>
 
-                        <td className="px-6 py-4 text-right">
-                          <p className="text-xs text-slate-400 max-w-xs break-words font-sans">
-                            {mov.notes || <span className="text-slate-600 italic">بدون ملاحظات</span>}
-                          </p>
-                        </td>
-                      </tr>
+                        <div className="grid grid-cols-2 divide-x divide-white/10 bg-white/[0.02] border-t border-white/10 mt-auto relative z-10">
+                          <div className="p-4 flex flex-col items-center justify-center gap-1">
+                            <div className="text-[10px] uppercase font-bold text-slate-500 tracking-widest">الكمية</div>
+                            <span className="text-base font-bold font-mono text-white">
+                              {mov.quantity} {mov.partUnit}
+                            </span>
+                          </div>
+                          <div className="p-4 flex flex-col items-center justify-center gap-1">
+                            <div className="text-[10px] uppercase font-bold text-slate-500 tracking-widest">المنفذ / الآلة</div>
+                            <span className="text-xs font-bold text-slate-300 font-mono truncate max-w-full px-2">
+                              {mov.machineCode ? `الآلة: ${mov.machineCode}` : mov.performedBy}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
                     ))}
-
-                    {filteredMovements.length === 0 && (
-                      <tr>
-                        <td colSpan={5} className="p-0">
-                          <EmptyState 
-                            icon={History}
-                            title={t('pdr.history.noMovements', 'لم يتم العثور على أي حركات مخزنية')}
-                            description={t('pdr.history.noMovementsDesc', 'لم يتم تسجيل حركات سحب أو صرف مطابقة لمعايير البحث الحالية.')}
-                            color="cyan"
-                            className="py-16 opacity-80"
-                          />
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                  </div>
+                </div>
+              )}
             </GlassCard>
           </motion.div>
         ) : (

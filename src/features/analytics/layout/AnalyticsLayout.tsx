@@ -57,10 +57,6 @@ export function AnalyticsLayout({ user, onLogout }: { user: User | null, onLogou
           title="Corrective Ward"
           colorClass="text-red-500"
         />
-        
-        <div className="my-2 border-t border-white/10 pt-2 px-3">
-          <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Document Engines</span>
-        </div>
 
         <PortalSidebarItem 
           icon={<FileSpreadsheet />} 

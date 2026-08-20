@@ -146,7 +146,10 @@
 #### 🏛️ الفصل الثاني عشر: دستور البطاقة اليسرى لمختبرات النظام (Lab Left Navigation Card Constitution)
 تُعد البطاقة اليسرى (Left Sidebar / Navigation Panel) العمود الفقري للتصفح والفلترة في جميع مختبرات ومحركات BDR Nexus. لضمان هويتها البصرية الموحدة وتباينها الفائق والشعور المادي (Tactile Feedback)، يُطبق **دستور البطاقة اليسرى الجديد** بصرامة:
 
-1. **الاندماج الكامل للحاوية (Seamless Shell):**
+1. **الاندماج الكامل للحاوية والأبعاد التجاوبية (Seamless Shell & Responsive Dimensions):**
+   * **القياس القياسي المعتمد:** `w-full md:w-80 shrink-0 h-[650px] md:h-auto min-h-0`.
+   * **نقطة التحول والتجاوب (Breakpoint):** تفعيل المحاذاة الأفقية جنباً إلى جنب بدءاً من الشاشات المتوسطة `md:flex-row` (768px+) لضمان مرونة فائقة على كافة الأجهزة اللوحية والحواسيب.
+   * **امتداد القائمة الشجرية:** تأخذ القائمة 100% من الارتفاع المتاح داخل البطاقة وتتكيف تلقائياً مع الشاشة بدون أي فراغات ميتة.
    * البطاقة اليسرى هي امتداد لترويسة الصفحة (Page Header).
    * تأخذ نفس التدرج اللوني للخلفية الخاصة بالمحرك (مثال: `bg-gradient-to-b from-[engine]-950/40 via-[#0a0a0f]/95 to-[#0a0a0f]/98`) بدون ترويسة داخلية منفصلة أو إطار مقسوم.
    * تحتوي على إضاءة محيطية (Ambient Glow) تتناغم مع المحرك `bg-[engine]-500/15 blur-3xl`.
@@ -235,3 +238,107 @@
    * في القوائم الجانبية والمختبرات، يكون شريط البحث **دائماً أسفل** قائمة الأزرار الرئيسية للتبويب أو التصفية لتأمين تسلسل هرمي منطقي (من العام إلى الفرز الخاص).
 3. **زر الفلتر الموحد (Unified Filter Component Standard):**
    * اعتماد نفس النمط التصميمي المتبع في جداول مناطق الإنتاج والمختبرات (`UnifiedFilterButton` مع بادج المؤشر النشط وقائمة منسدلة زجاجية محكمة التباين).
+
+#### 💎 الفصل السابع عشر: معايير أيقونات الشريط الجانبي والنقاء البصري (Clean Glass Portal Sidebar & Icon Constitution)
+1. **نقاء ونظافة الشريط الجانبي (Clean Sidebar Structure):**
+   * يُمنع منعاً باتاً وضع فواصل عشوائية، خطوط أفقية، أو نصوص تصنيفية داخل قائمة أيقونات الشريط الجانبي للمحركات (`PortalSidebar`).
+   * يجب أن تتدفق الأيقونات بشكل نقي ومتسلسل عمودياً دون انقطاع لتجنب تشويه التناسق البصري للهيكل الزجاجي.
+2. **تصميم الصندوق الزجاجي المتوهج للأيقونات النشطة (Clean Glass Glow Icon Standard):**
+   * **إلغاء الشرائط الجانبية الملتصقة:** يُمنع تماماً استخدام شرائط أو خطوط إضافية على حافة الزر (`No indicator pills/sidebars`).
+   * **الصندوق الكريستالي النقي (Clean Crystal Box):** عند تحديد الأيقونة (`isActive`)، تلتف الأيقونة بصندوق زجاجي متكامل ونقي دون أي زوائد:
+     * خلفية زجاجية معتمة بحدود كريستالية: `bg-white/10 text-white border border-white/20 shadow-lg shadow-black/50 backdrop-blur-xl rounded-xl`.
+     * تدرج إضاءة ناعم داخلي: `absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/30 pointer-events-none`.
+     * إضاءة وتكبير الأيقونة بلونها الدلالي: `scale-110 ${colorClass || 'text-cyan-400'}` مع تأثير تحويم سلس.
+3. **الكود المرجعي الموثق لمكون الأيقونة (`PortalSidebarItem`):**
+```tsx
+import React from 'react';
+import { cn } from '@/shared/utils';
+
+interface PortalSidebarItemProps {
+  icon: React.ReactNode;
+  isActive: boolean;
+  onClick: () => void;
+  title?: string;
+  colorClass?: string;
+}
+
+export function PortalSidebarItem({ icon, isActive, onClick, title, colorClass }: PortalSidebarItemProps) {
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      className={cn(
+        "w-11 h-11 relative flex items-center justify-center transition-all duration-300 group rounded-xl active:scale-95 font-sans z-10 overflow-hidden",
+        isActive 
+          ? `bg-white/10 text-white border border-white/20 shadow-lg shadow-black/50 backdrop-blur-xl` 
+          : `bg-transparent text-slate-400 hover:text-white hover:bg-white/[0.06] border border-transparent hover:border-white/10`
+      )}
+    >
+      {isActive && (
+        <div className="absolute inset-0 bg-gradient-to-br from-white/10 via-transparent to-black/30 pointer-events-none" />
+      )}
+
+      {React.cloneElement(icon as React.ReactElement<{ className?: string }>, { 
+        className: cn(
+          "w-5 h-5 transition-all duration-300 relative z-10", 
+          isActive ? `scale-110 ${colorClass || 'text-cyan-400'}` : "group-hover:scale-110 opacity-75 group-hover:opacity-100"
+        ) 
+      })}
+    </button>
+  );
+}
+```
+
+#### 🏆 الفصل الثامن عشر: دستور بطاقة الجداول والجدول الذهبي المرجعي (Production Zone Golden Table & Card Standard)
+تم اعتماد وتثبيت تصميم بطاقة وجداول **سجل القطاعات (Production Zone / Sector Registry)** كمعيار معماري وهندسي مرجعي مطلق لكافة صفحات وجداول ومختبرات نظام BDR Nexus لما يتميز به من بساطة فائقة، نقاء بصري، مرونة ثنائية العرض (Table vs Cards)، وملاءمته التامة للأعمال الصناعية المكثفة:
+
+1. **الهيكل الخارجي والحاوية (Outer Glass Shell):**
+   * **الحاوية الرئيسية:** `GlassCard className="!p-0 border-white/10 overflow-hidden shadow-2xl rounded-3xl h-full flex flex-col bg-[#0a0b10]/95 backdrop-blur-xl relative"`
+   * **خط التوقيع العلوي الخافت:** `absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-transparent via-[theme]-500/30 to-transparent pointer-events-none`
+
+2. **شريط القيادة والتحكم الكريستالي الموحد (Universal Crystal Command Bar):**
+   * **الحاوية:** `p-4 md:p-6 border-b border-white/10 bg-white/[0.02] flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4 shrink-0 relative z-10`
+   * **الكتلة التعريفية:** 
+     * صندوق الأيقونة: `w-10 h-10 rounded-xl bg-[theme]-500/10 border border-[theme]-500/20 flex items-center justify-center shrink-0`
+     * العنوان الرئيسي: `text-sm font-black text-white uppercase tracking-tight`
+     * بادج العداد: `px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[theme]-500/15 border border-[theme]-500/30 text-[theme]-300`
+     * الوصف المصاحب: `text-[10px] font-bold text-slate-400 uppercase tracking-widest`
+   * **شريط الفلاتر وأدوات التحكم (`UnifiedSearchFilter`):**
+     * يتضمن البحث السريع وفلاتر الرقائق (`filterGroups` أو `quickTabs`).
+     * زر تبديل العرض المزدوج (`extraControls`): `displayMode === 'table'` (أيقونة `Eye`) و `displayMode === 'cards'` (أيقونة `LayoutGrid`).
+     * الزر الإستراتيجي الأبيض: `bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all shrink-0 flex items-center gap-2 cursor-pointer`.
+
+3. **الجدول الكريستالي عالي التباين (Crystal High-Contrast Table Structure):**
+   * **رأس الجدول (`<thead>`):** `bg-[#12141d] border-b-2 border-white/15 text-slate-200 font-extrabold uppercase tracking-wider text-[11px] sticky top-0 z-20 backdrop-blur-md shadow-sm`
+   * **رؤوس الأعمدة (`<th>`):** `py-4 px-6 text-start font-extrabold` (أو `text-center` للأرقام والحالات).
+   * **صفوف البيانات (`<tbody>`):** `divide-y divide-white/5 text-xs text-slate-300 font-medium`.
+   * **خطوط الزيبرا المتناوبة (`<tr>`):** `transition-colors duration-150 group text-start cursor-pointer`, `idx % 2 === 0 ? "bg-white/[0.015]" : "bg-white/[0.05]"` مع تحويم بلون المحرك `hover:bg-[theme]-500/15 hover:text-white`.
+   * **خلايا الأكواد:** `font-mono font-extrabold px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-white text-[11px] inline-flex items-center gap-1.5`.
+
+4. **شبكة البطاقات المرنة (Cards Grid View):**
+   * شبكة متجاوبة: `grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-6 overflow-y-auto custom-scrollbar flex-1`.
+   * بطاقة السجل: `titan-card overflow-hidden flex flex-col group relative shadow-none p-0 hover:border-[theme]-500 transition-all duration-300 border border-white/10 bg-[#0a0a0f] rounded-3xl`.
+   * مقاييس أسفل البطاقة: `grid grid-cols-2 divide-x divide-white/10 bg-white/[0.02] border-t border-white/10 mt-auto`.
+
+5. **شاشة التوجيه المتقدمة (Registry Guidance State):**
+   * عند عدم وجود نتائج أو في الزيارة الأولى، يتم استخدام `RegistryGuidanceState` مع بطاقات الإرشاد ومفاتيح تصفير الفلاتر السريعة.
+
+6. **دستور درج الإدخال المدمج (Inline Accordion Drawer Form Architecture):**
+   * **الفلسفة والهدف:** منع استخدام النوافذ المنبثقة (Modals) التي تفصل المستخدم عن سياق العمل الصناعي عند إنشاء أو تعديل السجلات. يتم فتح نموذج الإدخال بسلاسة تامة كدرج أكورديون مطوي مدمج أعلى الجدول مباشرة داخل نفس البطاقة.
+   * **بنية الحاوية والحركة (Motion & Surface):**
+     * حاوية الحركة: `motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} transition={{ duration: 0.35, ease: "easeInOut" }} className="border-b border-white/10 bg-white/[0.02] relative overflow-hidden"`
+     * الخط المضيء العلوي: `absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[theme]-500/50 to-transparent`
+     * حشوة المحتوى الداخلي: `p-6 md:p-8 relative z-10`
+   * **ترويسة الفورم (Drawer Header):**
+     * `h2 className="text-sm font-bold text-white uppercase tracking-widest mb-6 flex items-center gap-2"`
+     * أيقونة الإجراء: `<Activity className="w-4 h-4 text-[theme]-400" />`
+     * عنوان واضح مع كود السجل: `إنشاء / تعديل سجل جديد [ID]`
+   * **حقول الإدخال (Inputs & Grid):**
+     * تقسيم شبكي متجاوب: `grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5`
+     * التسمية العلوية: `label className="text-[10px] uppercase font-bold text-slate-400 tracking-widest ml-1"`
+     * حقل الإدخال الصناعي: `input / select className="titan-input py-3"` (مع `appearance-none bg-[#0a0a0f] text-white` للقوائم المنسدلة).
+   * **أزرار التحكم والإجراءات (Action Buttons):**
+     * الحاوية: `flex justify-end items-center gap-3 pt-4 border-t border-white/5 mt-4`
+     * زر الإلغاء الشفاف: `button type="button" onClick={handleCancel} className="bg-white/[0.04] text-slate-300 hover:bg-white/[0.08] hover:text-white border border-white/10 font-bold rounded-xl px-5 py-2.5 text-xs transition-all"`
+     * زر الحفظ/التأكيد الإستراتيجي الأبيض: `button type="submit" className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-6 py-2.5 text-xs shadow-lg transition-all flex items-center gap-2"`
+

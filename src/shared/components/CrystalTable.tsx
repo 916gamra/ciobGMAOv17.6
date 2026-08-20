@@ -27,13 +27,13 @@ export function CrystalTable<T>({
 }: CrystalTableProps<T>) {
   return (
     <div className={cn("overflow-x-auto rounded-2xl border border-white/10 bg-slate-900/60 backdrop-blur-xl shadow-2xl custom-scrollbar", className)}>
-      <table className="w-full text-right border-collapse dir-rtl" dir="rtl">
+      <table className="w-full text-start border-collapse">
         <thead>
           <tr className="bg-white/[0.04] border-b border-white/10 text-slate-300 font-bold uppercase tracking-wider text-xs">
             {columns.map((col) => (
               <th 
                 key={col.key} 
-                className={cn("px-6 py-4 text-right font-extrabold select-none whitespace-nowrap", col.className)}
+                className={cn("px-6 py-4 text-start font-extrabold select-none whitespace-nowrap", col.className)}
               >
                 {col.header}
               </th>
