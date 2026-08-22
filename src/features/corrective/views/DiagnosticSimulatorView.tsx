@@ -28,6 +28,7 @@ import { cn } from '@/shared/utils';
 import { useNotifications } from '@/shared/hooks/useNotifications';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTabStore } from '@/app/store';
+import { LabHierarchicalSidebar, HierarchyFamilyNode } from '@/shared/components/LabHierarchicalSidebar';
 
 export function DiagnosticSimulatorView() {
   const { t } = useTranslation();
@@ -37,32 +38,73 @@ export function DiagnosticSimulatorView() {
 
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
-  const [categorySearch, setCategorySearch] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   
   // Interactive Simulator State
   const [diagnosticStep, setDiagnosticStep] = useState<number | string>(1);
   const [diagnosticOutput, setDiagnosticOutput] = useState<any>(null);
 
-  // Seed default categories on mount
+  // Seed default categories on mount once
   useEffect(() => {
     seedDefaultCategories();
-  }, [seedDefaultCategories]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // Set default category
+  // Set default category once categories load
   useEffect(() => {
     if (categories.length > 0 && !selectedCategoryId) {
       setSelectedCategoryId(categories[0].id);
     }
-  }, [categories, selectedCategoryId]);
+  }, [categories.length, selectedCategoryId]);
+
+  // Transform failure categories and templates for LabHierarchicalSidebar
+  const hierarchicalFamilies: HierarchyFamilyNode[] = useMemo(() => {
+    return categories.map(cat => {
+      const lower = (cat.name || '').toLowerCase();
+      let discipline: 'mechanical' | 'electrical' | 'hydraulic' | 'pneumatic' | 'electronic' | 'general' = 'general';
+      let defaultCode = 'CAT';
+      
+      if (lower.includes('méc') || lower.includes('ميكانيك') || lower.includes('mechanical')) {
+        discipline = 'mechanical';
+        defaultCode = 'MEC';
+      } else if (lower.includes('élec') || lower.includes('كهرباء') || lower.includes('electric')) {
+        discipline = 'electrical';
+        defaultCode = 'ELE';
+      } else if (lower.includes('hydr') || lower.includes('هيدروليك') || lower.includes('hydraulic')) {
+        discipline = 'hydraulic';
+        defaultCode = 'HYD';
+      } else if (lower.includes('pneu') || lower.includes('نيوماتيك') || lower.includes('pneumatic')) {
+        discipline = 'pneumatic';
+        defaultCode = 'PNU';
+      } else if (lower.includes('électron') || lower.includes('إلكترونيك') || lower.includes('electronic')) {
+        discipline = 'electronic';
+        defaultCode = 'ELC';
+      } else {
+        defaultCode = (cat.name.substring(0, 3) || 'CAT').toUpperCase();
+      }
+
+      const catTemplates = templates.filter(t => t.categoryId === cat.id);
+
+      return {
+        id: cat.id,
+        code: defaultCode,
+        name: cat.name,
+        subtitle: cat.description,
+        discipline,
+        count: catTemplates.length,
+        templates: catTemplates.map(tpl => ({
+          id: tpl.id,
+          code: (tpl.severity || 'MED').toUpperCase().substring(0, 3),
+          name: tpl.name,
+          subtitle: tpl.description || undefined,
+          raw: tpl
+        })),
+        raw: cat
+      };
+    });
+  }, [categories, templates]);
 
   const selectedCategory = categories.find(c => c.id === selectedCategoryId);
-
-  const filteredCategories = useMemo(() => {
-    if (!categorySearch.trim()) return categories;
-    const q = categorySearch.toLowerCase();
-    return categories.filter(c => c.name.toLowerCase().includes(q) || (c.description && c.description.toLowerCase().includes(q)));
-  }, [categories, categorySearch]);
 
   const filteredTemplates = useMemo(() => {
     let list = templates;
@@ -86,10 +128,10 @@ export function DiagnosticSimulatorView() {
       if (!selectedTemplateId || !filteredTemplates.some(t => t.id === selectedTemplateId)) {
         setSelectedTemplateId(filteredTemplates[0].id);
       }
-    } else {
+    } else if (selectedTemplateId) {
       setSelectedTemplateId(null);
     }
-  }, [filteredTemplates, selectedCategoryId, selectedTemplateId]);
+  }, [filteredTemplates.length, selectedCategoryId]);
 
   const selectedTemplate = templates.find(t => t.id === selectedTemplateId);
 
@@ -307,16 +349,6 @@ export function DiagnosticSimulatorView() {
     setDiagnosticOutput(null);
   };
 
-  const getCategoryIcon = (name: string) => {
-    const lower = (name || '').toLowerCase();
-    if (lower.includes('méc') || lower.includes('ميكانيك') || lower.includes('mechanical')) return <Wrench className="w-4 h-4" />;
-    if (lower.includes('élec') || lower.includes('كهرباء') || lower.includes('electric')) return <Zap className="w-4 h-4" />;
-    if (lower.includes('hydr') || lower.includes('هيدروليك') || lower.includes('hydraulic')) return <Droplets className="w-4 h-4" />;
-    if (lower.includes('pneu') || lower.includes('نيوماتيك') || lower.includes('pneumatic')) return <Wind className="w-4 h-4" />;
-    if (lower.includes('électron') || lower.includes('إلكترونيك') || lower.includes('electronic')) return <Cpu className="w-4 h-4" />;
-    return <Layers className="w-4 h-4" />;
-  };
-
   return (
     <div className="flex flex-col h-full bg-[#08080c] text-slate-100 custom-scrollbar overflow-y-auto">
       {/* Page Header */}
@@ -366,125 +398,36 @@ export function DiagnosticSimulatorView() {
       </div>
 
       {/* Main Workspace Area: Split-Pane Twin Panels */}
-      <div className="flex-1 flex flex-col lg:flex-row gap-6 p-6 md:p-8 pt-0 overflow-hidden min-h-0">
+      <div className="flex-1 flex flex-col md:flex-row gap-6 p-6 md:p-8 pt-0 overflow-hidden min-h-0">
         
-        {/* Left Navigation Panel: Categories & Sectors (Chapter 12 Constitution) */}
-        <div className="w-full lg:w-[360px] shrink-0 flex flex-col gap-4">
-          <div className="flex flex-col flex-1 min-h-[460px] p-0 border border-orange-500/30 rounded-3xl overflow-hidden shadow-[0_10px_30px_rgba(249,115,22,0.12)] bg-gradient-to-b from-orange-950/40 via-[#0a0a0f]/95 to-[#0a0a0f]/98 backdrop-blur-xl relative h-full">
-            
-            {/* Ambient engine accent glow */}
-            <div className="absolute -top-12 -right-12 w-48 h-48 bg-orange-500/15 rounded-full blur-3xl pointer-events-none" />
-
-            <div className="p-5 relative z-10 flex flex-col h-full space-y-4">
-              
-              {/* Title & Badge */}
-              <div className="flex items-center justify-between border-b border-white/10 pb-4 shrink-0">
-                <div>
-                  <h3 className="text-xs font-black text-white uppercase tracking-wider text-start">
-                    {t('corrective.failureCatalog.familiesAndSectors', 'العائلات والقطاعات')}
-                  </h3>
-                  <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest block mt-0.5 text-start">
-                    SECTORS & ENGINES
-                  </span>
-                </div>
-                <span className="text-[10px] bg-white/10 text-white font-mono px-2.5 py-1 rounded-full border border-white/15 font-bold">
-                  {categories.length} {t('corrective.failureCatalog.families', 'عائلة')}
-                </span>
-              </div>
-
-              {/* Category Search with Clear Button */}
-              <div className="relative shrink-0">
-                <Search className="absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none" />
-                <input
-                  type="text"
-                  value={categorySearch}
-                  onChange={(e) => setCategorySearch(e.target.value)}
-                  placeholder={t('corrective.failureCatalog.searchFamilies', 'بحث في العائلات والقطاعات...')}
-                  className="w-full bg-[#111218] border border-white/10 rounded-xl py-2 pl-9 pr-8 rtl:pr-9 rtl:pl-8 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-orange-500/50 transition-colors shadow-inner text-start"
-                />
-                {categorySearch && (
-                  <button
-                    type="button"
-                    onClick={() => setCategorySearch('')}
-                    className="absolute right-2.5 rtl:right-auto rtl:left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white flex items-center justify-center text-[10px] cursor-pointer transition-colors"
-                    title={t('common.clear', 'مسح البحث')}
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-
-              {/* Navigation button to Failure Catalog */}
-              <button 
-                type="button"
-                onClick={() => openTab({ id: 'failure-catalog', portalId: 'CORRECTIVE', title: 'كتالوج الأعطال', component: 'failure-catalog' })}
-                className="w-full bg-white/[0.05] hover:bg-white/10 text-white font-bold rounded-xl px-4 py-2.5 text-xs border border-white/10 transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0 shadow-sm"
-              >
-                <Wrench className="w-3.5 h-3.5 text-orange-400" />
-                <span>{t('corrective.failureCatalog.openCatalogBtn', 'إدارة وتعديل كتالوج الأعطال')}</span>
-                <ArrowRight className="w-3.5 h-3.5 text-slate-400 rtl:rotate-180" />
-              </button>
-              
-              {/* Categories List */}
-              <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-0.5">
-                {filteredCategories.map(cat => {
-                  const isSelected = selectedCategoryId === cat.id;
-                  const catTemplatesCount = templates.filter(t => t.categoryId === cat.id).length;
-                  return (
-                    <button
-                      key={cat.id}
-                      type="button"
-                      onClick={() => {
-                        setSelectedCategoryId(cat.id);
-                        resetDiagnosticSimulator();
-                      }}
-                      className={cn(
-                        "w-full flex items-center justify-between p-3 rounded-2xl border transition-all text-xs font-bold cursor-pointer text-start",
-                        isSelected 
-                          ? "bg-white/10 border-white/20 text-white font-extrabold shadow-md"
-                          : "bg-white/[0.02] border-white/5 text-slate-300 hover:bg-white/[0.05] hover:text-white"
-                      )}
-                    >
-                      <div className="flex items-center gap-3 overflow-hidden">
-                        <div className={cn(
-                          "p-2 rounded-xl border transition-colors shrink-0",
-                          isSelected 
-                            ? "bg-orange-500/20 border-orange-500/30 text-orange-300" 
-                            : "bg-white/5 border-white/10 text-slate-400"
-                        )}>
-                          {getCategoryIcon(cat.name)}
-                        </div>
-                        <div className="overflow-hidden">
-                          <span className="block text-white font-bold truncate">{cat.name}</span>
-                          <span className="text-[10px] text-slate-400 font-mono">
-                            {catTemplatesCount} {t('corrective.failureCatalog.activeFailuresCount', 'عطل')}
-                          </span>
-                        </div>
-                      </div>
-                      <ChevronRight className={cn(
-                        "w-4 h-4 transition-transform rtl:rotate-180 shrink-0",
-                        isSelected ? "opacity-100 text-orange-400" : "opacity-30 text-slate-500"
-                      )} />
-                    </button>
-                  );
-                })}
-
-                {filteredCategories.length === 0 && (
-                  <div className="text-center py-10 text-xs text-slate-500 italic space-y-2">
-                    <p>{t('corrective.failureCatalog.noMatchingFamilies', 'لا توجد عائلات مطابقة للبحث')}</p>
-                    <button
-                      type="button"
-                      onClick={() => setCategorySearch('')}
-                      className="px-3 py-1 bg-white/5 hover:bg-white/10 text-slate-300 rounded-lg text-[11px] border border-white/10 cursor-pointer"
-                    >
-                      {t('common.clearFilter', 'إلغاء التصفية')}
-                    </button>
-                  </div>
-                )}
-              </div>
-
-            </div>
-          </div>
+        {/* Left Navigation Panel: Categories & Faults Tree (Golden Master Lab Standard) */}
+        <div className="w-full md:w-96 shrink-0 h-[650px] md:h-auto min-h-0">
+          <LabHierarchicalSidebar
+            title={t('corrective.failureCatalog.familiesAndSectors', 'العائلات والقطاعات')}
+            subtitle="CATEGORIES & SECTORS"
+            families={hierarchicalFamilies}
+            selectedFamilyId={selectedCategoryId}
+            selectedTemplateId={selectedTemplateId}
+            onSelectFamily={(fam) => {
+              setSelectedCategoryId(fam ? fam.id : null);
+              setSelectedTemplateId(null);
+              resetDiagnosticSimulator();
+            }}
+            onSelectTemplate={(tmpl, fam) => {
+              if (fam) setSelectedCategoryId(fam.id);
+              setSelectedTemplateId(tmpl ? tmpl.id : null);
+              resetDiagnosticSimulator();
+            }}
+            onPrimaryAction={() => openTab({ id: 'failure-catalog', portalId: 'CORRECTIVE', title: 'كتالوج الأعطال', component: 'failure-catalog' })}
+            primaryActionLabel={t('corrective.failureCatalog.openCatalogBtn', 'إدارة وتعديل كتالوج الأعطال')}
+            onResetSelection={() => {
+              setSelectedCategoryId(null);
+              setSelectedTemplateId(null);
+              resetDiagnosticSimulator();
+            }}
+            resetLabel={t('corrective.diagnosticSimulator.allMatrices', 'عرض جميع مصفوفات التشخيص')}
+            engineTheme="orange"
+          />
         </div>
 
         {/* Right Main Workspace Canvas (Exact parity with EngineeringLabView design) */}

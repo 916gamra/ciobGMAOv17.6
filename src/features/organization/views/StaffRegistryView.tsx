@@ -14,6 +14,7 @@ import { useNotifications } from '@/shared/hooks/useNotifications';
 import { db } from '@/core/db';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/shared/utils';
+import { LabEntityCard } from '@/shared/components/LabEntityCard';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -441,57 +442,45 @@ export function StaffRegistryView() {
             ) : (
               /* Cards View */
               <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                 <AnimatePresence mode="popLayout">
                   {filteredStaff.map((tech) => (
-                      <motion.div 
-                        key={tech.id}
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        className="titan-card overflow-hidden flex flex-col group relative shadow-none p-0 hover:border-indigo-500 transition-all duration-300 border border-white/10 bg-[#0a0a0f] rounded-3xl"
-                      >
-                        {/* ID Header Plaque */}
-                        <div className="flex justify-between items-center bg-white/[0.02] p-4 border-b border-white/5 relative z-10 transition-colors duration-300 group-hover:bg-white/[0.04]">
-                          <div className="flex items-center gap-2">
-                             <div className={`w-1.5 h-1.5 rounded-full ${tech.isActive ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)] animate-pulse' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]'}`} />
-                             <span className={`text-[10px] font-mono tracking-widest uppercase font-bold transition-colors ${tech.isActive ? 'text-slate-400 group-hover:text-slate-200' : 'text-slate-600'}`}>{tech.id}</span>
-                          </div>
-                          <div className="flex opacity-0 group-hover:opacity-100 transition-all duration-300 gap-1 bg-white/5 backdrop-blur-md border border-white/10 p-1 rounded-lg">
-                             <button 
-                               onClick={() => handleEdit(tech)}
-                               className="p-1.5 rounded-md hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer"
-                               title={t('staff.configureTooltip', 'Configure Slot')}
-                             >
-                               <Edit3 className="w-3.5 h-3.5" />
-                             </button>
-                          </div>
-                        </div>
-
-                        <div className={`p-6 flex flex-col items-center text-center relative z-10 flex-1 ${!tech.isActive && 'opacity-60 grayscale'}`}>
-                          <div className={`w-20 h-20 rounded-2xl flex items-center justify-center text-3xl font-semibold group-hover:scale-105 transition-transform duration-500 text-slate-300 group-hover:text-white bg-white/5 border border-white/10 mb-5`}>
-                            {tech.initials}
-                          </div>
-                          
-                          <h3 className="text-xl font-bold text-slate-400 group-hover:text-white group-hover:font-black tracking-wide mb-2 uppercase transition-all duration-300">{tech.name}</h3>
-                          
-                          <div className="flex items-center gap-1.5 text-[10px] text-slate-400 mb-5 bg-white/5 px-3 py-1.5 rounded-md border border-white/10 uppercase tracking-widest font-bold">
-                            <Pocket className="w-3.5 h-3.5" />
-                            <span>{tech.role}</span>
-                          </div>
-                          
-                          <div className="w-full bg-[#0a0a0f] rounded-xl p-4 border border-white/5 flex flex-col gap-2 mt-auto text-left group-hover:bg-white/5 transition-colors">
-                            <span className="text-[10px] uppercase tracking-widest font-bold text-slate-500 flex items-center gap-1.5 group-hover:text-slate-400 transition-colors">
-                              <Fingerprint className="w-3.5 h-3.5 text-slate-500 group-hover:text-slate-400" /> {t('staff.thBadgeId', 'Physical Badge ID')}
-                            </span>
-                            <div className="text-sm font-bold text-slate-400 group-hover:text-slate-200 font-mono uppercase tracking-tight transition-colors">
-                               {tech.realBadgeId || t('staff.unassignedBadge', 'NOT CONFIGURED')}
-                            </div>
-                          </div>
-                        </div>
-                      </motion.div>
-                    )
-                  )}
+                    <LabEntityCard
+                      key={tech.id}
+                      id={`staff-card-${tech.id}`}
+                      title={tech.name}
+                      subtitle={tech.role || t('staff.defaultRole', 'Certified Maintenance Tech')}
+                      code={tech.id}
+                      icon={UserCircle2}
+                      engineTheme="indigo"
+                      statusBadge={{
+                        label: tech.isActive ? t('staff.badgeFieldActive', 'Field Active') : t('staff.badgeDormant', 'Dormant Slot'),
+                        variant: tech.isActive ? 'emerald' : 'rose'
+                      }}
+                      tag={tech.initials ? `الرمز: ${tech.initials}` : undefined}
+                      metrics={[
+                        {
+                          label: t('staff.thBadgeId', 'Physical Badge ID'),
+                          value: tech.realBadgeId || t('staff.unassignedBadge', 'NOT CONFIGURED'),
+                          icon: Fingerprint,
+                          highlight: Boolean(tech.realBadgeId)
+                        },
+                        {
+                          label: t('staff.thRole', 'الدور الفني'),
+                          value: tech.role || 'فني صيانة',
+                          icon: Pocket
+                        }
+                      ]}
+                      actions={[
+                        {
+                          icon: Edit3,
+                          title: t('staff.configureTooltip', 'Configure Slot'),
+                          onClick: () => handleEdit(tech),
+                          variant: 'ghost'
+                        }
+                      ]}
+                    />
+                  ))}
                 </AnimatePresence>
                 </div>
               </div>

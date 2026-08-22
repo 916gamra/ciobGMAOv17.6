@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/core/db';
 import type { FailureCategory, FailureTemplate } from '@/core/db';
@@ -7,7 +8,7 @@ export function useFailureCatalog() {
   const categories = useLiveQuery(() => db.failureCategories.toArray()) || [];
   const templates = useLiveQuery(() => db.failureTemplates.toArray()) || [];
 
-  const addCategory = async (name: string, description?: string, color?: string) => {
+  const addCategory = useCallback(async (name: string, description?: string, color?: string) => {
     const id = uuidv4();
     await db.failureCategories.add({
       id,
@@ -16,20 +17,20 @@ export function useFailureCatalog() {
       color
     });
     return id;
-  };
+  }, []);
 
-  const updateCategory = async (id: string, updates: Partial<FailureCategory>) => {
+  const updateCategory = useCallback(async (id: string, updates: Partial<FailureCategory>) => {
     await db.failureCategories.update(id, updates);
-  };
+  }, []);
 
-  const deleteCategory = async (id: string) => {
+  const deleteCategory = useCallback(async (id: string) => {
     // Delete all templates in this category first
     const templatesInCat = await db.failureTemplates.where('categoryId').equals(id).toArray();
     await db.failureTemplates.bulkDelete(templatesInCat.map(t => t.id));
     await db.failureCategories.delete(id);
-  };
+  }, []);
 
-  const addTemplate = async (categoryId: string, name: string, description?: string, severity?: 'low' | 'medium' | 'high' | 'critical') => {
+  const addTemplate = useCallback(async (categoryId: string, name: string, description?: string, severity?: 'low' | 'medium' | 'high' | 'critical') => {
     const id = uuidv4();
     await db.failureTemplates.add({
       id,
@@ -39,18 +40,18 @@ export function useFailureCatalog() {
       severity
     });
     return id;
-  };
+  }, []);
 
-  const updateTemplate = async (id: string, updates: Partial<FailureTemplate>) => {
+  const updateTemplate = useCallback(async (id: string, updates: Partial<FailureTemplate>) => {
     await db.failureTemplates.update(id, updates);
-  };
+  }, []);
 
-  const deleteTemplate = async (id: string) => {
+  const deleteTemplate = useCallback(async (id: string) => {
     await db.failureTemplates.delete(id);
-  };
+  }, []);
 
   // Seed default categories if empty
-  const seedDefaultCategories = async () => {
+  const seedDefaultCategories = useCallback(async () => {
     const count = await db.failureCategories.count();
     if (count === 0) {
       const defaults = [
@@ -62,7 +63,7 @@ export function useFailureCatalog() {
       ];
       await db.failureCategories.bulkAdd(defaults);
     }
-  };
+  }, []);
 
   return {
     categories,

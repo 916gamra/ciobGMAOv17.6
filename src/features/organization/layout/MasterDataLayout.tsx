@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Database, FlaskConical } from 'lucide-react';
+import { Database, DraftingCompass } from 'lucide-react';
 import { useTabStore } from '@/app/store';
 import { PortalCanvas } from '@/app/layout/PortalCanvas';
 import { PortalSidebar } from '@/app/layout/PortalSidebar';
@@ -35,7 +35,7 @@ export function MasterDataLayout({ user, onLogout }: { user: User | null, onLogo
         textClass="text-amber-400"
       >
         <PortalSidebarItem 
-          icon={<FlaskConical />} 
+          icon={<DraftingCompass />} 
           isActive={activeTabId === 'components-lab' || activeTabId === 'part-master'} 
           onClick={() => openTab({ id: 'components-lab', portalId: 'ORGANIZATION', title: 'مختبر المكونات والقوالب', component: 'components-lab' })}
           title="مختبر المكونات والقوالب"

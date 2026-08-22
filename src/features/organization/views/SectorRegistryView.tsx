@@ -15,6 +15,7 @@ import { useNotifications } from '@/shared/hooks/useNotifications';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/shared/utils';
 import { EngineViewSkeleton } from '@/shared/components/EngineViewSkeleton';
+import { LabEntityCard } from '@/shared/components/LabEntityCard';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -535,90 +536,55 @@ export function SectorRegistryView() {
             ) : (
               /* Cards View */
               <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                 <AnimatePresence mode="popLayout">
                   {filteredSectors.map((sector) => {
                     const zoneTechs = activeTechnicians.filter(t => t.id === sector.preventiveTechId).length;
                     const zoneMachines = machines.filter(m => m.sectorId === sector.id).length;
+                    const assignedTech = activeTechnicians.find(t => t.id === sector.preventiveTechId);
                     
                     return (
-                      <motion.div 
+                      <LabEntityCard
                         key={sector.id}
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        className="titan-card overflow-hidden flex flex-col group relative shadow-none p-0 hover:border-indigo-500 transition-all duration-300 border border-white/10 bg-[#0a0a0f] rounded-3xl"
-                      >
-                        <div className="p-6 relative z-10 flex-1">
-                          <div className="flex justify-between items-start mb-4">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 text-slate-400 flex items-center justify-center shrink-0">
-                                <Network className="w-5 h-5" />
-                              </div>
-                              <div>
-                                <h3 className="text-base font-bold text-slate-400 group-hover:text-white group-hover:font-black tracking-tight uppercase transition-all duration-300">{sector.name}</h3>
-                                <p className="text-[10px] text-slate-500 uppercase tracking-widest font-mono font-bold mt-0.5">ID: {sector.id.substring(0, 8)}</p>
-                              </div>
-                            </div>
-                            <div className="flex opacity-0 group-hover:opacity-100 transition-all duration-300 gap-1 bg-white/5 backdrop-blur-md border border-white/10 p-1 rounded-lg">
-                              <button 
-                                onClick={() => handleEdit(sector)}
-                                className="p-1.5 rounded-md hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer"
-                                title="Edit Zone"
-                              >
-                                <Edit3 className="w-3.5 h-3.5" />
-                              </button>
-                              <button 
-                                onClick={() => handleDelete(sector.id, sector.name)}
-                                className="p-1.5 rounded-md hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors cursor-pointer"
-                                title="Decommission Zone"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          </div>
-                          
-                          <p className="text-xs text-slate-500 group-hover:text-slate-300 transition-colors duration-300 font-medium line-clamp-2 h-8 leading-relaxed">
-                            {sector.description || t('sectors.noParams', 'No direct operational parameters defined. Following universal factory protocol.')}
-                          </p>
-                          
-                          {sector.managerName && (
-                            <div className="mt-4 flex flex-col gap-2">
-                               <div className="text-[10px] uppercase tracking-[0.2em] font-bold text-slate-500 mb-1 ml-1 opacity-80">{t('sectors.leadership', 'Sector Leadership')}</div>
-                               <div className="flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-3 rounded-2xl group/manager hover:bg-white/10 transition-all duration-300">
-                                 <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center border border-white/10 group-hover/manager:scale-110 transition-transform shrink-0">
-                                   <Users className="w-4 h-4 text-slate-400" />
-                                 </div>
-                                 <div className="flex flex-col">
-                                   <span className="text-[11px] font-bold text-slate-300 group-hover:text-white uppercase tracking-wider transition-colors">{sector.managerName}</span>
-                                   <span className="text-[9px] text-slate-500 font-bold uppercase tracking-widest opacity-90">{t('sectors.headTitle', 'Operational Head')}</span>
-                                 </div>
-                               </div>
-                               {sector.preventiveTechId && (
-                                 <div className="flex items-center gap-2 bg-white/5 border border-white/10 px-3 py-1.5 rounded-lg">
-                                   <Activity className="w-3.5 h-3.5 text-slate-400" />
-                                   <span className="text-[10px] uppercase tracking-widest font-bold text-slate-400">{t('sectors.pmTechAssigned', 'PM Tech Assigned')}</span>
-                                 </div>
-                               )}
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="grid grid-cols-2 divide-x divide-white/10 bg-white/[0.02] border-t border-white/10 mt-auto relative z-10 transition-colors duration-300">
-                          <div className="p-4 flex flex-col items-center justify-center gap-1 group/stat hover:bg-white/[0.05] transition-colors">
-                            <div className="text-[10px] uppercase font-bold text-slate-500 group-hover:text-slate-400 tracking-widest flex items-center gap-1.5 transition-colors">
-                              <Users className="w-3.5 h-3.5 text-slate-500 group-hover/stat:text-slate-300 group-hover/stat:scale-110 transition-all" /> {t('sectors.personnel', 'Staff')}
-                            </div>
-                            <span className="text-lg font-bold font-mono text-slate-400 group-hover:text-white transition-colors">{zoneTechs}</span>
-                          </div>
-                          <div className="p-4 flex flex-col items-center justify-center gap-1 group/stat hover:bg-white/[0.05] transition-colors">
-                            <div className="text-[10px] uppercase font-bold text-slate-500 group-hover:text-slate-400 tracking-widest flex items-center gap-1.5 transition-colors">
-                               <Cpu className="w-3.5 h-3.5 text-slate-500 group-hover/stat:text-slate-300 group-hover/stat:scale-110 transition-all" /> {t('sectors.machines', 'Machines')}
-                            </div>
-                            <span className="text-lg font-bold font-mono text-slate-400 group-hover:text-white transition-colors">{zoneMachines}</span>
-                          </div>
-                        </div>
-                      </motion.div>
+                        id={`sector-card-${sector.id}`}
+                        title={sector.name}
+                        subtitle={sector.description || t('sectors.noParams', 'No direct operational parameters defined.')}
+                        code={sector.id.substring(0, 8).toUpperCase()}
+                        icon={Network}
+                        engineTheme="indigo"
+                        statusBadge={{
+                          label: t('sectors.statusActive', 'Active'),
+                          variant: 'emerald'
+                        }}
+                        tag={sector.managerName ? `مسؤول: ${sector.managerName}` : undefined}
+                        metrics={[
+                          {
+                            label: t('sectors.machines', 'الآلات'),
+                            value: `${zoneMachines} معدة`,
+                            icon: Cpu,
+                            highlight: true
+                          },
+                          {
+                            label: t('sectors.personnel', 'الفنيين'),
+                            value: assignedTech ? assignedTech.name : `${zoneTechs} طاقم`,
+                            icon: Users
+                          }
+                        ]}
+                        actions={[
+                          {
+                            icon: Edit3,
+                            title: t('sectors.editZone', 'Edit Zone'),
+                            onClick: () => handleEdit(sector),
+                            variant: 'ghost'
+                          },
+                          {
+                            icon: Trash2,
+                            title: t('sectors.decommissionZone', 'Decommission Zone'),
+                            onClick: () => handleDelete(sector.id, sector.name),
+                            variant: 'danger'
+                          }
+                        ]}
+                      />
                     );
                   })}
                 </AnimatePresence>

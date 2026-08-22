@@ -147,7 +147,7 @@
 تُعد البطاقة اليسرى (Left Sidebar / Navigation Panel) العمود الفقري للتصفح والفلترة في جميع مختبرات ومحركات BDR Nexus. لضمان هويتها البصرية الموحدة وتباينها الفائق والشعور المادي (Tactile Feedback)، يُطبق **دستور البطاقة اليسرى الجديد** بصرامة:
 
 1. **الاندماج الكامل للحاوية والأبعاد التجاوبية (Seamless Shell & Responsive Dimensions):**
-   * **القياس القياسي المعتمد:** `w-full md:w-80 shrink-0 h-[650px] md:h-auto min-h-0`.
+   * **القياس القياسي المعتمد:** `w-full md:w-96 shrink-0 h-[650px] md:h-auto min-h-0`.
    * **نقطة التحول والتجاوب (Breakpoint):** تفعيل المحاذاة الأفقية جنباً إلى جنب بدءاً من الشاشات المتوسطة `md:flex-row` (768px+) لضمان مرونة فائقة على كافة الأجهزة اللوحية والحواسيب.
    * **امتداد القائمة الشجرية:** تأخذ القائمة 100% من الارتفاع المتاح داخل البطاقة وتتكيف تلقائياً مع الشاشة بدون أي فراغات ميتة.
    * البطاقة اليسرى هي امتداد لترويسة الصفحة (Page Header).
@@ -342,3 +342,110 @@ export function PortalSidebarItem({ icon, isActive, onClick, title, colorClass }
      * زر الإلغاء الشفاف: `button type="button" onClick={handleCancel} className="bg-white/[0.04] text-slate-300 hover:bg-white/[0.08] hover:text-white border border-white/10 font-bold rounded-xl px-5 py-2.5 text-xs transition-all"`
      * زر الحفظ/التأكيد الإستراتيجي الأبيض: `button type="submit" className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-6 py-2.5 text-xs shadow-lg transition-all flex items-center gap-2"`
 
+#### 🌲 الفصل التاسع عشر: دستور القائمة الشجرية ذات الأدراج الكريستالية المركبة (Crystal Nested Drawer Tree Constitution)
+يحدد هذا الفصل المعيار المعماري المعتمد والمثبت لمكون القائمة الشجرية الهرمية في البطاقة اليسرى (`LabHierarchicalSidebar`) لكافة مختبرات ومحركات BDR Nexus:
+
+1. **هيكلية الأدراج المتداخلة (Accordion Nested Drawer Architecture):**
+   * **إلغاء الخطوط العمودية المتفرعة (No Side Branch Lines):** يُمنع استخدام خطوط التفرع الجانبية التقليدية (`border-s-2`) لصالح نظام الأدراج التراكمية النظيفة (Drawer Shells).
+   * **حاوية درج العائلة (Level 1 Expanded Drawer):** عند توسيع العائلة، تفتح كحاوية متكاملة بحدود كريستالية عالية التباين (`bg-black/40 border border-white/25 p-2 space-y-2 rounded-2xl shadow-xl`).
+   * **حاوية درج القوالب (Level 2 Expanded Drawer):** عند توسيع القالب لعرض الموديلات، يفتح كدرج فرعي محاط بإطار ناصع التباين (`bg-black/50 border border-white/25 p-2 space-y-1.5 rounded-xl shadow-lg`).
+
+2. **استدامة النشاط والتحديد الهرمي الصاعد (Upward Active Propagation):**
+   * عند تحديد قالب فرعي أو موديل (`Blueprint`)، تظل العائلة والقالب الأب في حالة نشطة (`isFamilyActive`, `isTemplateActive`) مع إبقاء حدودها الكريستالية وشريط الإضاءة المضيء (`indicatorStrip`) متوهجاً طالما أن الفرع مفتوح.
+
+3. **دستور المستويات الثلاثة وتوزيع الألوان والأيقونات (3-Tier Visual Standard):**
+   * **المستوى الأول (العائلة - Families):**
+     * الأيقونة: مطفأة ومحايدة في حالة السكون (`bg-white/5 border-white/10 text-slate-400`). عند التحديد أو النشاط تضيء بلون المحرك الأصلي (`theme.iconSelectedBg` / `theme.iconSelectedText`).
+     * السهم (Chevron): عند فتح الدرج يتحول إلى لون نيون المحرك النشط (`theme.accentText bg-white/10 font-bold`).
+     * شريط التحديد المضيء (`indicatorStrip`) على الحافة اليسرى للبطاقة.
+   * **المستوى الثاني (قوالب المواصفات - Spec Templates):**
+     * ترويسة القسم: نص أبيض صريح عالي التباين بدون نقاط تشتيت (`SPEC TEMPLATES` مع `text-white font-extrabold uppercase tracking-widest text-[10px]`).
+     * الأيقونة: أيقونة الطبقات `Layers`، مطفأة عند السكون، وتضيء باللون الأصفر/العنبري الناصع عند التحديد (`bg-amber-500/20 border-amber-500/40 text-amber-300`).
+     * السهم (Chevron): يتحول للون المحرك عند التوسيع.
+   * **المستوى الثالث (الموديلات والبصمات - Spec Blueprints):**
+     * ترويسة القسم: نص أبيض صريح عالي التباين (`SPEC BLUEPRINTS` مع `text-white font-extrabold uppercase tracking-widest text-[10px]`).
+     * الأيقونة التسلسلية: بادج رقمي تسلسلي مربع يوضح ترتيب الموديل (`1`, `2`, `3`...) لمنع الالتباس البصري (`w-5 h-5 rounded-md font-mono text-[10px]`) يضيء باللون الأزرق المائي عالي التباين عند التحديد (`bg-blue-500/20 border-blue-500/40 text-blue-300`).
+     * نقطة الحالة المادية للمخزون (Physical Stock Dot) خضراء للقطع المتوفرة ورمادية للقطع غير المفعلة.
+
+4. **ثبات الأحجام والمقروئية الصناعية (Consistent Industrial Sizing):**
+   * توحيد أحجام الخطوط عبر المستويات الثلاثة (`text-xs font-bold text-white`) دون تصغير الخطوط مع زيادة العمق.
+   * استخدام خط أحادي `font-mono` واضح للأكواد التسلسلية وعدادات العناصر باللغة الإنجليزية (`X Templates`, `X Models`).
+
+5. **الكود المرجعي لتطبيق هيكل الشجرة (`LabHierarchicalSidebar.tsx` Snippet):**
+```tsx
+{/* Level 1: Family Expanded Drawer */}
+<div className={cn(
+  "rounded-2xl transition-all duration-200 border",
+  isFamilyExpanded 
+    ? "bg-black/40 border-white/25 p-2 space-y-2 shadow-xl" 
+    : "bg-transparent border-transparent space-y-0"
+)}>
+  {/* Family Card */}
+  <div className={cn(
+    "group relative w-full flex items-center justify-between p-3 rounded-xl border transition-all text-xs font-bold cursor-pointer text-start",
+    isFamilyActive 
+      ? "bg-white/10 border-white/25 text-white font-extrabold shadow-md"
+      : "bg-white/[0.03] border-white/10 text-slate-300 hover:bg-white/[0.06] hover:text-white hover:border-white/20"
+  )}>
+    {isFamilyActive && <div className="absolute top-2.5 bottom-2.5 w-1 rounded-full left-1 bg-white" />}
+    {/* Left Icon + Info */}
+    ...
+  </div>
+
+  {/* Level 2: Templates Sub-Drawer */}
+  {isFamilyExpanded && (
+    <div className="space-y-2 pt-1 px-1">
+      <div className="text-[10px] font-extrabold text-white uppercase tracking-widest">SPEC TEMPLATES</div>
+      ...
+    </div>
+  )}
+</div>
+```
+
+#### 🎨 الفصل العشرون: معايير أيقونات العائلات والقوالب والمخططات المعمارية (Family, Template & Blueprint Icon Standard)
+يُحدد هذا الفصل المعيار المعماري المعتمد والموحد لاختيار واستخدام أيقونات مكتبة `lucide-react` عبر جميع الكتالوجات والمختبرات والبطاقات في نظام BDR Nexus:
+
+1. **أيقونات العائلات (Family Icons):**
+   * **`Shapes`**: الأيقونة الرئيسية والافتراضية لعائلات المكونات (`Component Family`).
+   * **`Layers`**: تُستخدم لعائلات الآلات والمعدات (`Machine Family`).
+
+2. **أيقونات القوالب (Templates Icons):**
+   * **`Component`**: الأيقونة الرسمية لقوالب المكونات وعناصر النظام (`Component Template`).
+   * **`Box`**: تُستخدم للتعبير عن عناصر وقوالب المكونات الفردية (`Part / Individual Template`).
+   * **`Cpu`**: تُستخدم لقوالب الآلات والأنظمة الفرعية (`Subsystem / Machine Template`).
+
+3. **أيقونات المخططات المعمارية (Blueprint Icons):**
+   * **`FileCode`**: الأيقونة الأساسية والافتراضية لبطاقات المخطط المعماري (`Blueprint Card`).
+   * **`Compass`**: تُستخدم للتعبير عن الهندسة والتصميم الهندسي والمواصفات المعمارية (`Engineering & Architecture`).
+   * **`Drafts`**: تُستخدم للرسومات والتصاميم المبدئية والمسودات المعمارية (`Drafts & Sketches`).
+
+4. **الاستدعاء القياسي عبر العناصر المشتركة:**
+   * يتم استيرادها واستخدام المكون المشترك الموحد `src/shared/constants/icons.ts` لضمان التناسق البصري والأداء الهيكلي بدون تشتت عبر كافة محركات BDR Nexus.
+
+#### 🏛️ الفصل الحادي والعشرون: معايير أيقونات صفحات المختبر وقسم المعماري (Architect & Lab Pages Icon Standard)
+يُحدد هذا الفصل معيار الأيقونات الرسمي الموصى به لصفحات المختبرات (Lab Pages) وقسم المهندس المعماري الهندسي (Architect Section) عبر كافة صفحات وتطبيقات BDR Nexus:
+
+1. **`DraftingCompass`**: الأيقونة الأساسية والأكثر تعبيراً عن التخطيط المعماري والتصميم الهندسي الدقيق والرسم الفني للمكونات والآلات.
+2. **`Ruler`**: تُستخدم في أدوات القياس، ضبط الأبعاد الهندسية، والخيارات والمواصفات المعيارية.
+3. **`Building2`**: تُستخدم للتعبير عن بناء الهياكل، تصميم المنشآت الصناعية، والمخططات الهيكلية الكبرى (Industrial Structures & Subsystems).
+4. **`HardHat`**: تُستخدم للتعبير عن عمليات البناء والإنشاءات الميدانية والصيانة التطبيقية للأنظمة الهندسية.
+
+**التعميم البرمجي:**
+يتم توثيق واستدعاء هذه الأيقونات مركزياً من السجل الموحد `src/shared/constants/icons.ts` لتسهيل الاستخدام المتناسق والتطبيق الشامل في كافة صفحات وحواضن المختبرات (Engineering Lab, Components Lab, Parts Catalog Lab).
+
+
+#### ❄️ الفصل الثاني والعشرون: معيار الغلاف الزجاجي الضبابي (FrostCard Wrapper Standard)
+يُحدد هذا الفصل المعيار البصري لبطاقات المحتوى والتغليف الزجاجي الضبابي (Frosted Glass Effect) عبر كافة بطاقات وواجهات نظام BDR Nexus، لتعزيز عمق الـ 3D والتباين في واجهات المستخدم الصناعية العالية الجودة (Crystal High-Contrast Glass).
+
+**1. التصميم الزجاجي والمواد (Glassmorphism & Materials):**
+   * **الخلفية العميقة:** يتم الاعتماد على `bg-[#0a0a0f]/60` كخلفية شبه شفافة لتشكيل زجاج داكن وناعم.
+   * **الحدود العاكسة للضوء:** حدود دقيقة خفيفة `border-white/10` تحاكي انعكاس الضوء على أطراف الزجاج.
+   * **الضبابية والانعكاس (Backdrop Blur):** يُستخدم `backdrop-blur-xl` لإحداث ضبابية قوية وخلفية ناعمة للغاية لما يقع خلف البطاقة.
+   * **الظلال الكريستالية:** ظلال متناسقة `shadow-2xl` لتعطي عمقاً بصرياً (3D Effect) حقيقياً تفصل البطاقة عن الخلفية العميقة للصفحة.
+
+**2. التفاعلية والانتقالات السلسة (Hover & Interactive Effects):**
+   * **التوهج والإضاءة الناعمة:** تتوفر إضاءة حواف عند التحويم `hover:border-white/20` ولمسة ضوئية للخلفية `hover:bg-white/[0.02]`.
+   * **الطفو المغناطيسي (Magnetic Lift):** ارتفاع خفيف وناعم للبطاقة للأعلى بمقدار نصف بكسل `hover:-translate-y-0.5` لإعطاء شعور بالخفة.
+
+**3. التعميم والمكون المشترك:**
+   * تم توثيق وتعميم هذا المعيار عبر المكون المشترك الشامل `src/shared/components/FrostCard.tsx` ليُستخدم كحاوية مرنة وشاملة (Wrapper Component) لغلاف أي محتوى داخلي (نصوص، أزرار، نماذج، بطاقات إحصائيات) ليأخذ الشكل الزجاجي الفاخر تلقائياً.

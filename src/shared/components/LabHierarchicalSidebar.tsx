@@ -80,10 +80,16 @@ export interface LabHierarchicalSidebarProps {
   
   // Theming & Options
   engineTheme?: EngineTheme;
+  showSearch?: boolean;
   searchPlaceholder?: string;
   className?: string;
   emptyMessage?: string;
   level3Enabled?: boolean;
+  
+  // Custom Tabs Support
+  customTabs?: { id: string; label: string; count?: number; icon?: React.ElementType }[];
+  activeTabId?: string;
+  onTabChange?: (tabId: string) => void;
 }
 
 const THEME_CONFIG: Record<EngineTheme, {
@@ -102,6 +108,7 @@ const THEME_CONFIG: Record<EngineTheme, {
   iconSelectedBg: string;
   iconSelectedText: string;
   activeChevron: string;
+  indicatorStrip?: string;
   inputFocusBorder: string;
   inputFocusRing: string;
   inputSearchIconFocus: string;
@@ -112,16 +119,17 @@ const THEME_CONFIG: Record<EngineTheme, {
     containerBg: 'bg-gradient-to-b from-amber-950/40 via-[#0a0a0f]/95 to-[#0a0a0f]/98',
     ambientGlow: 'bg-amber-500/15',
     accentText: 'text-amber-400',
-    selectedBorder: 'border-amber-500/50',
-    selectedBg: 'bg-amber-500/20',
-    selectedShadow: 'shadow-[0_4px_20px_rgba(245,158,11,0.25)]',
+    selectedBorder: 'border-white/20',
+    selectedBg: 'bg-white/10',
+    selectedShadow: 'shadow-md',
     selectedText: 'text-white',
-    badgeSelectedBg: 'bg-amber-500/30',
+    badgeSelectedBg: 'bg-amber-500/20',
     badgeSelectedBorder: 'border-amber-500/40',
     badgeSelectedText: 'text-amber-200',
-    iconSelectedBg: 'bg-amber-500/30',
-    iconSelectedText: 'text-amber-200',
-    activeChevron: 'text-amber-300',
+    iconSelectedBg: 'bg-amber-500/20',
+    iconSelectedText: 'text-amber-300',
+    activeChevron: 'text-amber-400',
+    indicatorStrip: 'bg-amber-400',
     inputFocusBorder: 'focus:border-amber-500/50',
     inputFocusRing: 'focus:ring-amber-500/30',
     inputSearchIconFocus: 'group-focus-within:text-amber-400',
@@ -132,16 +140,17 @@ const THEME_CONFIG: Record<EngineTheme, {
     containerBg: 'bg-gradient-to-b from-cyan-950/40 via-[#0a0a0f]/95 to-[#0a0a0f]/98',
     ambientGlow: 'bg-cyan-500/15',
     accentText: 'text-cyan-400',
-    selectedBorder: 'border-cyan-500/50',
-    selectedBg: 'bg-cyan-500/20',
-    selectedShadow: 'shadow-[0_4px_20px_rgba(6,182,212,0.25)]',
+    selectedBorder: 'border-white/20',
+    selectedBg: 'bg-white/10',
+    selectedShadow: 'shadow-md',
     selectedText: 'text-white',
-    badgeSelectedBg: 'bg-cyan-500/30',
+    badgeSelectedBg: 'bg-cyan-500/20',
     badgeSelectedBorder: 'border-cyan-500/40',
     badgeSelectedText: 'text-cyan-200',
-    iconSelectedBg: 'bg-cyan-500/30',
-    iconSelectedText: 'text-cyan-200',
-    activeChevron: 'text-cyan-300',
+    iconSelectedBg: 'bg-cyan-500/20',
+    iconSelectedText: 'text-cyan-300',
+    activeChevron: 'text-cyan-400',
+    indicatorStrip: 'bg-cyan-400',
     inputFocusBorder: 'focus:border-cyan-500/50',
     inputFocusRing: 'focus:ring-cyan-500/30',
     inputSearchIconFocus: 'group-focus-within:text-cyan-400',
@@ -152,16 +161,17 @@ const THEME_CONFIG: Record<EngineTheme, {
     containerBg: 'bg-gradient-to-b from-indigo-950/40 via-[#0a0a0f]/95 to-[#0a0a0f]/98',
     ambientGlow: 'bg-indigo-500/15',
     accentText: 'text-indigo-400',
-    selectedBorder: 'border-indigo-500/50',
-    selectedBg: 'bg-indigo-500/20',
-    selectedShadow: 'shadow-[0_4px_20px_rgba(99,102,241,0.25)]',
+    selectedBorder: 'border-white/20',
+    selectedBg: 'bg-white/10',
+    selectedShadow: 'shadow-md',
     selectedText: 'text-white',
-    badgeSelectedBg: 'bg-indigo-500/30',
+    badgeSelectedBg: 'bg-indigo-500/20',
     badgeSelectedBorder: 'border-indigo-500/40',
     badgeSelectedText: 'text-indigo-200',
-    iconSelectedBg: 'bg-indigo-500/30',
-    iconSelectedText: 'text-indigo-200',
-    activeChevron: 'text-indigo-300',
+    iconSelectedBg: 'bg-indigo-500/20',
+    iconSelectedText: 'text-indigo-300',
+    activeChevron: 'text-indigo-400',
+    indicatorStrip: 'bg-indigo-400',
     inputFocusBorder: 'focus:border-indigo-500/50',
     inputFocusRing: 'focus:ring-indigo-500/30',
     inputSearchIconFocus: 'group-focus-within:text-indigo-400',
@@ -172,16 +182,17 @@ const THEME_CONFIG: Record<EngineTheme, {
     containerBg: 'bg-gradient-to-b from-orange-950/40 via-[#0a0a0f]/95 to-[#0a0a0f]/98',
     ambientGlow: 'bg-orange-500/15',
     accentText: 'text-orange-400',
-    selectedBorder: 'border-orange-500/50',
-    selectedBg: 'bg-orange-500/20',
-    selectedShadow: 'shadow-[0_4px_20px_rgba(249,115,22,0.25)]',
+    selectedBorder: 'border-white/20',
+    selectedBg: 'bg-white/10',
+    selectedShadow: 'shadow-md',
     selectedText: 'text-white',
-    badgeSelectedBg: 'bg-orange-500/30',
+    badgeSelectedBg: 'bg-orange-500/20',
     badgeSelectedBorder: 'border-orange-500/40',
     badgeSelectedText: 'text-orange-200',
-    iconSelectedBg: 'bg-orange-500/30',
-    iconSelectedText: 'text-orange-200',
-    activeChevron: 'text-orange-300',
+    iconSelectedBg: 'bg-orange-500/20',
+    iconSelectedText: 'text-orange-300',
+    activeChevron: 'text-orange-400',
+    indicatorStrip: 'bg-orange-400',
     inputFocusBorder: 'focus:border-orange-500/50',
     inputFocusRing: 'focus:ring-orange-500/30',
     inputSearchIconFocus: 'group-focus-within:text-orange-400',
@@ -192,16 +203,17 @@ const THEME_CONFIG: Record<EngineTheme, {
     containerBg: 'bg-gradient-to-b from-violet-950/40 via-[#0a0a0f]/95 to-[#0a0a0f]/98',
     ambientGlow: 'bg-violet-500/15',
     accentText: 'text-violet-400',
-    selectedBorder: 'border-violet-500/50',
-    selectedBg: 'bg-violet-500/20',
-    selectedShadow: 'shadow-[0_4px_20px_rgba(139,92,246,0.25)]',
+    selectedBorder: 'border-white/20',
+    selectedBg: 'bg-white/10',
+    selectedShadow: 'shadow-md',
     selectedText: 'text-white',
-    badgeSelectedBg: 'bg-violet-500/30',
+    badgeSelectedBg: 'bg-violet-500/20',
     badgeSelectedBorder: 'border-violet-500/40',
     badgeSelectedText: 'text-violet-200',
-    iconSelectedBg: 'bg-violet-500/30',
-    iconSelectedText: 'text-violet-200',
-    activeChevron: 'text-violet-300',
+    iconSelectedBg: 'bg-violet-500/20',
+    iconSelectedText: 'text-violet-300',
+    activeChevron: 'text-violet-400',
+    indicatorStrip: 'bg-violet-400',
     inputFocusBorder: 'focus:border-violet-500/50',
     inputFocusRing: 'focus:ring-violet-500/30',
     inputSearchIconFocus: 'group-focus-within:text-violet-400',
@@ -212,16 +224,17 @@ const THEME_CONFIG: Record<EngineTheme, {
     containerBg: 'bg-gradient-to-b from-emerald-950/40 via-[#0a0a0f]/95 to-[#0a0a0f]/98',
     ambientGlow: 'bg-emerald-500/15',
     accentText: 'text-emerald-400',
-    selectedBorder: 'border-emerald-500/50',
-    selectedBg: 'bg-emerald-500/20',
-    selectedShadow: 'shadow-[0_4px_20px_rgba(16,185,129,0.25)]',
+    selectedBorder: 'border-white/20',
+    selectedBg: 'bg-white/10',
+    selectedShadow: 'shadow-md',
     selectedText: 'text-white',
-    badgeSelectedBg: 'bg-emerald-500/30',
+    badgeSelectedBg: 'bg-emerald-500/20',
     badgeSelectedBorder: 'border-emerald-500/40',
     badgeSelectedText: 'text-emerald-200',
-    iconSelectedBg: 'bg-emerald-500/30',
-    iconSelectedText: 'text-emerald-200',
-    activeChevron: 'text-emerald-300',
+    iconSelectedBg: 'bg-emerald-500/20',
+    iconSelectedText: 'text-emerald-300',
+    activeChevron: 'text-emerald-400',
+    indicatorStrip: 'bg-emerald-400',
     inputFocusBorder: 'focus:border-emerald-500/50',
     inputFocusRing: 'focus:ring-emerald-500/30',
     inputSearchIconFocus: 'group-focus-within:text-emerald-400',
@@ -232,16 +245,17 @@ const THEME_CONFIG: Record<EngineTheme, {
     containerBg: 'bg-gradient-to-b from-blue-950/40 via-[#0a0a0f]/95 to-[#0a0a0f]/98',
     ambientGlow: 'bg-blue-500/15',
     accentText: 'text-blue-400',
-    selectedBorder: 'border-blue-500/50',
-    selectedBg: 'bg-blue-500/20',
-    selectedShadow: 'shadow-[0_4px_20px_rgba(59,130,246,0.25)]',
+    selectedBorder: 'border-white/20',
+    selectedBg: 'bg-white/10',
+    selectedShadow: 'shadow-md',
     selectedText: 'text-white',
-    badgeSelectedBg: 'bg-blue-500/30',
+    badgeSelectedBg: 'bg-blue-500/20',
     badgeSelectedBorder: 'border-blue-500/40',
     badgeSelectedText: 'text-blue-200',
-    iconSelectedBg: 'bg-blue-500/30',
-    iconSelectedText: 'text-blue-200',
-    activeChevron: 'text-blue-300',
+    iconSelectedBg: 'bg-blue-500/20',
+    iconSelectedText: 'text-blue-300',
+    activeChevron: 'text-blue-400',
+    indicatorStrip: 'bg-blue-400',
     inputFocusBorder: 'focus:border-blue-500/50',
     inputFocusRing: 'focus:ring-blue-500/30',
     inputSearchIconFocus: 'group-focus-within:text-blue-400',
@@ -252,16 +266,17 @@ const THEME_CONFIG: Record<EngineTheme, {
     containerBg: 'bg-gradient-to-b from-slate-900/60 via-[#0a0a0f]/95 to-[#0a0a0f]/98',
     ambientGlow: 'bg-white/5',
     accentText: 'text-slate-300',
-    selectedBorder: 'border-white/40',
+    selectedBorder: 'border-white/20',
     selectedBg: 'bg-white/10',
-    selectedShadow: 'shadow-[0_4px_20px_rgba(255,255,255,0.1)]',
+    selectedShadow: 'shadow-md',
     selectedText: 'text-white',
-    badgeSelectedBg: 'bg-white/20',
-    badgeSelectedBorder: 'border-white/30',
+    badgeSelectedBg: 'bg-white/10',
+    badgeSelectedBorder: 'border-white/20',
     badgeSelectedText: 'text-white',
-    iconSelectedBg: 'bg-white/20',
+    iconSelectedBg: 'bg-white/10',
     iconSelectedText: 'text-white',
-    activeChevron: 'text-slate-200',
+    activeChevron: 'text-white',
+    indicatorStrip: 'bg-white',
     inputFocusBorder: 'focus:border-white/40',
     inputFocusRing: 'focus:ring-white/20',
     inputSearchIconFocus: 'group-focus-within:text-white',
@@ -300,10 +315,14 @@ export function LabHierarchicalSidebar({
   onQuickAddTemplate,
   onQuickAddBlueprint,
   engineTheme = 'amber',
+  showSearch = false,
   searchPlaceholder = 'بحث بالاسم أو الكود...',
   className,
   emptyMessage = 'لا توجد عناصر مسجلة',
   level3Enabled = true,
+  customTabs,
+  activeTabId,
+  onTabChange,
 }: LabHierarchicalSidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedFamilies, setExpandedFamilies] = useState<Set<string>>(new Set());
@@ -389,19 +408,35 @@ export function LabHierarchicalSidebar({
 
   // When searching, auto expand matching nodes
   React.useEffect(() => {
-    if (searchQuery.trim()) {
+    const q = searchQuery.trim().toLowerCase();
+    if (q) {
       const allFamIds = new Set<string>();
       const allTplIds = new Set<string>();
-      filteredFamilies.forEach(f => {
-        allFamIds.add(f.id);
+      families.forEach(f => {
+        const matchFamily = f.name.toLowerCase().includes(q) || 
+                            f.code.toLowerCase().includes(q) ||
+                            (f.subtitle && f.subtitle.toLowerCase().includes(q));
+        if (matchFamily) allFamIds.add(f.id);
+
         (f.templates || []).forEach(t => {
-          allTplIds.add(t.id);
+          const matchTemplate = t.name.toLowerCase().includes(q) ||
+                                t.code.toLowerCase().includes(q) ||
+                                (t.subtitle && t.subtitle.toLowerCase().includes(q));
+          const hasMatchingBps = (t.items || []).some(bp => 
+            bp.name.toLowerCase().includes(q) ||
+            bp.code.toLowerCase().includes(q) ||
+            (bp.subtitle && bp.subtitle.toLowerCase().includes(q))
+          );
+          if (matchTemplate || hasMatchingBps) {
+            allFamIds.add(f.id);
+            allTplIds.add(t.id);
+          }
         });
       });
       setExpandedFamilies(allFamIds);
       setExpandedTemplates(allTplIds);
     }
-  }, [searchQuery, filteredFamilies]);
+  }, [searchQuery, families]);
 
   const hasActiveSelection = Boolean(selectedFamilyId || selectedTemplateId || selectedBlueprintId);
 
@@ -442,6 +477,40 @@ export function LabHierarchicalSidebar({
         </span>
       </div>
 
+      {/* Segmented Custom Tabs Switcher */}
+      {customTabs && customTabs.length > 0 && (
+        <div className="grid grid-cols-2 gap-1 p-1 bg-[#08080c]/90 rounded-2xl border border-white/10 shrink-0 relative z-10">
+          {customTabs.map(tab => {
+            const TabIcon = tab.icon;
+            const isActive = activeTabId === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => onTabChange?.(tab.id)}
+                className={cn(
+                  "py-2 rounded-xl text-xs font-bold transition-all text-center cursor-pointer flex items-center justify-center gap-1.5",
+                  isActive
+                    ? "bg-white/10 text-white border border-white/20 shadow-sm font-extrabold"
+                    : "text-slate-400 hover:text-white"
+                )}
+              >
+                {TabIcon && <TabIcon className="w-3.5 h-3.5" />}
+                <span>{tab.label}</span>
+                {typeof tab.count === 'number' && (
+                  <span className={cn(
+                    "text-[10px] font-mono px-1.5 py-0.2 rounded border",
+                    isActive ? "bg-white/20 border-white/30 text-white" : "bg-white/5 border-white/10 text-slate-400"
+                  )}>
+                    {tab.count}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {/* Prominent Wide Action Button - High Contrast White */}
       {onPrimaryAction && (
         <button 
@@ -466,36 +535,38 @@ export function LabHierarchicalSidebar({
         </button>
       )}
 
-      {/* Quick Search - Crystal Dark */}
-      <div className="relative w-full shrink-0 relative z-10 group">
-        <Search className={cn(
-          "w-4 h-4 absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors pointer-events-none",
-          theme.inputSearchIconFocus
-        )} />
-        <input 
-          type="text" 
-          placeholder={searchPlaceholder}
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className={cn(
-            "w-full bg-[#0a0a0f]/80 border border-white/10 rounded-xl pl-9 pr-8 rtl:pr-9 rtl:pl-8 py-2.5 text-xs text-white placeholder:text-slate-500 outline-none transition-all text-start font-bold shadow-inner",
-            theme.inputFocusBorder,
-            theme.inputFocusRing && "focus:ring-1"
+      {/* Quick Search - Crystal Dark (Conditional) */}
+      {showSearch && (
+        <div className="relative w-full shrink-0 relative z-10 group">
+          <Search className={cn(
+            "w-4 h-4 absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 text-slate-400 transition-colors pointer-events-none",
+            theme.inputSearchIconFocus
+          )} />
+          <input 
+            type="text" 
+            placeholder={searchPlaceholder}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className={cn(
+              "w-full bg-[#0a0a0f]/80 border border-white/10 rounded-xl pl-9 pr-8 rtl:pr-9 rtl:pl-8 py-2.5 text-xs text-white placeholder:text-slate-500 outline-none transition-all text-start font-bold shadow-inner",
+              theme.inputFocusBorder,
+              theme.inputFocusRing && "focus:ring-1"
+            )}
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery('')}
+              className="absolute top-1/2 -translate-y-1/2 right-2.5 rtl:right-auto rtl:left-2.5 text-slate-400 hover:text-white p-0.5"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
           )}
-        />
-        {searchQuery && (
-          <button
-            type="button"
-            onClick={() => setSearchQuery('')}
-            className="absolute top-1/2 -translate-y-1/2 right-2.5 rtl:right-auto rtl:left-2.5 text-slate-400 hover:text-white p-0.5"
-          >
-            <X className="w-3.5 h-3.5" />
-          </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Expanded Breathable Tree Container */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar space-y-2 text-start pt-1 -mx-2 px-2 pb-4 relative z-10 min-h-[300px]">
+      <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3 text-start pt-1 -mx-2 px-2 pb-4 relative z-10 min-h-[300px]">
         {filteredFamilies.length === 0 ? (
           <div className="py-12 text-center px-4 space-y-2">
             <FolderTree className="w-8 h-8 text-slate-600 mx-auto" />
@@ -513,80 +584,73 @@ export function LabHierarchicalSidebar({
         ) : (
           filteredFamilies.map((fam) => {
             const isFamilyExpanded = expandedFamilies.has(fam.id);
-            const isFamilySelected = selectedFamilyId === fam.id && !selectedTemplateId && !selectedBlueprintId;
+            
+            // Check if this family is directly selected or contains a selected child template or blueprint
+            const isChildTemplateSelected = fam.templates?.some(t => t.id === selectedTemplateId || t.items?.some(b => b.id === selectedBlueprintId));
+            const isFamilyActive = selectedFamilyId === fam.id || isChildTemplateSelected;
+            const isFamilyDirectlySelected = selectedFamilyId === fam.id && !selectedTemplateId && !selectedBlueprintId;
+
             const hasTemplates = fam.templates && fam.templates.length > 0;
             const templateCount = fam.count ?? (fam.templates ? fam.templates.length : 0);
             const DisciplineIcon = getDisciplineIcon(fam.discipline, fam.icon);
 
             return (
-              <div key={fam.id} className="space-y-1.5">
+              <div 
+                key={fam.id} 
+                className={cn(
+                  "rounded-2xl transition-all duration-200 border",
+                  isFamilyExpanded 
+                    ? "bg-black/40 border-white/25 p-2 space-y-2 shadow-xl" 
+                    : "bg-transparent border-transparent space-y-0"
+                )}
+              >
                 {/* Level 1: Family Node */}
                 <div
                   onClick={() => onSelectFamily && onSelectFamily(fam)}
                   className={cn(
-                    "group w-full flex items-center justify-between p-2.5 rounded-xl border transition-all duration-200 text-xs font-bold transform active:scale-95 cursor-pointer",
-                    isFamilySelected 
-                      ? cn(theme.selectedBg, theme.selectedBorder, theme.selectedText, theme.selectedShadow, "font-black scale-[1.02] -translate-y-0.5")
-                      : "bg-[#0a0a0f] border-white/10 text-slate-300 hover:bg-white/[0.05] hover:text-white"
+                    "group relative w-full flex items-center justify-between p-3 rounded-xl border transition-all text-xs font-bold cursor-pointer text-start",
+                    isFamilyActive 
+                      ? "bg-white/10 border-white/25 text-white font-extrabold shadow-md"
+                      : isFamilyExpanded
+                        ? "bg-white/[0.05] border-white/15 text-white hover:bg-white/[0.08]"
+                        : "bg-white/[0.03] border-white/10 text-slate-300 hover:bg-white/[0.06] hover:text-white hover:border-white/20"
                   )}
                 >
-                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                    {/* Expand/Collapse Chevron Button */}
-                    <button
-                      type="button"
-                      onClick={(e) => toggleFamilyExpand(fam.id, e)}
-                      className={cn(
-                        "p-1 rounded shrink-0 transition-colors",
-                        isFamilySelected 
-                          ? cn(theme.iconSelectedText, "hover:text-white hover:bg-white/10")
-                          : "text-slate-400 hover:text-white hover:bg-white/5",
-                        !hasTemplates && "invisible"
-                      )}
-                    >
-                      {isFamilyExpanded ? (
-                        <ChevronDown className="w-3.5 h-3.5" />
-                      ) : (
-                        <ChevronRight className="w-3.5 h-3.5 rtl:rotate-180" />
-                      )}
-                    </button>
-
-                    {/* Family Icon Box */}
+                  {/* Active Indicator Strip Bar on Edge */}
+                  {isFamilyActive && (
                     <div className={cn(
-                      "p-1.5 rounded-lg transition-colors shrink-0",
-                      isFamilySelected ? theme.iconSelectedBg : "bg-white/5 text-slate-400"
+                      "absolute top-2.5 bottom-2.5 w-1 rounded-full left-1",
+                      theme.indicatorStrip || "bg-white"
+                    )} />
+                  )}
+
+                  {/* Left Section: Icon + Title + English Count Subtitle */}
+                  <div className="flex items-center gap-3 min-w-0 flex-1 ps-2">
+                    {/* Family Icon Box on the Left - Engine Color when Active, Muted when Unselected */}
+                    <div className={cn(
+                      "p-2 rounded-xl border transition-colors shrink-0 flex items-center justify-center",
+                      isFamilyActive 
+                        ? cn(theme.iconSelectedBg, "border-white/20", theme.iconSelectedText) 
+                        : "bg-white/5 border-white/10 text-slate-400 group-hover:text-white group-hover:border-white/20"
                     )}>
-                      <DisciplineIcon className="w-3.5 h-3.5" />
+                      <DisciplineIcon className="w-4 h-4" />
                     </div>
 
-                    {/* Family Name */}
-                    <div className="flex flex-col min-w-0 flex-1">
-                      <span className="truncate max-w-[170px] text-start font-bold">{fam.name}</span>
-                      {fam.subtitle && (
-                        <span className="text-[10px] text-slate-400 truncate max-w-[170px]">{fam.subtitle}</span>
+                    {/* Family Name & Subtitle in English with high contrast */}
+                    <div className="flex flex-col min-w-0 flex-1 overflow-hidden">
+                      <span className="truncate max-w-[170px] text-start text-white font-bold text-xs">{fam.name}</span>
+                      {fam.subtitle ? (
+                        <span className="text-[10px] text-slate-400 truncate max-w-[170px] text-start">{fam.subtitle}</span>
+                      ) : (
+                        <span className="text-[10px] text-slate-300 font-mono font-medium text-start">
+                          {templateCount} {templateCount === 1 ? 'Template' : 'Templates'}
+                        </span>
                       )}
                     </div>
                   </div>
 
-                  {/* Badges & Quick Action */}
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <span className={cn(
-                      "font-mono text-[9px] px-1.5 py-0.5 rounded border",
-                      isFamilySelected
-                        ? cn(theme.badgeSelectedBg, theme.badgeSelectedBorder, theme.badgeSelectedText)
-                        : "bg-white/5 border-white/10 text-slate-400"
-                    )}>
-                      {fam.code}
-                    </span>
-
-                    {templateCount > 0 && (
-                      <span className={cn(
-                        "px-1.5 py-0.5 rounded text-[9px] font-mono",
-                        isFamilySelected ? theme.badgeSelectedBg : "bg-white/5 text-slate-500"
-                      )}>
-                        {templateCount}
-                      </span>
-                    )}
-
+                  {/* Right Section: Code Badge + Action + Chevron on the Far Right */}
+                  <div className="flex items-center gap-2 shrink-0 pe-0.5">
                     {onQuickAddTemplate && (
                       <button
                         type="button"
@@ -594,22 +658,55 @@ export function LabHierarchicalSidebar({
                           e.stopPropagation();
                           onQuickAddTemplate(fam);
                         }}
-                        title="إضافة قالب جديد في هذه العائلة"
+                        title="Add Template"
                         className="w-5 h-5 rounded hover:bg-white/10 text-slate-400 hover:text-white items-center justify-center hidden group-hover:flex transition-colors"
                       >
                         <Plus className="w-3 h-3" />
                       </button>
                     )}
+
+                    {/* Code Badge */}
+                    <span className={cn(
+                      "font-mono text-[9px] px-2 py-0.5 rounded-md border font-bold",
+                      isFamilyActive
+                        ? cn(theme.badgeSelectedBg, theme.badgeSelectedBorder, theme.badgeSelectedText)
+                        : "bg-white/5 border-white/10 text-slate-300 font-mono"
+                    )}>
+                      {fam.code}
+                    </span>
+
+                    {/* Expand/Collapse Chevron on the Far Right - Changes to Engine Accent Color when Expanded */}
+                    {hasTemplates ? (
+                      <button
+                        type="button"
+                        onClick={(e) => toggleFamilyExpand(fam.id, e)}
+                        className={cn(
+                          "p-1 rounded-lg shrink-0 transition-colors cursor-pointer",
+                          isFamilyExpanded
+                            ? cn(theme.accentText, "bg-white/10 font-bold")
+                            : "text-slate-400 hover:text-white hover:bg-white/10"
+                        )}
+                        title={isFamilyExpanded ? "Collapse" : "Expand"}
+                      >
+                        {isFamilyExpanded ? (
+                          <ChevronDown className="w-4 h-4" />
+                        ) : (
+                          <ChevronRight className="w-4 h-4" />
+                        )}
+                      </button>
+                    ) : (
+                      <div className="w-5" />
+                    )}
                   </div>
                 </div>
 
-                {/* Level 2: Templates Sub-Tree (Spacious Breathable Indent) */}
+                {/* Level 2: Templates Sub-Drawer (Accordion Expansion Container) */}
                 {isFamilyExpanded && hasTemplates && (
-                  <div className="ms-4 ps-3 border-s border-white/10 space-y-1.5 py-1">
+                  <div className="space-y-2 pt-1 px-1">
                     {/* Sub-Header for Templates */}
-                    <div className="flex items-center justify-between px-1 mb-1">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                        قوالب المواصفات
+                    <div className="flex items-center justify-between px-2 pt-1 pb-0.5">
+                      <span className="text-[10px] font-extrabold text-white uppercase tracking-widest">
+                        SPEC TEMPLATES
                       </span>
                       {onQuickAddTemplate && (
                         <button
@@ -620,66 +717,73 @@ export function LabHierarchicalSidebar({
                           }}
                           className="text-[9px] font-bold text-slate-300 hover:text-white flex items-center gap-1 cursor-pointer"
                         >
-                          <Plus className="w-2.5 h-2.5" /> قالب جديد
+                          <Plus className="w-2.5 h-2.5" /> New Template
                         </button>
                       )}
                     </div>
 
                     {fam.templates!.map((template) => {
                       const isTemplateExpanded = expandedTemplates.has(template.id);
-                      const isTemplateSelected = selectedTemplateId === template.id && !selectedBlueprintId;
+                      
+                      // Check if this template is directly selected or contains a selected blueprint
+                      const isChildBlueprintSelected = template.items?.some(b => b.id === selectedBlueprintId);
+                      const isTemplateActive = selectedTemplateId === template.id || isChildBlueprintSelected;
+
                       const hasBlueprints = level3Enabled && template.items && template.items.length > 0;
                       const blueprintCount = template.count ?? (template.items ? template.items.length : 0);
 
                       return (
-                        <div key={template.id} className="space-y-1">
-                          {/* Template Card Item */}
+                        <div 
+                          key={template.id} 
+                          className={cn(
+                            "rounded-xl transition-all duration-200 border",
+                            isTemplateExpanded && level3Enabled && hasBlueprints 
+                              ? "bg-black/50 border-white/25 p-2 space-y-1.5 shadow-lg" 
+                              : "bg-transparent border-transparent space-y-0"
+                          )}
+                        >
+                          {/* Template Card Item - Standard Sizing */}
                           <div
                             onClick={() => onSelectTemplate && onSelectTemplate(template, fam)}
                             className={cn(
-                              "group/t w-full text-start p-2 rounded-xl text-[11px] font-semibold transition-all duration-200 flex items-center justify-between transform active:scale-95 cursor-pointer border",
-                              isTemplateSelected
-                                ? cn(theme.selectedBg, theme.selectedBorder, theme.selectedText, theme.selectedShadow, "font-black scale-[1.02] -translate-y-0.5")
-                                : "bg-[#0a0a0f] border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/[0.05] hover:border-white/10"
+                              "group/t relative w-full text-start p-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-between cursor-pointer border",
+                              isTemplateActive
+                                ? "bg-white/10 border-white/25 text-white font-extrabold shadow-md"
+                                : isTemplateExpanded && level3Enabled && hasBlueprints
+                                  ? "bg-white/[0.05] border-white/15 text-white hover:bg-white/[0.08]"
+                                  : "bg-white/[0.03] border-white/10 text-slate-300 hover:text-white hover:bg-white/[0.06] hover:border-white/20"
                             )}
                           >
-                            <div className="flex items-center gap-2 min-w-0 flex-1">
-                              {/* Level 3 Toggle */}
-                              {level3Enabled && (
-                                <button
-                                  type="button"
-                                  onClick={(e) => toggleTemplateExpand(template.id, e)}
-                                  className={cn(
-                                    "p-0.5 rounded flex items-center justify-center text-slate-500 hover:text-white shrink-0",
-                                    !hasBlueprints && "invisible"
-                                  )}
-                                >
-                                  {isTemplateExpanded ? (
-                                    <ChevronDown className="w-3.5 h-3.5" />
-                                  ) : (
-                                    <ChevronRight className="w-3.5 h-3.5 rtl:rotate-180" />
-                                  )}
-                                </button>
-                              )}
+                            {/* Active Indicator Strip Bar on Edge */}
+                            {isTemplateActive && (
+                              <div className={cn(
+                                "absolute top-2 bottom-2 w-1 rounded-full left-1",
+                                theme.indicatorStrip || "bg-white"
+                              )} />
+                            )}
 
-                              <Layers className={cn("w-3.5 h-3.5 shrink-0", isTemplateSelected ? theme.accentText : "text-slate-400")} />
-                              <span className="truncate max-w-[150px]">{template.name}</span>
+                            {/* Left Section: Layers Icon (Yellow/Amber Glow when Active, Muted when Unselected) + Name + Count */}
+                            <div className="flex items-center gap-2.5 min-w-0 flex-1 ps-2">
+                              <div className={cn(
+                                "p-1.5 rounded-lg border shrink-0 transition-colors",
+                                isTemplateActive
+                                  ? "bg-amber-500/20 border-amber-500/40 text-amber-300"
+                                  : "bg-white/5 border-white/10 text-slate-400 group-hover/t:text-white"
+                              )}>
+                                <Layers className="w-3.5 h-3.5 shrink-0" />
+                              </div>
+                              <div className="flex flex-col min-w-0 flex-1 overflow-hidden">
+                                <span className="truncate text-white font-bold text-xs">{template.name}</span>
+                                {level3Enabled && blueprintCount > 0 && (
+                                  <span className="text-[10px] text-slate-300 font-mono font-medium">
+                                    {blueprintCount} {blueprintCount === 1 ? 'Model' : 'Models'}
+                                  </span>
+                                )}
+                              </div>
                             </div>
 
-                            <div className="flex items-center gap-1.5 shrink-0">
-                              <span className={cn(
-                                "font-mono text-[9px] uppercase px-1.5 py-0.5 rounded",
-                                isTemplateSelected ? theme.badgeSelectedText : "opacity-60 bg-white/5"
-                              )}>
-                                {template.code}
-                              </span>
-
-                              {blueprintCount > 0 && level3Enabled && (
-                                <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/5 text-slate-400">
-                                  {blueprintCount}
-                                </span>
-                              )}
-
+                            {/* Right Section: Code Badge + Action + Level 3 Chevron */}
+                            <div className="flex items-center gap-2 shrink-0">
                               {onQuickAddBlueprint && (
                                 <button
                                   type="button"
@@ -687,19 +791,67 @@ export function LabHierarchicalSidebar({
                                     e.stopPropagation();
                                     onQuickAddBlueprint(template, fam);
                                   }}
-                                  title="إضافة موديل/قطعة في هذا القالب"
+                                  title="Add Model"
                                   className="w-4 h-4 rounded hover:bg-white/10 text-slate-400 hover:text-white items-center justify-center hidden group-hover/t:flex transition-colors"
                                 >
                                   <Plus className="w-2.5 h-2.5" />
                                 </button>
                               )}
+
+                              <span className={cn(
+                                "font-mono text-[9px] uppercase px-1.5 py-0.5 rounded-md border font-bold",
+                                isTemplateActive 
+                                  ? cn(theme.badgeSelectedBg, theme.badgeSelectedBorder, theme.badgeSelectedText) 
+                                  : "bg-white/5 border-white/10 text-slate-300 font-mono"
+                              )}>
+                                {template.code}
+                              </span>
+
+                              {/* Chevron Arrow Changes to Engine Accent Color when Expanded */}
+                              {level3Enabled && hasBlueprints && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => toggleTemplateExpand(template.id, e)}
+                                  className={cn(
+                                    "p-0.5 rounded flex items-center justify-center shrink-0 cursor-pointer transition-colors",
+                                    isTemplateExpanded
+                                      ? cn(theme.accentText, "bg-white/10 font-bold")
+                                      : "text-slate-400 hover:text-white"
+                                  )}
+                                >
+                                  {isTemplateExpanded ? (
+                                    <ChevronDown className="w-3.5 h-3.5" />
+                                  ) : (
+                                    <ChevronRight className="w-3.5 h-3.5" />
+                                  )}
+                                </button>
+                              )}
                             </div>
                           </div>
 
-                          {/* Level 3: Blueprints / Items Sub-Tree */}
+                          {/* Level 3: Blueprints / Items Sub-Drawer */}
                           {level3Enabled && isTemplateExpanded && hasBlueprints && (
-                            <div className="ms-4 ps-3 border-s border-white/10 space-y-1 my-1">
-                              {template.items!.map((blueprint) => {
+                            <div className="space-y-1.5 pt-1.5 px-1">
+                              {/* Sub-Header for Level 3 Models */}
+                              <div className="flex items-center justify-between px-2 pt-0.5 pb-0.5">
+                                <span className="text-[10px] font-extrabold text-white uppercase tracking-widest">
+                                  SPEC BLUEPRINTS
+                                </span>
+                                {onQuickAddBlueprint && (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      onQuickAddBlueprint(template, fam);
+                                    }}
+                                    className="text-[9px] font-bold text-slate-300 hover:text-white flex items-center gap-1 cursor-pointer"
+                                  >
+                                    <Plus className="w-2.5 h-2.5" /> New Model
+                                  </button>
+                                )}
+                              </div>
+
+                              {template.items!.map((blueprint, bpIndex) => {
                                 const isBlueprintSelected = selectedBlueprintId === blueprint.id;
 
                                 return (
@@ -707,17 +859,25 @@ export function LabHierarchicalSidebar({
                                     key={blueprint.id}
                                     onClick={() => onSelectBlueprint && onSelectBlueprint(blueprint, template, fam)}
                                     className={cn(
-                                      "p-1.5 rounded-lg flex items-center justify-between cursor-pointer transition-all duration-200 border text-start transform active:scale-95 text-[11px]",
+                                      "group/b relative p-2.5 rounded-lg flex items-center justify-between cursor-pointer transition-all border text-start text-xs",
                                       isBlueprintSelected
-                                        ? cn(theme.selectedBg, theme.selectedBorder, theme.selectedText, theme.selectedShadow, "font-bold scale-[1.02] -translate-y-0.5")
-                                        : "bg-[#0a0a0f] border-white/5 hover:bg-white/[0.05] hover:border-white/10 text-slate-300 hover:text-white"
+                                        ? "bg-white/10 border-white/25 text-white font-extrabold shadow-md"
+                                        : "bg-white/[0.03] border-white/10 hover:bg-white/[0.06] hover:border-white/20 text-slate-300 hover:text-white"
                                     )}
                                   >
-                                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                                    {/* Active Indicator Strip Bar on Edge */}
+                                    {isBlueprintSelected && (
+                                      <div className={cn(
+                                        "absolute top-2 bottom-2 w-1 rounded-full left-1",
+                                        theme.indicatorStrip || "bg-white"
+                                      )} />
+                                    )}
+
+                                    <div className="flex items-center gap-2.5 min-w-0 flex-1 ps-2">
                                       {/* Physical Stock Status Dot */}
                                       {blueprint.isInStock !== undefined && (
                                         <div
-                                          title={blueprint.isInStock ? `متوفر بالمخزن (${blueprint.stockQty ?? ''})` : 'غير مفعل بالمخزن'}
+                                          title={blueprint.isInStock ? `In Stock (${blueprint.stockQty ?? ''})` : 'Catalog Only'}
                                           className={cn(
                                             "w-2 h-2 rounded-full shrink-0",
                                             blueprint.isInStock
@@ -726,13 +886,25 @@ export function LabHierarchicalSidebar({
                                           )}
                                         />
                                       )}
-                                      <Cpu className={cn("w-3.5 h-3.5 shrink-0", isBlueprintSelected ? theme.accentText : "text-slate-400")} />
-                                      <span className="truncate">{blueprint.name}</span>
+                                      
+                                      {/* Numbered Sequence Badge 1, 2, 3... (Blue Glow when Active, Muted when Unselected) */}
+                                      <div className={cn(
+                                        "w-5 h-5 rounded-md border shrink-0 flex items-center justify-center font-mono font-extrabold text-[10px] transition-colors",
+                                        isBlueprintSelected 
+                                          ? "bg-blue-500/20 border-blue-500/40 text-blue-300" 
+                                          : "bg-white/5 border-white/10 text-slate-400 group-hover/b:text-white group-hover/b:border-white/20"
+                                      )}>
+                                        {bpIndex + 1}
+                                      </div>
+
+                                      <span className="truncate text-white font-bold text-xs">{blueprint.name}</span>
                                     </div>
 
                                     <span className={cn(
-                                      "font-mono text-[9px] px-1.5 py-0.5 rounded shrink-0",
-                                      isBlueprintSelected ? theme.badgeSelectedText : "text-slate-400 bg-white/5"
+                                      "font-mono text-[9px] px-1.5 py-0.5 rounded-md border shrink-0 font-bold",
+                                      isBlueprintSelected 
+                                        ? cn(theme.badgeSelectedBg, theme.badgeSelectedBorder, theme.badgeSelectedText) 
+                                        : "text-slate-300 bg-white/5 border-white/10 font-mono"
                                     )}>
                                       {blueprint.code}
                                     </span>

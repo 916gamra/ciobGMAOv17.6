@@ -21,6 +21,8 @@ import { PdrPageSkeleton } from '../components/PdrPageSkeleton';
 import { RegistryGuidanceState } from '@/core/ui/RegistryGuidanceState';
 import { UnifiedSearchFilter, FilterGroup } from '@/shared/components/UnifiedSearchFilter';
 import { LabHierarchicalSidebar, HierarchyFamilyNode } from '@/shared/components/LabHierarchicalSidebar';
+import { CompleteComponentBlueprintCard } from '@/shared/components/CompleteComponentBlueprintCard';
+import { toast } from 'sonner';
 
 export function ComponentCatalogView() {
   const { t } = useTranslation();
@@ -393,7 +395,7 @@ export function ComponentCatalogView() {
       <div className="flex-1 min-h-0 flex flex-col md:flex-row gap-6 overflow-hidden px-6 md:px-8 pb-6">
         
         {/* Left Navigation Card (دستور البطاقة اليسرى لمختبرات النظام الموحدة) */}
-        <div className="w-full md:w-80 shrink-0 h-[650px] md:h-auto min-h-0">
+        <div className="w-full md:w-96 shrink-0 h-[650px] md:h-auto min-h-0">
           <LabHierarchicalSidebar
             title={t('pdr.catalog.hierarchyTree', 'Parts Taxonomy Matrix')}
             subtitle={t('pdr.catalog.hierarchySubtitle', '999 Slots Mathematical Architecture')}
@@ -428,7 +430,6 @@ export function ComponentCatalogView() {
             }}
             resetLabel={t('pdr.catalog.showMasterCatalog', 'View Master Catalog (All)')}
             engineTheme="cyan"
-            searchPlaceholder={t('pdr.catalog.searchPlaceholder', 'Filter by code, name, or SKU...')}
             level3Enabled={true}
           />
         </div>
@@ -934,80 +935,38 @@ export function ComponentCatalogView() {
                       </table>
                     </div>
                   ) : (
-                    /* Cards Grid View (Matching StaffRegistryView) */
+                    /* Cards Grid View */
                     <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 text-start">
                         <AnimatePresence mode="popLayout">
                           {filteredWorkspaceBlueprints.map((bp) => (
-                            <motion.div 
+                            <CompleteComponentBlueprintCard
                               key={bp.id}
-                              initial={{ opacity: 0, scale: 0.95 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              exit={{ opacity: 0, scale: 0.95 }}
-                              onClick={() => setSelectedBlueprintId(bp.id)}
-                              className={cn(
-                                "border rounded-2xl p-5 backdrop-blur-md relative overflow-hidden transition-all duration-300 flex flex-col justify-between group shadow-lg cursor-pointer",
-                                bp.inStock 
-                                  ? "bg-[#12141d]/90 border-emerald-500/20 hover:border-emerald-500/40" 
-                                  : "bg-[#12141d]/90 border-white/10 hover:border-white/20 hover:bg-white/[0.04]"
-                              )}
-                            >
-                              <div>
-                                <div className="flex justify-between items-start mb-4">
-                                  <div className="min-w-0 pr-2">
-                                    <span className="text-[10px] font-mono font-bold text-white bg-white/10 px-2 py-0.5 rounded border border-white/15 uppercase">
-                                      {bp.id}
-                                    </span>
-                                    <div className="text-base font-extrabold text-white tracking-tight truncate mt-1.5 group-hover:text-cyan-300 transition-colors font-mono">
-                                      {bp.reference}
-                                    </div>
-                                    <div className="text-xs text-slate-400 truncate">
-                                      {bp.model || t('pdr.catalog.genericModel', 'Standard Commercial Model')}
-                                    </div>
-                                  </div>
-
-                                  <span className={cn(
-                                    "px-2 py-0.5 rounded-full text-[9px] font-mono font-bold uppercase tracking-wider shrink-0 border",
-                                    bp.inStock 
-                                      ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" 
-                                      : "bg-white/5 text-slate-400 border-white/10"
-                                  )}>
-                                    {bp.inStock ? t('pdr.catalog.activeStock', 'IN STOCK') : t('pdr.catalog.dormantSlot', 'DORMANT')}
-                                  </span>
-                                </div>
-
-                                <div className="space-y-2 mb-4 border-t border-white/5 pt-3">
-                                  <div className="flex justify-between text-xs">
-                                    <span className="text-slate-500">{t('pdr.catalog.unitLabel', 'Unit')}</span>
-                                    <span className="text-slate-300 font-medium font-mono">{bp.unit || 'PCS'}</span>
-                                  </div>
-                                  <div className="flex justify-between text-xs">
-                                    <span className="text-slate-500">{t('pdr.catalog.capacityLabel', 'Capacity')}</span>
-                                    <span className="text-slate-300 font-medium truncate max-w-[140px]">{bp.powerOrForce || '-'}</span>
-                                  </div>
-                                  <div className="flex justify-between text-xs">
-                                    <span className="text-slate-500">{t('pdr.catalog.taxonomyLabel', 'Category')}</span>
-                                    <span className="text-white font-bold text-[10px] truncate max-w-[140px]">{bp.parentFamily?.name || 'FAMILY'}</span>
-                                  </div>
-                                </div>
-                              </div>
-
-                              <div className="pt-2 border-t border-white/5" onClick={e => e.stopPropagation()}>
-                                {!bp.inStock ? (
-                                  <button 
-                                    type="button"
-                                    onClick={() => setActivatingBlueprintId(bp.id)}
-                                    className="w-full py-2 bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl text-xs uppercase tracking-wider transition-all cursor-pointer shadow-md"
-                                  >
-                                    {t('pdr.catalog.activateToStockBtn', 'Activate to Stock')}
-                                  </button>
-                                ) : (
-                                  <div className="w-full py-2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2">
-                                    <CheckCircle2 className="w-4 h-4" /> {t('pdr.catalog.availableInFactory', 'Available in Factory')}
-                                  </div>
-                                )}
-                              </div>
-                            </motion.div>
+                              blueprint={{
+                                id: bp.id,
+                                name: bp.reference,
+                                partNumber: bp.reference,
+                                manufacturer: bp.model || bp.parentFamily?.name,
+                                category: bp.parentFamily?.name,
+                                description: bp.technicalSpecs || bp.model,
+                                voltageRating: bp.powerOrForce,
+                                slotNumber: bp.id.replace(/\D/g, ''),
+                                stockCount: bp.inStockItem?.quantityCurrent,
+                                version: (bp as any).version
+                              }}
+                              isSelected={selectedBlueprintId === bp.id}
+                              onSelect={() => setSelectedBlueprintId(bp.id)}
+                              onActivateToStock={!bp.inStock ? () => setActivatingBlueprintId(bp.id) : undefined}
+                              onEdit={() => {
+                                setSelectedBlueprintId(bp.id);
+                              }}
+                              onDuplicate={() => {
+                                toast.info(t('pdr.duplicateBlueprintNotice', 'جاري نسخ المخطط الفني...'));
+                              }}
+                              onDelete={() => {
+                                toast.info(t('pdr.blueprintDeleteNotice', 'تم تسجيل طلب حذف المخطط الفني'));
+                              }}
+                            />
                           ))}
                         </AnimatePresence>
                       </div>

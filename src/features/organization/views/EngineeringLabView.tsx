@@ -1,9 +1,9 @@
 import React, { useState, useMemo } from 'react';
-import { motion, AnimatePresence, Variants } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
-  Search, Folder, Layers, Hash, Plus, Trash2, Database, FlaskConical,
-  RefreshCw, Component, ChevronDown, ChevronRight, Eye, LayoutGrid,
-  Wrench, Droplet, Wind, Zap, Box, Cpu, BookOpen, Sparkles
+  Search, Folder, Layers, Hash, Plus, Trash2, Database,
+  Component, Eye, LayoutGrid, Zap, BookOpen, Sparkles,
+  DraftingCompass, RefreshCw, Building2
 } from 'lucide-react';
 import { useMachineLibrary } from '../hooks/useMachineLibrary';
 import { GlassCard } from '@/shared/components/GlassCard';
@@ -23,6 +23,12 @@ import { useTranslation } from 'react-i18next';
 import { EngineViewSkeleton } from '@/shared/components/EngineViewSkeleton';
 import { UnifiedSearchFilter, FilterGroup } from '@/shared/components/UnifiedSearchFilter';
 import { LabHierarchicalSidebar, HierarchyFamilyNode } from '@/shared/components/LabHierarchicalSidebar';
+import { LabEntityCard } from '@/shared/components/LabEntityCard';
+import { CompleteFamilyCard } from '@/shared/components/CompleteFamilyCard';
+import { CompleteMachineFamilyCard } from '@/shared/components/CompleteMachineFamilyCard';
+import { CompleteMachineTemplateCard } from '@/shared/components/CompleteMachineTemplateCard';
+import { CompleteMachineBlueprintCard } from '@/shared/components/CompleteMachineBlueprintCard';
+import { getFamilyIcon, getTemplateIcon, getBlueprintIcon } from '@/shared/constants/icons';
 
 export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: User | null }) {
   const { t } = useTranslation();
@@ -141,8 +147,8 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
     });
   }, [families, templates, blueprints]);
 
-  const handleDelete = (type: string, id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleDelete = (type: string, id: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
     setDeleteContext({ type: type as any, id });
   };
 
@@ -221,7 +227,7 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
         <PageHeader
           title={t('lab.title', 'Engineering Classification & Modeling Lab')}
           subtitle={t('lab.subtitle', 'Manage and classify engineering families, specification templates, and physical blueprints')}
-          icon={<FlaskConical className="w-7 h-7 text-indigo-400" />}
+          icon={<DraftingCompass className="w-7 h-7 text-indigo-400" />}
           badgeText={t('lab.badge', 'Engineering Lab')}
           badgeColor="indigo"
           actions={
@@ -241,7 +247,7 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
               title={t('lab.statFamilies', 'Machine Families')}
               subtitle="MACHINE FAMILIES"
               value={families.length}
-              icon={<Folder className="w-3.5 h-3.5" />}
+              icon={<Building2 className="w-3.5 h-3.5" />}
               color="blue"
             />
             <HeaderBentoCard
@@ -283,7 +289,7 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
         <div className="flex flex-col md:flex-row flex-1 min-h-0 gap-6 overflow-hidden">
           
           {/* Left Sidebar - Machine Taxonomy Tree (Golden Master Lab Standard) */}
-          <div className="w-full md:w-80 shrink-0 h-[650px] md:h-auto min-h-0">
+          <div className="w-full md:w-96 shrink-0 h-[650px] md:h-auto min-h-0">
             <LabHierarchicalSidebar
               title={t('lab.hierarchyTree', 'Engineering Hierarchy Tree')}
               subtitle={t('lab.hierarchySubtitle', 'Families & Templates Library')}
@@ -315,7 +321,6 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
               }}
               resetLabel={t('pdr.catalog.showMasterCatalog', 'View Master Catalog (All)')}
               engineTheme="indigo"
-              searchPlaceholder={t('lab.searchPlaceholder', 'Search families, templates, or codes...')}
               level3Enabled={true}
             />
           </div>
@@ -332,8 +337,7 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
               <div className="absolute -bottom-12 -left-12 sm:-bottom-20 sm:-left-20 w-64 h-64 sm:w-80 sm:h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none z-0" />
               
               {/* Foreground Content Container with z-10 relative layer */}
-              <div className="relative z-10 flex flex-col flex-1 min-h-0 w-full h-full">
-                <AnimatePresence mode="wait">
+              <div className="relative z-10 flex flex-col flex-1 min-h-0 w-full h-full">                <AnimatePresence mode="wait">
                   {selectedBlueprintId ? (
                   // Mode: Blueprint Selected Detail View
                   (() => {
@@ -342,6 +346,7 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
                     const parentTemplate = templates.find(t => t.id === bp.templateId);
                     const parentFamily = parentTemplate ? families.find(f => f.id === parentTemplate.familyId) : null;
                     const assembledComps = standardComponents.filter(c => bp.componentIds?.includes(c.id));
+                    const BlueprintIcon = getBlueprintIcon(bp.model || bp.reference, 'card');
 
                     return (
                       <motion.div
@@ -355,7 +360,7 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
                         <div className="p-4 md:p-6 border-b border-indigo-500/20 bg-gradient-to-r from-indigo-950/40 via-slate-900/90 to-[#0a0b10]/95 backdrop-blur-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0 relative z-10 shadow-md">
                           <div className="flex items-center gap-3 shrink-0">
                             <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center shadow-[0_0_15px_rgba(99,102,241,0.15)] shrink-0 text-indigo-400">
-                              <Hash className="w-6 h-6" />
+                              <BlueprintIcon className="w-6 h-6" />
                             </div>
                             <div className="text-start">
                               <div className="flex items-center gap-2 flex-wrap">
@@ -463,6 +468,7 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
                     if (!tpl) return null;
                     const parentFamily = families.find(f => f.id === tpl.familyId);
                     const allTplBlueprints = blueprints.filter(b => b.templateId === tpl.id);
+                    const TemplateIcon = getTemplateIcon(tpl.name, 'component');
                     
                     const tplBlueprints = allTplBlueprints.filter(b => {
                       if (blueprintComponentsFilter === 'WITH_COMPONENTS') {
@@ -537,7 +543,7 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
                           {/* Start / Left: Icon, Names & Results Count Badge */}
                           <div className="flex items-center gap-3 shrink-0">
                             <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center shadow-[0_0_15px_rgba(99,102,241,0.15)] shrink-0 text-indigo-400">
-                              <Layers className="w-6 h-6" />
+                              <TemplateIcon className="w-6 h-6" />
                             </div>
                             <div className="text-start">
                               <div className="flex items-center gap-2 flex-wrap">
@@ -640,76 +646,38 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
                               </button>
                             </div>
                           ) : viewMode === 'cards' ? (
-                            <div className="p-6 md:p-8 flex-1 overflow-y-auto custom-scrollbar grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="p-6 md:p-8 flex-1 overflow-y-auto custom-scrollbar grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                               {tplBlueprints.map(bp => {
-                                const isSelected = selectedBlueprintId === bp.id;
                                 return (
-                                  <div 
+                                  <CompleteMachineBlueprintCard
                                     key={bp.id}
-                                    onClick={() => setSelectedBlueprintId(bp.id)}
-                                    className={cn(
-                                      "border rounded-2xl p-5 cursor-pointer relative overflow-hidden group text-start flex flex-col justify-between transition-all duration-300",
-                                      isSelected 
-                                        ? "border-2 border-indigo-500 bg-[#0a0a0f] scale-[1.02] shadow-[0_0_25px_rgba(99,102,241,0.25)]" 
-                                        : "bg-[#08080c]/80 border-white/10 text-slate-300 hover:bg-white/[0.04] hover:border-white/20 shadow-lg"
-                                    )}
-                                  >
-                                    {/* Ambient Bottom Ray */}
-                                    {isSelected && (
-                                      <div className="bg-indigo-500/25 rounded-full blur-xl absolute -bottom-10 left-1/2 -translate-x-1/2 w-28 h-16 pointer-events-none z-0" />
-                                    )}
-
-                                    <div className="relative z-10 w-full h-full flex flex-col justify-between">
-                                      <div>
-                                        <div className="flex items-start justify-between mb-4 flex-row">
-                                          <div className="flex items-center gap-2">
-                                            <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
-                                              <Hash className="w-4 h-4 text-slate-300" />
-                                            </div>
-                                            <span className="text-xs font-mono font-bold text-white uppercase tracking-wider bg-white/5 border border-white/10 px-2.5 py-1 rounded-lg">
-                                              {bp.reference}
-                                            </span>
-                                          </div>
-                                          
-                                          <button 
-                                            onClick={(e) => {
-                                              e.stopPropagation();
-                                              handleDelete('blueprint', bp.id, e);
-                                            }}
-                                            className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/25 text-red-400 border border-white/5 transition-colors cursor-pointer"
-                                            title={t('common.delete', 'Delete')}
-                                          >
-                                            <Trash2 className="w-3.5 h-3.5" />
-                                          </button>
-                                        </div>
-
-                                        <div className="space-y-3">
-                                          <div>
-                                            <span className="text-[10px] text-slate-400 block uppercase font-bold tracking-wider">{t('lab.commercialModelLabel', 'Commercial Model')}</span>
-                                            <span className="text-sm font-bold text-white">{bp.model || 'N/A'}</span>
-                                          </div>
-
-                                          <div className="grid grid-cols-2 gap-2 border-t border-white/5 pt-3">
-                                            <div>
-                                              <span className="text-[9px] text-slate-400 block">{t('lab.powerEnergyLabel', 'Power / Energy')}</span>
-                                              <span className="text-xs font-mono font-bold text-slate-200">{bp.powerOrForce || 'N/A'}</span>
-                                            </div>
-                                            <div>
-                                              <span className="text-[9px] text-slate-400 block">{t('lab.activeComponentsLabel', 'Active Components')}</span>
-                                              <span className="text-xs font-bold text-emerald-400">{bp.componentIds?.length || 0} {t('lab.unitComponent', 'components')}</span>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </div>
-
-                                      {bp.technicalSpecs && (
-                                        <div className="border-t border-white/5 pt-3 mt-3 text-start">
-                                          <span className="text-[9px] text-slate-400 block">{t('lab.techSpecsLabel', 'Technical Specs')}</span>
-                                          <p className="text-[11px] text-slate-300 truncate mt-0.5">{bp.technicalSpecs}</p>
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
+                                    blueprint={{
+                                      id: bp.id,
+                                      name: bp.reference,
+                                      reference: bp.reference,
+                                      model: bp.model,
+                                      description: (bp as any).description,
+                                      technicalSpecs: bp.technicalSpecs,
+                                      powerOrForce: bp.powerOrForce,
+                                      familyName: tpl.name,
+                                      componentIds: bp.componentIds || [],
+                                      subsystemIds: bp.componentIds || [],
+                                      version: (bp as any).version
+                                    }}
+                                    isSelected={selectedBlueprintId === bp.id}
+                                    onSelect={() => setSelectedBlueprintId(bp.id)}
+                                    onAssemble={() => setSelectedBlueprintIdForAssembly(bp.id)}
+                                    onEdit={() => {
+                                      setSelectedBlueprintId(bp.id);
+                                      setActiveModal('blueprint');
+                                    }}
+                                    onDuplicate={() => {
+                                      toast.info(t('lab.duplicateBlueprintNotice', 'جاري نسخ المخطط المعماري...'));
+                                    }}
+                                    onDelete={() => {
+                                      handleDelete('blueprint', bp.id);
+                                    }}
+                                  />
                                 );
                               })}
                             </div>
@@ -727,7 +695,7 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
                                 <tbody className="divide-y divide-white/5 text-xs text-slate-300">
                                   {tplBlueprints.map((bp, idx) => (
                                     <tr 
-                                      key={bp.id}
+                                      key={bp.id} 
                                       onClick={() => {
                                         setSelectedBlueprintId(bp.id);
                                       }}
@@ -768,6 +736,8 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
                     const fam = families.find(f => f.id === selectedFamilyId);
                     if (!fam) return null;
                     const allFamTemplates = templates.filter(t => t.familyId === fam.id);
+                    const FamilyIcon = getFamilyIcon(fam.code || fam.name, 'machine');
+
                     const famTemplates = allFamTemplates.filter(t => {
                       if (templateStatusFilter === 'HAS_BLUEPRINTS') {
                         const hasBps = blueprints.some(b => b.templateId === t.id);
@@ -819,7 +789,7 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
                           {/* Start / Left: Icon, Names & Results Count Badge */}
                           <div className="flex items-center gap-3 shrink-0">
                             <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center shadow-[0_0_15px_rgba(99,102,241,0.15)] shrink-0 text-indigo-400">
-                              <Folder className="w-6 h-6" />
+                              <FamilyIcon className="w-6 h-6" />
                             </div>
                             <div className="text-start">
                               <div className="flex items-center gap-2 flex-wrap">
@@ -921,56 +891,36 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
                               </button>
                             </div>
                           ) : viewMode === 'cards' ? (
-                            <div className="p-6 md:p-8 flex-1 overflow-y-auto custom-scrollbar grid grid-cols-1 md:grid-cols-2 gap-4">
-                              {famTemplates.map(tpl => (
-                                <div 
-                                  key={tpl.id}
-                                  onClick={() => setSelectedTemplateId(tpl.id)}
-                                  className="bg-[#08080c]/80 border border-white/10 hover:border-white/20 rounded-2xl p-5 hover:bg-white/[0.03] transition-all cursor-pointer relative overflow-hidden group text-start flex flex-col justify-between shadow-lg"
-                                >
-                                  <div>
-                                    <div className="flex items-start justify-between mb-4 flex-row">
-                                      <div className="flex items-center gap-2">
-                                        <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
-                                          <Layers className="w-4 h-4 text-slate-300" />
-                                        </div>
-                                        <span className="text-xs font-mono font-bold text-white uppercase tracking-wider bg-white/5 border border-white/10 px-2.5 py-1 rounded-lg">
-                                          {tpl.skuBase}
-                                        </span>
-                                      </div>
-                                      
-                                      <button 
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleDelete('template', tpl.id, e);
-                                        }}
-                                        className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/25 text-red-400 border border-white/5 transition-colors cursor-pointer"
-                                        title={t('common.delete', 'Delete')}
-                                      >
-                                        <Trash2 className="w-3.5 h-3.5" />
-                                      </button>
-                                    </div>
-
-                                    <h4 className="text-sm font-bold text-white mb-3">{tpl.name}</h4>
-
-                                    <div className="grid grid-cols-2 gap-2 border-t border-white/5 pt-3">
-                                      <div>
-                                        <span className="text-[9px] text-slate-400 block">{t('lab.registeredBlueprintsLabel', 'Registered Blueprints')}</span>
-                                        <span className="text-xs font-mono font-bold text-slate-200">{blueprintCounts.get(tpl.id) || 0} {t('lab.unitModel', 'models')}</span>
-                                      </div>
-                                      <div>
-                                        <span className="text-[9px] text-slate-400 block">{t('lab.capacityLabel', 'Mathematical Capacity')}</span>
-                                        <span className="text-xs font-mono font-bold text-slate-400">999 {t('lab.unitSlot', 'slots')}</span>
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  <div className="border-t border-white/5 pt-3 mt-3 flex justify-between items-center text-[10px] text-slate-500">
-                                    <span className="font-mono text-slate-400 bg-white/5 px-2 py-0.5 rounded border border-white/10">{t('lab.approvedTemplateBadge', 'Approved Knowledge Template')}</span>
-                                    <span>{t('common.clickForDetails', 'Click for Details')}</span>
-                                  </div>
-                                </div>
-                              ))}
+                            <div className="p-6 md:p-8 flex-1 overflow-y-auto custom-scrollbar grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                              {famTemplates.map(tpl => {
+                                return (
+                                  <CompleteMachineTemplateCard
+                                    key={tpl.id}
+                                    template={{
+                                      id: tpl.id,
+                                      name: tpl.name,
+                                      description: tpl.description,
+                                      familyId: tpl.familyId,
+                                      skuBase: tpl.skuBase,
+                                      subsystemIds: (tpl as any).subsystems || [],
+                                      preventiveTaskIds: (tpl as any).preventiveTasks || []
+                                    }}
+                                    familyName={fam.name}
+                                    isSelected={selectedTemplateId === tpl.id}
+                                    onSelect={() => setSelectedTemplateId(tpl.id)}
+                                    onEdit={() => {
+                                      setSelectedTemplateId(tpl.id);
+                                      setActiveModal('template');
+                                    }}
+                                    onDuplicate={() => {
+                                      toast.info(t('lab.duplicateTemplateNotice', 'جاري نسخ قالب الآلة...'));
+                                    }}
+                                    onDelete={() => {
+                                      handleDelete('template', tpl.id);
+                                    }}
+                                  />
+                                );
+                              })}
                             </div>
                           ) : (
                             <div className="flex-1 overflow-x-auto overflow-y-auto custom-scrollbar w-full min-h-0">
@@ -1022,89 +972,205 @@ export function EngineeringLabView({ tabId, user }: { tabId?: string, user?: Use
                     );
                   })()
                 ) : (
-                  // Default Welcome / Empty state
-                  <motion.div
-                    key="default-welcome"
-                    initial={{ opacity: 0, scale: 0.98, y: 15 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.98, y: -15 }}
-                    transition={{ duration: 0.3 }}
-                    className="flex-1 flex flex-col items-center justify-center p-6 md:p-10 text-center w-full space-y-6 relative z-10 overflow-y-auto custom-scrollbar min-h-0 box-border"
-                  >
-                    {/* Glowing Engine Icon Container */}
-                    <div className="relative shrink-0">
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-indigo-500/10 border border-indigo-500/25 flex items-center justify-center text-indigo-400 shadow-[0_0_40px_rgba(99,102,241,0.25)]">
-                        <Database className="w-8 h-8 sm:w-10 sm:h-10" />
-                      </div>
-                      <div className="absolute -bottom-2 -right-2 w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-slate-900 border border-indigo-500/40 flex items-center justify-center text-indigo-300 shadow-md">
-                        <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-2 max-w-xl">
-                      <h2 className="text-xl sm:text-2xl md:text-3xl font-black text-white tracking-tight">
-                        {t('lab.welcomeTitle', 'Asset Classification & Engineering Hierarchy Lab')}
-                      </h2>
-                      <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-medium">
-                        {t('lab.welcomeDesc', 'Welcome to the Industrial Engineering Lab workspace. Use the taxonomy tree on the left to navigate families, specification templates, and physical blueprints.')}
-                      </p>
-                    </div>
+                  // Default View: Master Families Overview (Table vs Cards with CompleteFamilyCard)
+                  (() => {
+                    const filteredFamilies = families.filter(f => {
+                      if (!rightSearchTerm.trim()) return true;
+                      const q = rightSearchTerm.toLowerCase();
+                      return (
+                        f.name.toLowerCase().includes(q) ||
+                        f.code.toLowerCase().includes(q) ||
+                        (f.description && f.description.toLowerCase().includes(q))
+                      );
+                    });
 
-                    {/* Quick Action Buttons */}
-                    <div className="flex items-center gap-3 flex-wrap justify-center shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => setActiveModal('family')}
-                        className="px-5 py-2.5 sm:px-6 sm:py-3 bg-white text-slate-950 font-extrabold rounded-2xl shadow-xl hover:bg-slate-200 transition-all flex items-center gap-2 text-xs cursor-pointer active:scale-95"
+                    return (
+                      <motion.div
+                        key="master-families-overview"
+                        initial={{ opacity: 0, y: 15 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -15 }}
+                        className="flex flex-col h-full min-h-0"
                       >
-                        <Plus className="w-4 h-4 text-slate-950" />
-                        <span>{t('lab.newFamilyBtn', 'Add New Machine Family')}</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (blueprints.length > 0) {
-                            setSelectedBlueprintId(blueprints[0].id);
-                          } else if (families.length > 0) {
-                            setSelectedFamilyId(families[0].id);
-                          } else {
-                            setActiveModal('family');
-                          }
-                        }}
-                        className="px-5 py-2.5 sm:px-6 sm:py-3 bg-white/[0.05] hover:bg-white/10 text-white font-bold rounded-2xl border border-white/10 transition-all flex items-center gap-2 text-xs cursor-pointer"
-                      >
-                        <BookOpen className="w-4 h-4 text-indigo-400" />
-                        <span>{t('lab.browseFirstAssetBtn', 'Browse First Asset')}</span>
-                      </button>
-                    </div>
+                        {/* Universal Glass Command Bar Header for Master Families */}
+                        <div className="p-4 md:p-6 border-b border-indigo-500/20 bg-gradient-to-r from-indigo-950/40 via-slate-900/90 to-[#0a0b10]/95 backdrop-blur-xl flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-4 shrink-0 relative z-10 shadow-md text-start">
+                          {/* Start / Left: Icon & Title */}
+                          <div className="flex items-center gap-3 shrink-0">
+                            <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center shadow-[0_0_15px_rgba(99,102,241,0.15)] shrink-0 text-indigo-400">
+                              <Layers className="w-6 h-6" />
+                            </div>
+                            <div className="text-start">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <h3 className="text-lg font-bold text-white tracking-tight">{t('lab.masterFamiliesTitle', 'Machine Families Catalog')}</h3>
+                                <span className="text-xs font-mono font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2.5 py-0.5 rounded-full">
+                                  {families.length} {t('lab.familiesCountBadge', 'عائلة صناعية')}
+                                </span>
+                              </div>
+                              <p className="text-xs text-slate-400 mt-1 uppercase tracking-wider">
+                                {t('lab.masterFamiliesSubtitle', 'Architectural classification & knowledge tree for machines')}
+                              </p>
+                            </div>
+                          </div>
 
-                    {/* Bento Grid Feature Highlight Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-3xl text-start pt-2">
-                      <div className="p-4 sm:p-5 rounded-2xl bg-white/[0.02] border border-white/10 hover:border-indigo-500/30 transition-all duration-300 space-y-2 group backdrop-blur-md">
-                        <div className="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center group-hover:scale-105 transition-transform">
-                          <Layers className="w-4 h-4" />
-                        </div>
-                        <h4 className="text-xs sm:text-sm font-bold text-white group-hover:text-indigo-300 transition-colors">
-                          {t('lab.rule999Title', 'The 999 Dormant Slots Rule')}
-                        </h4>
-                        <p className="text-[11px] sm:text-xs text-slate-400 leading-relaxed">
-                          {t('lab.rule999Desc', 'The system automatically generates 999 dormant slots mathematically upon template creation, providing sequential numbering with zero database footprint until activated.')}
-                        </p>
-                      </div>
+                          {/* Center: Search */}
+                          <div className="flex-1 max-w-md xl:max-w-lg mx-auto w-full px-1">
+                            <UnifiedSearchFilter
+                              searchTerm={rightSearchTerm}
+                              onSearchChange={setRightSearchTerm}
+                              searchPlaceholder={t('lab.searchFamiliesPlaceholder', 'بحث باسم العائلة أو الكود أو الوصف...')}
+                              themeColor="indigo"
+                              onResetAll={() => setRightSearchTerm('')}
+                            />
+                          </div>
 
-                      <div className="p-4 sm:p-5 rounded-2xl bg-white/[0.02] border border-white/10 hover:border-indigo-500/30 transition-all duration-300 space-y-2 group backdrop-blur-md">
-                        <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center group-hover:scale-105 transition-transform">
-                          <Component className="w-4 h-4" />
+                          {/* End / Right: View Mode Switcher, Actions */}
+                          <div className="flex items-center gap-2 shrink-0 justify-end">
+                            <div className="flex items-center gap-1.5 p-1 bg-[#08080c] rounded-xl border border-white/10 mr-1">
+                              <button
+                                onClick={() => setViewMode('table')}
+                                className={cn(
+                                  "p-1.5 rounded-lg transition-all cursor-pointer",
+                                  viewMode === 'table' ? "bg-white text-slate-950 shadow-sm" : "text-slate-400 hover:text-white"
+                                )}
+                                title={t('common.tableView', 'Crystal Table View')}
+                              >
+                                <Eye className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => setViewMode('cards')}
+                                className={cn(
+                                  "p-1.5 rounded-lg transition-all cursor-pointer",
+                                  viewMode === 'cards' ? "bg-white text-slate-950 shadow-sm" : "text-slate-400 hover:text-white"
+                                )}
+                                title={t('common.cardsView', 'Cards Grid View')}
+                              >
+                                <LayoutGrid className="w-4 h-4" />
+                              </button>
+                            </div>
+
+                            <button 
+                              onClick={() => setActiveModal('family')}
+                              className="bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-4 py-2.5 text-xs shadow-lg transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
+                            >
+                              <Plus className="w-3.5 h-3.5" />
+                              <span>{t('lab.newFamilyBtn', 'Add New Machine Family')}</span>
+                            </button>
+                          </div>
                         </div>
-                        <h4 className="text-xs sm:text-sm font-bold text-white group-hover:text-emerald-300 transition-colors">
-                          {t('lab.componentsTreeTitle', 'Components & Sub-assemblies Tree')}
-                        </h4>
-                        <p className="text-[11px] sm:text-xs text-slate-400 leading-relaxed">
-                          {t('lab.componentsTreeDesc', 'The active hierarchy allows bottom-up construction of machine internal components (B.O.M) ensuring seamless maintenance reconciliation and preventive plans.')}
-                        </p>
-                      </div>
-                    </div>
-                  </motion.div>
+
+                        {/* Master Content Area */}
+                        <div className="flex-1 flex flex-col min-h-0 w-full overflow-hidden text-start">
+                          {families.length === 0 ? (
+                            <div className="p-12 m-6 border border-dashed border-white/10 rounded-2xl text-center bg-white/[0.01]">
+                              <Layers className="w-10 h-10 text-slate-600 mx-auto mb-2" />
+                              <p className="text-xs text-slate-400">{t('lab.noFamiliesFound', 'No machine families registered yet.')}</p>
+                              <button 
+                                onClick={() => setActiveModal('family')}
+                                className="mt-4 bg-white text-slate-950 hover:bg-slate-200 font-extrabold text-xs rounded-xl px-4 py-2 transition-all inline-flex items-center gap-1.5 shadow-md cursor-pointer active:scale-95"
+                              >
+                                <Plus className="w-3.5 h-3.5" />
+                                {t('lab.newFamilyBtn', 'Add New Machine Family')}
+                              </button>
+                            </div>
+                          ) : filteredFamilies.length === 0 ? (
+                            <div className="p-12 m-6 border border-dashed border-white/10 rounded-2xl text-center bg-white/[0.01]">
+                              <Search className="w-10 h-10 text-slate-600 mx-auto mb-2" />
+                              <p className="text-xs text-slate-400">{t('common.nullResultsDesc', 'لا توجد نتائج تطابق معايير البحث.')}</p>
+                              <button 
+                                type="button"
+                                onClick={() => setRightSearchTerm('')}
+                                className="mt-4 px-4 py-2 bg-white/5 hover:bg-white/10 text-white font-bold rounded-xl border border-white/10 text-xs transition-all cursor-pointer"
+                              >
+                                {t('common.resetSearch', 'إلغاء التصفية ومسح البحث')}
+                              </button>
+                            </div>
+                          ) : viewMode === 'cards' ? (
+                            <div className="p-6 md:p-8 flex-1 overflow-y-auto custom-scrollbar grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                              {filteredFamilies.map(fam => {
+                                const famTemplatesList = templates.filter(t => t.familyId === fam.id);
+                                const famTemplateCount = famTemplatesList.length;
+                                const famMachineCount = blueprints.filter(b => famTemplatesList.some(t => t.id === b.templateId)).length;
+                                return (
+                                  <CompleteMachineFamilyCard
+                                    key={fam.id}
+                                    family={{
+                                      id: fam.id,
+                                      name: fam.name,
+                                      description: fam.description,
+                                      code: fam.code,
+                                      icon: fam.code,
+                                      color: '#6366f1'
+                                    }}
+                                    stats={{
+                                      templateCount: famTemplateCount,
+                                      machineCount: famMachineCount
+                                    }}
+                                    onSelect={() => setSelectedFamilyId(fam.id)}
+                                    onAddTemplate={() => {
+                                      setSelectedFamilyId(fam.id);
+                                      setActiveModal('template');
+                                    }}
+                                    onEdit={() => {
+                                      setSelectedFamilyId(fam.id);
+                                      setActiveModal('family');
+                                    }}
+                                    onDelete={() => {
+                                      handleDelete('family', fam.id);
+                                    }}
+                                  />
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <div className="flex-1 overflow-x-auto overflow-y-auto custom-scrollbar w-full min-h-0">
+                              <table className="w-full text-start border-collapse">
+                                <thead className="bg-[#0b0c13]/98 border-b-2 border-white/10 text-slate-300 font-extrabold uppercase tracking-wider text-[11px] sticky top-0 z-20 backdrop-blur-md shadow-sm">
+                                  <tr>
+                                    <th className="p-4 text-start">{t('lab.familyCode', 'Family Code')}</th>
+                                    <th className="p-4 text-start">{t('lab.familyName', 'Family Name')}</th>
+                                    <th className="p-4 text-start">{t('lab.templatesCount', 'Templates Count')}</th>
+                                    <th className="p-4 text-end">{t('common.actions', 'Actions')}</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-white/5 text-xs text-slate-300">
+                                  {filteredFamilies.map((fam, idx) => {
+                                    const count = templates.filter(t => t.familyId === fam.id).length;
+                                    return (
+                                      <tr 
+                                        key={fam.id}
+                                        onClick={() => setSelectedFamilyId(fam.id)}
+                                        className={cn(
+                                          "cursor-pointer transition-colors duration-150 text-start border-b border-white/5",
+                                          idx % 2 === 0 ? "bg-white/[0.015]" : "bg-white/[0.05]",
+                                          "hover:bg-indigo-500/15 hover:text-white"
+                                        )}
+                                      >
+                                        <td className="p-4 font-mono font-extrabold text-white uppercase text-start flex items-center gap-2">
+                                          <span className="w-2 h-2 rounded-full bg-indigo-400 shrink-0 inline-block" />
+                                          {fam.code}
+                                        </td>
+                                        <td className="p-4 font-bold text-white text-start">{fam.name}</td>
+                                        <td className="p-4 font-mono text-start font-semibold">{count} {t('lab.registeredTemplatesCount', 'قالب مسجل')}</td>
+                                        <td className="p-4 text-end" onClick={(e) => e.stopPropagation()}>
+                                          <button 
+                                            onClick={(e) => handleDelete('family', fam.id, e)}
+                                            className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 transition-colors cursor-pointer"
+                                            title={t('common.delete', 'Delete')}
+                                          >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                          </button>
+                                        </td>
+                                      </tr>
+                                    );
+                                  })}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+                        </div>
+                      </motion.div>
+                    );
+                  })()
                 )}
               </AnimatePresence>
             </div>

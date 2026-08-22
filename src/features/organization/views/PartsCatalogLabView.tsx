@@ -38,6 +38,9 @@ import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 import { EngineViewSkeleton } from '@/shared/components/EngineViewSkeleton';
 import { LabHierarchicalSidebar, HierarchyFamilyNode } from '@/shared/components/LabHierarchicalSidebar';
+import { LabEntityCard } from '@/shared/components/LabEntityCard';
+import { CompleteComponentTemplateCard } from '@/shared/components/CompleteComponentTemplateCard';
+import { CompleteComponentFamilyCard } from '@/shared/components/CompleteComponentFamilyCard';
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -220,7 +223,7 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
 
   // Transform families, templates, and blueprints for LabHierarchicalSidebar
   const hierarchicalFamilies: HierarchyFamilyNode[] = useMemo(() => {
-    return filteredFamilies.map(fam => {
+    return families.map(fam => {
       const famGroup = (fam.group || 'mecanique') as FamilyGroup;
       const disciplineMap: Record<FamilyGroup, 'mechanical' | 'hydraulic' | 'electrical' | 'electronic' | 'pneumatic' | 'general'> = {
         mecanique: 'mechanical',
@@ -261,7 +264,7 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
         raw: fam
       };
     });
-  }, [filteredFamilies, templates, blueprints]);
+  }, [families, templates, blueprints]);
 
   // Creation of Family Classification Group
   const handleCreateFamily = async (e: React.FormEvent) => {
@@ -405,7 +408,7 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
         className="flex-1 min-h-0 flex flex-col md:flex-row gap-6 overflow-hidden"
       >
         {/* Navigation Panel with Golden Master Standard */}
-        <div className="w-full md:w-80 shrink-0 h-[650px] md:h-auto min-h-0">
+        <div className="w-full md:w-96 shrink-0 h-[650px] md:h-auto min-h-0">
           <LabHierarchicalSidebar
             title={t('pdr.familiesTitle', 'عائلات التصنيف والقوالب')}
             subtitle={t('partsCatalogLab.familiesSubtitle', 'إدارة وتصنيف العائلات ومقاعد الـ 999')}
@@ -453,7 +456,6 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
               setSelectedTemplateForSlots(null);
             }}
             engineTheme="amber"
-            searchPlaceholder={t('pdr.searchFamiliesPlaceholder', 'البحث في العائلات والقوالب...')}
             level3Enabled={true}
           />
         </div>
@@ -926,63 +928,28 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                           ) : (
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                               {familyTemplates.map(tmpl => {
-                                const bCount = blueprintCounts.get(tmpl.id) || 0;
                                 const isSelected = selectedTemplateForSlots === tmpl.id;
                                 return (
-                                  <div
+                                  <CompleteComponentTemplateCard
                                     key={tmpl.id}
-                                    onClick={() => setSelectedTemplateForSlots(tmpl.id)}
-                                    className={cn(
-                                      "p-5 border rounded-2xl cursor-pointer relative overflow-hidden group text-start flex flex-col justify-between transition-all duration-300 bg-[#0a0a0f] shadow-xl",
-                                      isSelected
-                                        ? "border-2 border-amber-500 scale-[1.02] shadow-[0_0_25px_rgba(245,158,11,0.25)]"
-                                        : "border-white/10 hover:border-white/25 hover:bg-white/[0.03]"
-                                    )}
-                                  >
-                                    {/* Ambient Bottom Ray */}
-                                    {isSelected && (
-                                      <div className="bg-amber-500/20 rounded-full blur-xl absolute -bottom-10 left-1/2 -translate-x-1/2 w-28 h-16 pointer-events-none z-0" />
-                                    )}
-
-                                    <div className="relative z-10">
-                                      <div className="flex items-start justify-between mb-4 flex-row">
-                                        <div className="flex items-center gap-2">
-                                          <div className="w-8 h-8 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center shrink-0 text-amber-400">
-                                            <Component className="w-4 h-4" />
-                                          </div>
-                                          <span className="text-xs font-mono font-extrabold text-white uppercase tracking-wider bg-white/10 border border-white/15 px-2.5 py-1 rounded-lg">
-                                            {tmpl.skuBase}
-                                          </span>
-                                        </div>
-                                        <button 
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleDeleteItem('template', tmpl.id);
-                                          }}
-                                          className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/20 transition-colors cursor-pointer"
-                                          title={t('pdr.deleteTemplate', 'حذف القالب')}
-                                        >
-                                          <Trash2 className="w-3.5 h-3.5" />
-                                        </button>
-                                      </div>
-
-                                      <div className="space-y-3">
-                                        <div>
-                                          <h4 className="text-sm font-extrabold text-white group-hover:text-amber-300 transition-colors">{tmpl.name}</h4>
-                                          <p className="text-[11px] text-slate-300 line-clamp-2 mt-1">{tmpl.description}</p>
-                                        </div>
-                                        
-                                        <div className="border-t border-white/10 pt-3 mt-3 flex justify-between items-center">
-                                          <span className="text-[10px] text-slate-400 font-mono font-bold flex items-center gap-1">
-                                            <Grid className="w-3 h-3 text-amber-400" /> {t('pdr.slotsTotal', '999 مقعد')}
-                                          </span>
-                                          <span className="px-2.5 py-1 rounded-lg bg-amber-500/15 border border-amber-500/30 text-[10px] font-mono font-extrabold text-amber-400">
-                                            {bCount} {bCount === 1 ? t('pdr.activeSlotLabel', 'مقعد نشط') : t('pdr.activeSlotsCountLabel', 'مقاعد نشطة')}
-                                          </span>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
+                                    template={{
+                                      id: tmpl.id,
+                                      name: tmpl.name,
+                                      description: tmpl.description,
+                                      familyId: fam.id,
+                                      familyName: fam.name,
+                                      familyColor: '#f59e0b',
+                                      skuBase: tmpl.skuBase,
+                                      unit: (tmpl as any).unit || 'قطعة',
+                                      specifications: (tmpl as any).specifications || {}
+                                    }}
+                                    isSelected={isSelected}
+                                    onSelect={() => setSelectedTemplateForSlots(tmpl.id)}
+                                    onDelete={() => handleDeleteItem('template', tmpl.id)}
+                                    onEdit={() => {
+                                      setSelectedTemplateForSlots(tmpl.id);
+                                    }}
+                                  />
                                 );
                               })}
                             </div>
@@ -999,19 +966,19 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                     key="default-greeting"
                     initial={{ opacity: 0, scale: 0.98 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-8 flex flex-col items-center justify-center text-center"
+                    className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-8 space-y-8"
                   >
-                    <div className="max-w-2xl mx-auto flex flex-col items-center">
-                      <div className="w-16 h-16 rounded-3xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mb-6 shadow-lg text-amber-400">
+                    <div className="max-w-3xl mx-auto flex flex-col items-center text-center">
+                      <div className="w-16 h-16 rounded-3xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mb-4 shadow-lg text-amber-400">
                         <FolderTree className="w-8 h-8" />
                       </div>
-                      <h3 className="text-2xl font-black text-white uppercase tracking-wider mb-3">
+                      <h3 className="text-2xl font-black text-white uppercase tracking-wider mb-2">
                         {t('pdr.greetingTitle', 'مستكشف الكتالوج وقوالب قطع الغيار')}
                       </h3>
                       <p className="text-xs text-slate-300 leading-relaxed max-w-lg mb-6 font-medium">
                         {t('pdr.greetingDesc', 'يرجى تصفح أو اختيار إحدى عائلات التصنيف الفني من القائمة الهيكلية للوصول إلى قوالب المواصفات والـ 999 مقعداً المرتبطة بها.')}
                       </p>
-                      <div className="flex gap-3 flex-row-reverse mb-8">
+                      <div className="flex gap-3 flex-row-reverse mb-2">
                         <button
                           onClick={() => {
                             setIsAddingFamily(true);
@@ -1022,40 +989,28 @@ export function PartsCatalogLabView({ user, tabId }: { user?: any, tabId?: strin
                         >
                           <Plus className="w-4 h-4" /> {t('pdr.addNewFamily', 'إضافة عائلة جديدة')}
                         </button>
-                        <button
-                          onClick={() => {
-                            if (families.length > 0) {
-                              setSelectedFamilyFilterId(families[0].id);
-                            } else {
-                              setIsAddingFamily(true);
-                            }
-                          }}
-                          className="bg-white/[0.04] text-slate-300 hover:bg-white/[0.08] hover:text-white border border-white/10 font-bold rounded-xl px-5 py-2.5 text-xs transition-all flex items-center gap-2 cursor-pointer"
-                        >
-                          <BookOpen className="w-4 h-4 text-slate-300" /> {t('pdr.browseFirstFamily', 'تصفح العائلة الأولى')}
-                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full text-start pt-4">
+                      <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-white/20 transition-all shadow-lg">
+                        <div className="flex items-center gap-2 mb-2 justify-start">
+                          <Grid className="w-4 h-4 text-amber-400" />
+                          <span className="text-xs font-black text-white">{t('pdr.rule999Title', 'قانون الـ 999 مقعداً الافتراضية لقطع الغيار')}</span>
+                        </div>
+                        <p className="text-[11px] text-slate-400 leading-relaxed">
+                          {t('pdr.rule999Desc', 'يولد النظام تلقائياً 999 مقعداً شاغراً رياضياً فور إنشاء أي قالب، تضمن الترقيم المتسلسل والمنهجي التلقائي بمرونة عالية ودون استهلاك حجم قاعدة البيانات.')}
+                        </p>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full text-start">
-                        <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-white/20 transition-all shadow-lg">
-                          <div className="flex items-center gap-2 mb-2 justify-start">
-                            <Grid className="w-4 h-4 text-amber-400" />
-                            <span className="text-xs font-black text-white">{t('pdr.rule999Title', 'قانون الـ 999 مقعداً الافتراضية لقطع الغيار')}</span>
-                          </div>
-                          <p className="text-[11px] text-slate-400 leading-relaxed">
-                            {t('pdr.rule999Desc', 'يولد النظام تلقائياً 999 مقعداً شاغراً رياضياً فور إنشاء أي قالب، تضمن الترقيم المتسلسل والمنهجي التلقائي بمرونة عالية ودون استهلاك حجم قاعدة البيانات.')}
-                          </p>
+                      <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-white/20 transition-all shadow-lg">
+                        <div className="flex items-center gap-2 mb-2 justify-start">
+                          <FolderTree className="w-4 h-4 text-emerald-400" />
+                          <span className="text-xs font-black text-white">{t('pdr.activationTitle', 'استقلالية ونطاق مسؤول المخزن')}</span>
                         </div>
-
-                        <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 hover:border-white/20 transition-all shadow-lg">
-                          <div className="flex items-center gap-2 mb-2 justify-start">
-                            <FolderTree className="w-4 h-4 text-emerald-400" />
-                            <span className="text-xs font-black text-white">{t('pdr.activationTitle', 'استقلالية ونطاق مسؤول المخزن')}</span>
-                          </div>
-                          <p className="text-[11px] text-slate-400 leading-relaxed">
-                            {t('pdr.activationDesc', 'يركز محرك الكتالوج على الرصيد المادي لقطع الغيار وحركات الصرف، الإيداع، الجرد والتسوية لضمان تلبية احتياجات التدخلات الوقائية والعلاجية بكفاءة.')}
-                          </p>
-                        </div>
+                        <p className="text-[11px] text-slate-400 leading-relaxed">
+                          {t('pdr.activationDesc', 'يركز محرك الكتالوج على الرصيد المادي لقطع الغيار وحركات الصرف، الإيداع، الجرد والتسوية لضمان تلبية احتياجات التدخلات الوقائية والعلاجية بكفاءة.')}
+                        </p>
                       </div>
                     </div>
                   </motion.div>

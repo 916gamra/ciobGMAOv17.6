@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db, Machine, MachineTemplate, MachineBlueprint, PreventiveTask, PreventiveCard, MachineFamily, Technician } from '@/core/db';
 import { GlassCard } from '@/shared/components/GlassCard';
 import { PageHeader } from '@/shared/components/PageHeader';
 import { HeaderBentoCard } from '@/shared/components/HeaderBentoCard';
+import { LabHierarchicalSidebar, HierarchyFamilyNode } from '@/shared/components/LabHierarchicalSidebar';
 import { cn } from '@/shared/utils';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'motion/react';
@@ -49,13 +50,10 @@ export function MachineRegistryView() {
   const preventiveCards = useLiveQuery(() => db.preventiveCards.toArray(), []);
 
   // UI state
-  const [activeSidebarTab, setActiveSidebarTab] = useState<'templates' | 'blueprints'>('templates');
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const [selectedBlueprintId, setSelectedBlueprintId] = useState<string | null>(null);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('cards');
-  
-  const [searchTerm, setSearchTerm] = useState('');
 
   // Modals state
   const [isTemplateModalOpen, setIsTemplateModalOpen] = useState(false);
@@ -78,7 +76,8 @@ export function MachineRegistryView() {
   const [newTemplateName, setNewTemplateName] = useState('');
   const [newTemplateSkuBase, setNewTemplateSkuBase] = useState('');
   const [newTemplateType, setNewTemplateType] = useState<any>('A');
-  const [selectedFamilyId, setSelectedFamilyId] = useState('');
+  const [formFamilyId, setFormFamilyId] = useState('');
+  const [selectedNavFamilyId, setSelectedNavFamilyId] = useState<string | null>(null);
   const [newFamilyName, setNewFamilyName] = useState('');
   const [newFamilyCode, setNewFamilyCode] = useState('');
 
@@ -100,17 +99,6 @@ export function MachineRegistryView() {
   // Filtered Cards for the selected Template
   const cardsForSelectedTemplate = preventiveCards?.filter(c => c.templateId === selectedTemplateId) || [];
   const selectedCard = cardsForSelectedTemplate.find(c => c.id === selectedCardId);
-
-  // Filtered Templates & Blueprints for Sidebar Navigation
-  const filteredTemplates = templates?.filter(t => 
-    t.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    t.skuBase.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
-
-  const filteredBlueprints = blueprints?.filter(bp => 
-    bp.reference.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    bp.brand.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
 
   // Resolve tasks inside the selected card
   const activeCardTaskIds = new Set(selectedCard?.taskIds || []);
@@ -139,6 +127,57 @@ export function MachineRegistryView() {
     }
   }, [selectedTemplateId, preventiveCards]);
 
+  // Map MachineFamilies, MachineTemplates, MachineBlueprints to HierarchyFamilyNode for standard sidebar
+  const hierarchicalFamilies: HierarchyFamilyNode[] = useMemo(() => {
+    return (machineFamilies || []).map(fam => {
+      const famCode = fam.code || '';
+      const famName = fam.name || '';
+      const group = `${famCode} ${famName}`.toLowerCase();
+      let discipline: 'mechanical' | 'hydraulic' | 'electrical' | 'electronic' | 'pneumatic' | 'general' = 'general';
+      if (group.includes('mecanique') || group.includes('méc') || group.includes('mechanical') || group.includes('rob') || famCode.startsWith('MC')) {
+        discipline = 'mechanical';
+      } else if (group.includes('hydraulique') || group.includes('hydr') || group.includes('hydraulic') || group.includes('hyd') || famCode.startsWith('HY')) {
+        discipline = 'hydraulic';
+      } else if (group.includes('pneumatique') || group.includes('pneum') || group.includes('pneumatic') || group.includes('pnu') || famCode.startsWith('PN')) {
+        discipline = 'pneumatic';
+      } else if (group.includes('electronique') || group.includes('electronic') || famCode.startsWith('EL')) {
+        discipline = 'electronic';
+      } else if (group.includes('electrique') || group.includes('elec') || group.includes('electrical')) {
+        discipline = 'electrical';
+      }
+
+      const famTemplates = (templates || []).filter(t => t.familyId === fam.id);
+      
+      return {
+        id: fam.id,
+        code: fam.code,
+        name: fam.name,
+        subtitle: `${famTemplates.length} قوالب مسجلة`,
+        discipline,
+        count: famTemplates.length,
+        templates: famTemplates.map(tmpl => {
+          const tmplBps = (blueprints || []).filter(b => b.templateId === tmpl.id);
+          return {
+            id: tmpl.id,
+            code: tmpl.skuBase || tmpl.id,
+            name: tmpl.name,
+            subtitle: tmpl.type === 'A' ? 'آلي (Auto)' : tmpl.type === 'I' ? 'كهربائي (Elec)' : 'يدوي/ميكانيكي',
+            count: tmplBps.length,
+            items: tmplBps.map(bp => ({
+              id: bp.id,
+              code: bp.reference || bp.id,
+              name: `${bp.brand} ${bp.model || bp.reference || ''}`,
+              subtitle: bp.powerOrForce || bp.energySource,
+              raw: bp
+            })),
+            raw: tmpl
+          };
+        }),
+        raw: fam
+      };
+    });
+  }, [machineFamilies, templates, blueprints]);
+
   // Pre-populate target machines in deploy modal
   useEffect(() => {
     if (isDeployModalOpen && templateMachines) {
@@ -150,7 +189,7 @@ export function MachineRegistryView() {
   const handleCreateTemplate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      let finalFamilyId = selectedFamilyId;
+      let finalFamilyId = formFamilyId;
 
       if (isCreatingFamily) {
         if (!newFamilyName.trim() || !newFamilyCode.trim()) {
@@ -198,7 +237,7 @@ export function MachineRegistryView() {
       setNewTemplateName('');
       setNewTemplateSkuBase('');
       setNewTemplateType('A');
-      setSelectedFamilyId('');
+      setFormFamilyId('');
       setNewFamilyName('');
       setNewFamilyCode('');
       setIsCreatingFamily(false);
@@ -426,251 +465,43 @@ export function MachineRegistryView() {
 
       {/* Main Content Area */}
       <div className="px-6 md:px-8 py-6 flex-1 min-h-0">
-        <div className="flex flex-col lg:flex-row gap-6 min-h-0 h-full">
+        <div className="flex flex-col md:flex-row gap-6 min-h-0 h-full">
         
-          {/* LEFT SIDEBAR: Templates & Blueprints Navigation */}
-          <div className="w-full lg:w-[380px] shrink-0 flex flex-col gap-4">
-            <div className="flex flex-col h-full min-h-[420px] p-0 border border-emerald-500/30 rounded-3xl overflow-hidden shadow-[0_10px_30px_rgba(16,185,129,0.12)] bg-gradient-to-b from-emerald-950/40 via-[#0a0a0f]/95 to-[#0a0a0f]/98 backdrop-blur-xl relative">
-              
-              {/* Background ambient engine accent glow */}
-              <div className="absolute -top-12 -right-12 w-48 h-48 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
-
-              {/* Sidebar Header & Controls */}
-              <div className="p-5 text-start space-y-3.5 relative z-10">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-sm font-black text-white uppercase tracking-wider block">
-                      {t("preventive.plans.sidebarHeader", "مكتبة وسجل الأصول")}
-                    </span>
-                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest block mt-0.5">
-                      {activeSidebarTab === 'templates' ? 'قوالب الآلات والهياكل' : 'كتالوج الطرازات والموديلات'}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Segmented Tab Navigation - Neutral High Contrast */}
-                <div className="flex items-center gap-1 bg-[#08080c]/90 p-1 rounded-2xl border border-white/10">
-                  <button
-                    onClick={() => {
-                      setActiveSidebarTab('templates');
-                      setSearchTerm('');
-                    }}
-                    className={cn(
-                      "flex-1 py-2 rounded-xl text-xs font-bold transition-all text-center cursor-pointer",
-                      activeSidebarTab === 'templates' 
-                        ? "bg-white/10 text-white border border-white/20 shadow-sm font-extrabold" 
-                        : "text-slate-400 hover:text-white"
-                    )}
-                  >
-                    {t("preventive.plans.tabTemplates", "قوالب الآلات")} ({templates?.length || 0})
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      setActiveSidebarTab('blueprints');
-                      setSearchTerm('');
-                    }}
-                    className={cn(
-                      "flex-1 py-2 rounded-xl text-xs font-bold transition-all text-center cursor-pointer",
-                      activeSidebarTab === 'blueprints' 
-                        ? "bg-white/10 text-white border border-white/20 shadow-sm font-extrabold" 
-                        : "text-slate-400 hover:text-white"
-                    )}
-                  >
-                    {t("preventive.plans.tabBlueprints", "الطرازات")} ({blueprints?.length || 0})
-                  </button>
-                </div>
-
-                {/* Prominent Wide Action Button */}
-                {activeSidebarTab === 'templates' ? (
-                  <button 
-                    onClick={() => setIsTemplateModalOpen(true)}
-                    className="w-full bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-3 py-2.5 text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
-                  >
-                    <Plus className="w-4 h-4 text-slate-950" />
-                    <span>{t("preventive.plans.addTemplate", "إضافة قالب آلة جديد")}</span>
-                  </button>
-                ) : (
-                  <button 
-                    onClick={() => setIsBlueprintModalOpen(true)}
-                    className="w-full bg-white text-slate-950 hover:bg-slate-200 font-extrabold rounded-xl px-3 py-2.5 text-xs shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
-                  >
-                    <Plus className="w-4 h-4 text-slate-950" />
-                    <span>{t("preventive.plans.addBlueprint", "تسجيل طراز تجاري بالكتالوج")}</span>
-                  </button>
-                )}
-
-                {/* Search Bar - Crystal Glass */}
-                <div className="relative w-full">
-                  <Search className="w-4 h-4 absolute left-3 rtl:left-auto rtl:right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                  <input 
-                    type="text"
-                    placeholder={activeSidebarTab === 'templates' ? t('machine.searchTemplates', "Search machine templates...") : t('machine.searchModels', "Search commercial models...")}
-                    value={searchTerm}
-                    onChange={e => setSearchTerm(e.target.value)}
-                    className="w-full bg-[#0a0a0f]/80 border border-white/10 rounded-xl pl-9 pr-3 rtl:pr-9 rtl:pl-3 py-2.5 text-xs text-white placeholder:text-slate-500 focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all text-start font-bold shadow-sm"
-                  />
-                </div>
-
-              </div>
-
-              {/* Scrollable Items List */}
-              <div className="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-2.5 text-left relative z-10">
-                
-                {/* List Header Row with Count */}
-                <div className="flex items-center justify-between mb-1 px-1">
-                  <span className="text-[10px] uppercase text-slate-400 font-bold tracking-wider">
-                    {activeSidebarTab === 'templates' 
-                      ? `قوالب الآلات (${filteredTemplates.length})` 
-                      : `الطرازات المادية (${filteredBlueprints.length})`}
-                  </span>
-                </div>
-
-                {/* Filtered Bento Mini-Cards - Matching HeaderBentoCard */}
-                {activeSidebarTab === 'templates' ? (
-                  filteredTemplates.map(t => {
-                    const isSelected = selectedTemplateId === t.id && !selectedBlueprintId;
-                    const fam = machineFamilies?.find(f => f.id === t.familyId);
-                    const mCount = machines?.filter(m => m.templateId === t.id || blueprints?.some(b => b.id === m.blueprintId && b.templateId === t.id)).length || 0;
-
-                    return (
-                      <div
-                        key={t.id}
-                        onClick={() => {
-                          setSelectedTemplateId(t.id);
-                          setSelectedBlueprintId(null);
-                        }}
-                        className={cn(
-                          "p-3.5 rounded-2xl transition-all duration-500 relative group overflow-hidden select-none cursor-pointer flex flex-col gap-2.5 text-start bg-[#0a0a0f]",
-                          isSelected 
-                            ? "border-2 border-emerald-500 shadow-[0_0_25px_rgba(16,185,129,0.35)] scale-[1.03]" 
-                            : "border border-white/10 hover:border-white/25 hover:scale-[1.01]"
-                        )}
-                      >
-                        {/* Selected Background Ambient Glow */}
-                        {isSelected && (
-                          <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-28 h-16 bg-emerald-500/25 rounded-full blur-xl pointer-events-none" />
-                        )}
-
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <div className={cn(
-                              "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border shadow-sm transition-all duration-300",
-                              isSelected 
-                                ? "bg-white/5 border-white/10 text-emerald-400" 
-                                : "bg-white/5 border-white/10 text-slate-300 group-hover:text-white"
-                            )}>
-                              <Layers className="w-3.5 h-3.5" />
-                            </div>
-                            <span className={cn(
-                              "text-xs truncate transition-all duration-300",
-                              isSelected ? "text-white font-black" : "text-slate-300 group-hover:text-white font-bold"
-                            )}>{t.name}</span>
-                          </div>
-                          <span className={cn(
-                            "text-[10px] font-mono font-bold border px-2 py-0.5 rounded-md shrink-0 uppercase transition-all duration-300",
-                            isSelected 
-                              ? "bg-white/20 text-white border-white/30" 
-                              : "bg-white/5 text-slate-300 border-white/10 group-hover:text-white"
-                          )}>
-                            {t.skuBase}
-                          </span>
-                        </div>
-
-                        <div className={cn(
-                          "flex justify-between items-center text-[10px] pt-2 border-t transition-colors duration-300",
-                          isSelected ? "border-white/15 text-slate-200" : "border-white/5 text-slate-400 group-hover:text-white"
-                        )}>
-                          <span>العائلة: <strong className={cn("transition-colors", isSelected ? "text-slate-200 font-bold" : "text-slate-400 group-hover:text-slate-200 font-bold")}>{fam ? fam.name : 'عام'}</strong></span>
-                          <span className={cn(
-                            "font-mono border px-2 py-0.5 rounded-md font-bold transition-all duration-300",
-                            isSelected 
-                              ? "bg-white/20 text-white border-white/30" 
-                              : "bg-white/5 text-slate-300 border-white/10 group-hover:text-white"
-                          )}>
-                            {mCount} آلة
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  filteredBlueprints.map(bp => {
-                    const isSelected = selectedBlueprintId === bp.id;
-                    const tpl = templates?.find(t => t.id === bp.templateId);
-
-                    return (
-                      <div
-                        key={bp.id}
-                        onClick={() => {
-                          setSelectedBlueprintId(bp.id);
-                          if (tpl) setSelectedTemplateId(tpl.id);
-                        }}
-                        className={cn(
-                          "p-3.5 rounded-2xl transition-all duration-500 relative group overflow-hidden select-none cursor-pointer flex flex-col gap-2.5 text-start bg-[#0a0a0f]",
-                          isSelected 
-                            ? "border-2 border-cyan-500 shadow-[0_0_25px_rgba(6,182,212,0.35)] scale-[1.03]" 
-                            : "border border-white/10 hover:border-white/25 hover:scale-[1.01]"
-                        )}
-                      >
-                        {/* Selected Background Ambient Glow */}
-                        {isSelected && (
-                          <div className="absolute -bottom-10 left-1/2 -translate-x-1/2 w-28 h-16 bg-cyan-500/25 rounded-full blur-xl pointer-events-none" />
-                        )}
-
-                        <div className="flex items-center justify-between gap-2">
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <div className={cn(
-                              "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 border shadow-sm transition-all duration-300",
-                              isSelected 
-                                ? "bg-white/5 border-white/10 text-cyan-400" 
-                                : "bg-white/5 border-white/10 text-slate-300 group-hover:text-white"
-                            )}>
-                              <Boxes className="w-3.5 h-3.5" />
-                            </div>
-                            <span className={cn(
-                              "text-xs font-mono truncate transition-all duration-300",
-                              isSelected ? "text-white font-black" : "text-slate-300 group-hover:text-white font-bold"
-                            )}>{bp.reference}</span>
-                          </div>
-                          <span className={cn(
-                            "text-[10px] font-mono font-bold border px-2 py-0.5 rounded-md shrink-0 transition-all duration-300",
-                            isSelected 
-                              ? "bg-white/20 text-white border-white/30" 
-                              : "bg-white/5 text-slate-300 border-white/10 group-hover:text-white"
-                          )}>
-                            {bp.brand}
-                          </span>
-                        </div>
-
-                        <div className={cn(
-                          "flex justify-between items-center text-[10px] pt-2 border-t transition-colors duration-300",
-                          isSelected ? "border-white/15 text-slate-200" : "border-white/5 text-slate-400 group-hover:text-white"
-                        )}>
-                          <span>القالب: <strong className={cn("transition-colors", isSelected ? "text-slate-200 font-bold" : "text-slate-400 group-hover:text-slate-200 font-bold")}>{tpl ? tpl.name : 'غير محدد'}</strong></span>
-                          <span className={cn(
-                            "font-mono border px-2 py-0.5 rounded-md font-bold transition-all duration-300",
-                            isSelected 
-                              ? "bg-white/20 text-white border-white/30" 
-                              : "bg-white/5 text-slate-300 border-white/10 group-hover:text-white"
-                          )}>
-                            {bp.powerOrForce || 'N/A'}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-
-                {activeSidebarTab === 'templates' && filteredTemplates.length === 0 && (
-                  <div className="text-center text-xs text-slate-500 py-12">لا توجد قوالب آلات مسجلة بعد.</div>
-                )}
-                {activeSidebarTab === 'blueprints' && filteredBlueprints.length === 0 && (
-                  <div className="text-center text-xs text-slate-500 py-12">لا توجد طرازات مسجلة بعد.</div>
-                )}
-              </div>
-
-            </div>
+          {/* LEFT SIDEBAR: Standard Hierarchical Navigation (Crystal Drawer Tree) */}
+          <div className="w-full md:w-96 shrink-0 h-[650px] md:h-auto min-h-0">
+            <LabHierarchicalSidebar
+              title={t("preventive.plans.sidebarHeader", "مكتبة وسجل الأصول")}
+              subtitle={t("preventive.plans.sidebarSub", "هيكلية عائلات وقوالب وطرازات الآلات")}
+              families={hierarchicalFamilies}
+              selectedFamilyId={selectedNavFamilyId}
+              selectedTemplateId={selectedTemplateId}
+              selectedBlueprintId={selectedBlueprintId}
+              onSelectFamily={(fam) => {
+                setSelectedNavFamilyId(fam ? fam.id : null);
+                setSelectedTemplateId(null);
+                setSelectedBlueprintId(null);
+              }}
+              onSelectTemplate={(tmpl, fam) => {
+                if (fam) setSelectedNavFamilyId(fam.id);
+                setSelectedTemplateId(tmpl ? tmpl.id : null);
+                setSelectedBlueprintId(null);
+              }}
+              onSelectBlueprint={(bp, tmpl, fam) => {
+                if (fam) setSelectedNavFamilyId(fam.id);
+                if (tmpl) setSelectedTemplateId(tmpl.id);
+                setSelectedBlueprintId(bp ? bp.id : null);
+              }}
+              onResetSelection={() => {
+                setSelectedNavFamilyId(null);
+                setSelectedTemplateId(null);
+                setSelectedBlueprintId(null);
+              }}
+              resetLabel={t('preventive.plans.showAll', 'عرض كافة الأصول (الكل)')}
+              onPrimaryAction={() => setIsTemplateModalOpen(true)}
+              primaryActionLabel={t("preventive.plans.addTemplate", "إضافة قالب آلة جديد")}
+              engineTheme="emerald"
+              level3Enabled={true}
+            />
           </div>
 
           {/* RIGHT MAIN WORKSPACE CANVAS */}
@@ -1152,8 +983,8 @@ export function MachineRegistryView() {
                     </div>
                   ) : (
                     <select 
-                      value={selectedFamilyId} 
-                      onChange={e => setSelectedFamilyId(e.target.value)} 
+                      value={formFamilyId} 
+                      onChange={e => setFormFamilyId(e.target.value)} 
                       className="w-full bg-[#0a0a0f]/80 border border-white/10 rounded-xl py-2.5 px-4 text-sm text-white outline-none focus:border-white/30 text-start"
                     >
                       <option value="">اختر العائلة...</option>

@@ -16,6 +16,7 @@ import { GlassCard } from '@/shared/components/GlassCard';
 import { UnifiedSearchFilter, FilterGroup } from '@/shared/components/UnifiedSearchFilter';
 import { useTabStore } from '@/app/store';
 import { LabHierarchicalSidebar, HierarchyFamilyNode } from '@/shared/components/LabHierarchicalSidebar';
+import { LabEntityCard } from '@/shared/components/LabEntityCard';
 
 export function FailureCatalogView() {
   const { t } = useTranslation();
@@ -44,10 +45,11 @@ export function FailureCatalogView() {
   // Display Mode: Table vs Cards (matches EngineeringLabView standard)
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
 
-  // Seed defaults on mount if empty
+  // Seed defaults on mount if empty once
   useEffect(() => {
     seedDefaultCategories();
-  }, [seedDefaultCategories]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -327,7 +329,7 @@ export function FailureCatalogView() {
       <div className="flex-1 flex flex-col md:flex-row gap-6 p-6 md:p-8 pt-0 overflow-hidden min-h-0">
         
         {/* Left Navigation Panel: Categories & Faults Tree (Golden Master Lab Standard) */}
-        <div className="w-full md:w-80 shrink-0 h-[650px] md:h-auto min-h-0">
+        <div className="w-full md:w-96 shrink-0 h-[650px] md:h-auto min-h-0">
           <LabHierarchicalSidebar
             title={t('corrective.failureCatalog.familiesAndSectors', 'العائلات والقطاعات')}
             subtitle="CATEGORIES & SECTORS"
@@ -350,7 +352,6 @@ export function FailureCatalogView() {
             }}
             resetLabel={t('corrective.failureCatalog.showAllFamilies', 'عرض الكتالوج الشامل (الكل)')}
             engineTheme="orange"
-            searchPlaceholder={t('corrective.failureCatalog.searchFamilies', 'بحث في العائلات والقطاعات أو الأعطال...')}
             level3Enabled={false}
           />
         </div>
@@ -495,59 +496,55 @@ export function FailureCatalogView() {
                             </button>
                           </div>
                         ) : viewMode === 'cards' ? (
-                          /* Cards Grid View - Styled like EngineeringLabView */
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-6 pb-8">
-                            {filteredTemplates.map(item => (
-                              <div 
-                                key={item.id}
-                                className="bg-[#08080c]/80 border border-white/10 hover:border-white/20 rounded-2xl p-5 hover:bg-white/[0.03] transition-all relative overflow-hidden group text-start flex flex-col justify-between shadow-lg"
-                              >
-                                <div>
-                                  <div className="flex items-start justify-between mb-4 flex-row">
-                                    <div className="flex items-center gap-2">
-                                      <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
-                                        <AlertTriangle className="w-4 h-4 text-orange-400" />
-                                      </div>
-                                      <span className="text-xs font-mono font-bold text-white uppercase tracking-wider bg-white/5 border border-white/10 px-2.5 py-1 rounded-lg">
-                                        {item.id.length > 8 ? `TR-${item.id.slice(-4).toUpperCase()}` : item.id}
-                                      </span>
-                                    </div>
-                                    
-                                    <div className="flex items-center gap-1.5">
-                                      {getSeverityBadge(item.severity || 'medium')}
-                                      <button 
-                                        type="button"
-                                        onClick={(e) => handleDeleteTemplate(item.id, e)}
-                                        className="p-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/25 text-red-400 border border-white/5 transition-colors cursor-pointer"
-                                        title={t('common.delete', 'حذف')}
-                                      >
-                                        <Trash2 className="w-3.5 h-3.5" />
-                                      </button>
-                                    </div>
-                                  </div>
+                          /* Cards Grid View - Styled with LabEntityCard */
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 p-6 pb-8">
+                            {filteredTemplates.map(item => {
+                              const severityLabel = item.severity === 'high' || item.severity === 'critical' ? 'حرج جداً' : item.severity === 'low' ? 'منخفض' : 'متوسط الخطورة';
+                              const severityVariant = item.severity === 'high' || item.severity === 'critical' ? 'rose' : item.severity === 'low' ? 'emerald' : 'amber';
 
-                                  <h4 className="text-sm font-bold text-white mb-2">{item.name}</h4>
-
-                                  {item.description && (
-                                    <p className="text-xs text-slate-400 leading-relaxed line-clamp-2 mb-3">
-                                      {item.description}
-                                    </p>
-                                  )}
-                                </div>
-
-                                <div className="border-t border-white/5 pt-3 mt-3 flex justify-between items-center text-xs">
-                                  <button
-                                    type="button"
-                                    onClick={() => openTab({ id: 'diagnostic-simulator', portalId: 'CORRECTIVE', title: 'شجرة التشخيص الميداني', component: 'diagnostic-simulator' })}
-                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-orange-500/10 hover:bg-orange-500/20 text-orange-300 border border-orange-500/25 font-bold transition-all cursor-pointer"
-                                  >
-                                    <Activity className="w-3.5 h-3.5" />
-                                    <span>{t('corrective.failureCatalog.diagnoseAction', 'تشخيص العطل')}</span>
-                                  </button>
-                                  <span className="text-[10px] text-slate-500 font-mono">ISO 14224</span>
-                                </div>
-                              </div>
-                            ))}
+                              return (
+                                <LabEntityCard
+                                  key={item.id}
+                                  id={`failure-card-${item.id}`}
+                                  title={item.name}
+                                  subtitle={item.description || t('corrective.failureCatalog.defaultDesc', 'نمط عطل معتمد بالمعيار القياسي ISO 14224')}
+                                  code={item.id.length > 8 ? `TR-${item.id.slice(-4).toUpperCase()}` : item.id}
+                                  icon={AlertTriangle}
+                                  engineTheme="orange"
+                                  statusBadge={{
+                                    label: severityLabel,
+                                    variant: severityVariant
+                                  }}
+                                  metrics={[
+                                    {
+                                      label: t('corrective.failureCatalog.thSeverity', 'مستوى الخطورة'),
+                                      value: severityLabel,
+                                      icon: AlertTriangle,
+                                      highlight: item.severity === 'high' || item.severity === 'critical'
+                                    },
+                                    {
+                                      label: 'معيار المعايرة',
+                                      value: 'ISO 14224',
+                                      icon: Activity
+                                    }
+                                  ]}
+                                  actions={[
+                                    {
+                                      icon: Activity,
+                                      title: t('corrective.failureCatalog.diagnoseAction', 'تشخيص العطل'),
+                                      onClick: () => openTab({ id: 'diagnostic-simulator', portalId: 'CORRECTIVE', title: 'شجرة التشخيص الميداني', component: 'diagnostic-simulator' }),
+                                      variant: 'ghost'
+                                    },
+                                    {
+                                      icon: Trash2,
+                                      title: t('common.delete', 'حذف'),
+                                      onClick: (e) => handleDeleteTemplate(item.id, e),
+                                      variant: 'danger'
+                                    }
+                                  ]}
+                                />
+                              );
+                            })}
                           </div>
                         ) : (
                           /* Crystal High-Contrast Table - Styled like EngineeringLabView */

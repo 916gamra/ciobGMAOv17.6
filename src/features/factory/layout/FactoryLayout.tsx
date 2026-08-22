@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Factory, Cpu, Network, Users, FlaskConical } from 'lucide-react';
+import { Factory, Cpu, Network, Users, DraftingCompass } from 'lucide-react';
 import { useTabStore } from '@/app/store';
 import { PortalCanvas } from '@/app/layout/PortalCanvas';
 import { PortalSidebar } from '@/app/layout/PortalSidebar';
@@ -65,7 +65,7 @@ export function FactoryLayout({ user, onLogout }: { user: User | null, onLogout:
           colorClass="text-indigo-400"
         />
         <PortalSidebarItem 
-          icon={<FlaskConical />} 
+          icon={<DraftingCompass />} 
           isActive={activeTabId === 'engineering-lab'} 
           onClick={() => openTab({ id: 'engineering-lab', portalId: 'FACTORY', title: 'Engineering Lab', component: 'engineering-lab' })}
           title="Engineering Lab"
